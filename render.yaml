@@ -55,6 +55,7 @@ services:
           type: web
           name: ai-sql-backend
           property: url
+        value: ${AI_SQL_BACKEND_URL}/api
       - key: VITE_GOOGLE_AUTH_URL
         fromService:
           type: web

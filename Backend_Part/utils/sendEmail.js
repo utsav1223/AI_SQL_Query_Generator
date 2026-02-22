@@ -3,10 +3,21 @@ const PDFDocument = require("pdfkit");
 const { PassThrough } = require("stream");
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true, // Use SSL/TLS
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
+  }
+});
+
+// Verify connection configuration
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("Email transporter configuration error:", error);
+  } else {
+    console.log("Email server is ready to take our messages");
   }
 });
 
@@ -55,9 +66,8 @@ const buildEmailLayout = ({ title, subtitle, bodyHtml, metaRows = [], notice = "
             ${bodyHtml}
           </td>
         </tr>
-        ${
-          metaRows.length > 0
-            ? `
+        ${metaRows.length > 0
+      ? `
           <tr>
             <td style="padding: 8px 24px 16px;">
               <table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
@@ -66,11 +76,10 @@ const buildEmailLayout = ({ title, subtitle, bodyHtml, metaRows = [], notice = "
             </td>
           </tr>
         `
-            : ""
-        }
-        ${
-          notice
-            ? `
+      : ""
+    }
+        ${notice
+      ? `
           <tr>
             <td style="padding: 0 24px 18px;">
               <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; padding: 12px 14px; color: #065f46; font-size: 13px; line-height: 1.55;">
@@ -79,8 +88,8 @@ const buildEmailLayout = ({ title, subtitle, bodyHtml, metaRows = [], notice = "
             </td>
           </tr>
         `
-            : ""
-        }
+      : ""
+    }
         <tr>
           <td style="padding: 16px 24px 22px; color: #64748b; font-size: 12px; line-height: 1.6;">
             This is an automated email from SQL Studio. If you did not request this action, please contact support.

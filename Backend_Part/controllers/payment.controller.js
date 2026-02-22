@@ -77,17 +77,30 @@ const createBillingRecords = async ({ user, paymentId, orderId }) => {
   });
 };
 
-const sendSubscriptionConfirmation = async ({ user, invoiceNumber, renewalDate }) => {
-  await sendEmail({
-    to: user.email,
-    subject: "SQL Studio Pro Subscription Activated",
-    html: buildSubscriptionActivatedEmail({
-      name: user.name,
-      invoiceNumber,
-      amount: SUBSCRIPTION_AMOUNT_INR,
-      renewalDate
-    })
-  });
+const sendSubscriptionConfirmation = async ({ user, invoiceNumber, renewalDate, paymentId }) => {
+  try {
+    const pdfBuffer = await exports.generateInvoice(user, paymentId, renewalDate);
+
+    await sendEmail({
+      to: user.email,
+      subject: "SQL Studio Pro Subscription Activated",
+      html: buildSubscriptionActivatedEmail({
+        name: user.name,
+        invoiceNumber,
+        amount: SUBSCRIPTION_AMOUNT_INR,
+        renewalDate
+      }),
+      attachments: [
+        {
+          filename: `Invoice_${invoiceNumber}.pdf`,
+          content: pdfBuffer
+        }
+      ]
+    });
+    console.log(`Confirmation email sent with invoice to ${user.email}`);
+  } catch (error) {
+    console.error("Failed to send subscription confirmation email:", error);
+  }
 };
 
 exports.createOrder = async (req, res) => {
