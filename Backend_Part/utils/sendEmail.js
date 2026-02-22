@@ -1,7 +1,12 @@
 const nodemailer = require("nodemailer");
+const axios = require("axios");
 const PDFDocument = require("pdfkit");
 const { PassThrough } = require("stream");
 
+const EMAIL_PROVIDER = (
+  process.env.EMAIL_PROVIDER ||
+  (process.env.RESEND_API_KEY ? "resend" : "smtp")
+).toLowerCase();
 const EMAIL_HOST = process.env.EMAIL_HOST || "smtp.gmail.com";
 const EMAIL_PORT = Number(process.env.EMAIL_PORT || 465);
 const EMAIL_SECURE = process.env.EMAIL_SECURE
@@ -9,12 +14,14 @@ const EMAIL_SECURE = process.env.EMAIL_SECURE
   : EMAIL_PORT === 465;
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
+const EMAIL_FROM = process.env.EMAIL_FROM || (EMAIL_USER ? `"SQL Studio" <${EMAIL_USER}>` : null);
 const EMAIL_CONNECTION_TIMEOUT_MS = Number(process.env.EMAIL_CONNECTION_TIMEOUT_MS || 10000);
 const EMAIL_GREETING_TIMEOUT_MS = Number(process.env.EMAIL_GREETING_TIMEOUT_MS || 10000);
 const EMAIL_SOCKET_TIMEOUT_MS = Number(process.env.EMAIL_SOCKET_TIMEOUT_MS || 15000);
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
 const emailAuthConfigured = Boolean(EMAIL_USER && EMAIL_PASS);
-const transporter = emailAuthConfigured
+const transporter = EMAIL_PROVIDER === "smtp" && emailAuthConfigured
   ? nodemailer.createTransport({
     host: EMAIL_HOST,
     port: EMAIL_PORT,
@@ -29,8 +36,8 @@ const transporter = emailAuthConfigured
   })
   : null;
 
-// Verify connection configuration
-if (transporter) {
+// Verify SMTP connection configuration
+if (EMAIL_PROVIDER === "smtp" && transporter) {
   transporter.verify((error) => {
     if (error) {
       console.error("Email transporter configuration error:", error);
@@ -38,10 +45,16 @@ if (transporter) {
       console.log("Email server is ready to take our messages");
     }
   });
-} else {
+} else if (EMAIL_PROVIDER === "smtp") {
   console.warn(
     "Email transport disabled: set EMAIL_USER and EMAIL_PASS to enable outbound emails."
   );
+} else if (EMAIL_PROVIDER === "resend") {
+  if (!RESEND_API_KEY) {
+    console.warn("Email transport disabled: set RESEND_API_KEY to enable Resend emails.");
+  } else {
+    console.log("Email provider set to Resend API.");
+  }
 }
 
 const escapeHtml = (value = "") =>
@@ -173,12 +186,53 @@ exports.buildSubscriptionActivatedEmail = ({ name, invoiceNumber, amount, renewa
   });
 
 exports.sendEmail = async ({ to, subject, html, attachments = [] }) => {
+  if (EMAIL_PROVIDER === "resend") {
+    if (!RESEND_API_KEY) {
+      throw new Error("Resend email transport is not configured.");
+    }
+
+    const resendAttachments = attachments
+      .map((item) => {
+        if (!item?.content) return null;
+
+        const contentBuffer = Buffer.isBuffer(item.content)
+          ? item.content
+          : Buffer.from(item.content);
+
+        return {
+          filename: item.filename || "attachment",
+          content: contentBuffer.toString("base64")
+        };
+      })
+      .filter(Boolean);
+
+    await axios.post(
+      "https://api.resend.com/emails",
+      {
+        from: EMAIL_FROM || "SQL Studio <onboarding@resend.dev>",
+        to: [to],
+        subject,
+        html,
+        attachments: resendAttachments
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        timeout: EMAIL_SOCKET_TIMEOUT_MS
+      }
+    );
+
+    return;
+  }
+
   if (!transporter) {
-    throw new Error("Email transport is not configured.");
+    throw new Error("SMTP email transport is not configured.");
   }
 
   await transporter.sendMail({
-    from: `"SQL Studio" <${EMAIL_USER}>`,
+    from: EMAIL_FROM || `"SQL Studio" <${EMAIL_USER}>`,
     to,
     subject,
     html,
