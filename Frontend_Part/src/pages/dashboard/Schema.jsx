@@ -68,15 +68,7 @@ export default function Schema() {
   const memoryUsagePercent = Math.min((parseFloat(sizeInKB) / systemLimitKB) * 100, 100);
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in duration-500">
-        <div className="relative mb-6">
-          <Loader2 className="animate-spin text-emerald-500" size={48} strokeWidth={1} />
-          <div className="absolute inset-0 blur-2xl bg-emerald-500/20 rounded-full" />
-        </div>
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Calibrating Neural Map...</p>
-      </div>
-    );
+    return <SchemaSkeleton />;
   }
 
   return (
@@ -235,6 +227,25 @@ function InfoCard({ icon, title, value, subtitle, accentColor, progress, isActiv
           {subtitle}
         </p>
       </div>
+    </div>
+  );
+}
+
+function SchemaSkeleton() {
+  return (
+    <div className="dashboard-page space-y-8 animate-pulse">
+      <div className="space-y-3 border-b border-slate-100 pb-10">
+        <div className="h-5 w-36 rounded-full bg-slate-200" />
+        <div className="h-11 w-80 max-w-full rounded-2xl bg-slate-200" />
+        <div className="h-5 w-[38rem] max-w-full rounded-xl bg-slate-200" />
+      </div>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        {[1, 2, 3].map((id) => (
+          <div key={id} className="h-44 rounded-[32px] bg-slate-100" />
+        ))}
+      </div>
+      <div className="h-[560px] rounded-[32px] bg-slate-100" />
+      <div className="h-10 w-full rounded-2xl bg-slate-100" />
     </div>
   );
 }

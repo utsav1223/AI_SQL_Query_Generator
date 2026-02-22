@@ -9,10 +9,35 @@ const { sendEmail, buildSubscriptionActivatedEmail } = require("../utils/sendEma
 const SUBSCRIPTION_AMOUNT_INR = 499;
 const SUBSCRIPTION_AMOUNT_PAISE = SUBSCRIPTION_AMOUNT_INR * 100;
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_SECRET
-});
+let razorpayClient = null;
+
+const isRazorpayConfigured = () =>
+  Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_SECRET);
+
+const getRazorpayClient = () => {
+  if (!isRazorpayConfigured()) {
+    return null;
+  }
+
+  if (!razorpayClient) {
+    razorpayClient = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_SECRET
+    });
+  }
+
+  return razorpayClient;
+};
+
+const ensureRazorpayConfigured = (res) => {
+  const client = getRazorpayClient();
+  if (!client) {
+    res.status(503).json({ message: "Payment service is not configured on server." });
+    return null;
+  }
+
+  return client;
+};
 
 const getRenewalDate = () => {
   const renewalDate = new Date();
@@ -67,6 +92,9 @@ const sendSubscriptionConfirmation = async ({ user, invoiceNumber, renewalDate }
 
 exports.createOrder = async (req, res) => {
   try {
+    const razorpay = ensureRazorpayConfigured(res);
+    if (!razorpay) return;
+
     const order = await razorpay.orders.create({
       amount: SUBSCRIPTION_AMOUNT_PAISE,
       currency: "INR",
@@ -82,6 +110,9 @@ exports.createOrder = async (req, res) => {
 
 exports.createPaymentLink = async (req, res) => {
   try {
+    const razorpay = ensureRazorpayConfigured(res);
+    if (!razorpay) return;
+
     const { callbackUrl } = req.body;
 
     if (!callbackUrl) {
@@ -129,6 +160,10 @@ exports.createPaymentLink = async (req, res) => {
 
 exports.verifyPayment = async (req, res) => {
   try {
+    if (!process.env.RAZORPAY_SECRET) {
+      return res.status(503).json({ message: "Payment verification is not configured." });
+    }
+
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
@@ -185,6 +220,10 @@ exports.verifyPayment = async (req, res) => {
 
 exports.verifyPaymentLink = async (req, res) => {
   try {
+    if (!process.env.RAZORPAY_SECRET) {
+      return res.status(503).json({ message: "Payment verification is not configured." });
+    }
+
     const {
       razorpay_payment_link_id,
       razorpay_payment_link_reference_id,

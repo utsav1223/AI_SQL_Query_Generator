@@ -16,11 +16,13 @@ export default function Settings() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [message, setMessage] = useState({ text: "", type: "" });
-  const [loading, setLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const handleProfileUpdate = async () => {
     try {
-      setLoading(true);
+      setProfileLoading(true);
       setMessage({ text: "", type: "" });
       const updatedUser = await apiRequest("/auth/update-profile", "PUT", { name });
       await login({ token: localStorage.getItem("token"), user: updatedUser });
@@ -29,14 +31,14 @@ export default function Settings() {
     } catch {
       setMessage({ text: "Failed to update profile", type: "error" });
     } finally {
-      setLoading(false);
+      setProfileLoading(false);
     }
   };
 
   const handlePasswordChange = async () => {
     if (!currentPassword || !newPassword) return;
     try {
-      setLoading(true);
+      setPasswordLoading(true);
       setMessage({ text: "", type: "" });
       await apiRequest("/auth/change-password", "PUT", { currentPassword, newPassword });
       setCurrentPassword("");
@@ -46,19 +48,23 @@ export default function Settings() {
     } catch {
       setMessage({ text: "Validation failed: Check credentials", type: "error" });
     } finally {
-      setLoading(false);
+      setPasswordLoading(false);
     }
   };
 
   const handleDeleteAccount = async () => {
+    if (deleteLoading) return;
     const confirm = window.confirm("Critical: This will purge all workspace data and history permanently. Continue?");
     if (!confirm) return;
     try {
+      setDeleteLoading(true);
       await apiRequest("/auth/delete-account", "DELETE");
       logout();
       window.location.href = "/";
     } catch {
       alert("Account termination failed");
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -125,10 +131,10 @@ export default function Settings() {
               <div className="bg-slate-50/80 px-8 py-6 border-t border-slate-100 flex justify-end">
                 <button
                   onClick={handleProfileUpdate}
-                  disabled={loading}
+                  disabled={profileLoading}
                   className="group flex items-center gap-3 bg-slate-950 hover:bg-slate-800 text-white px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-xl active:scale-95 disabled:opacity-50"
                 >
-                  {loading ? <Loader2 size={16} className="animate-spin" /> : <>Save Profile <ChevronRight size={14} className="opacity-50 group-hover:translate-x-1 transition-transform" /></>}
+                  {profileLoading ? <Loader2 size={16} className="animate-spin" /> : <>Save Profile <ChevronRight size={14} className="opacity-50 group-hover:translate-x-1 transition-transform" /></>}
                 </button>
               </div>
             </div>
@@ -167,10 +173,17 @@ export default function Settings() {
               </div>
               <button
                 onClick={handlePasswordChange}
-                disabled={loading || !newPassword}
+                disabled={passwordLoading || !newPassword}
                 className="w-full bg-white border border-slate-200 hover:border-slate-800 text-slate-900 px-6 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-sm active:bg-slate-50"
               >
-                Reset Credentials
+                {passwordLoading ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 size={14} className="animate-spin" />
+                    Updating Credentials
+                  </span>
+                ) : (
+                  "Reset Credentials"
+                )}
               </button>
             </div>
           </div>
@@ -244,9 +257,18 @@ export default function Settings() {
               </div>
               <button
                 onClick={handleDeleteAccount}
-                className="w-full sm:w-auto flex items-center justify-center gap-3 bg-white border border-rose-200 text-rose-600 hover:bg-rose-600 hover:text-white px-8 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-sm active:scale-95"
+                disabled={deleteLoading}
+                className="w-full sm:w-auto flex items-center justify-center gap-3 bg-white border border-rose-200 text-rose-600 hover:bg-rose-600 hover:text-white px-8 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-sm active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <Trash2 size={16} /> Delete Forever
+                {deleteLoading ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" /> Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={16} /> Delete Forever
+                  </>
+                )}
               </button>
             </div>
           </div>

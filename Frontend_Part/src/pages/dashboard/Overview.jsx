@@ -71,7 +71,7 @@ export default function Overview() {
       : "N/A";
 
   return (
-    <div className="dashboard-page space-y-8 font-sans antialiased text-slate-900 animate-in fade-in slide-in-from-bottom-2 duration-700">
+    <div className="dashboard-page space-y-8 font-sans antialiased text-slate-900 dark:text-slate-100 animate-in fade-in slide-in-from-bottom-2 duration-700">
       
       {/* --- REFINED HEADER --- */}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-8">
@@ -168,24 +168,28 @@ export default function Overview() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* LOGIC DISTRIBUTION */}
-        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm hover:shadow-xl hover:shadow-slate-200/20 transition-all duration-500">
+        <div className="lg:col-span-4 bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 rounded-[2.5rem] p-8 shadow-sm hover:shadow-xl hover:shadow-slate-200/20 dark:hover:shadow-black/30 transition-all duration-500">
           <div className="flex items-center justify-between mb-10">
-            <h3 className="font-black text-slate-900 uppercase tracking-widest text-xs">Resource Allocation</h3>
-            <TrendingUp size={16} className="text-slate-300" />
+            <h3 className="font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest text-xs">Resource Allocation</h3>
+            <TrendingUp size={16} className="text-slate-300 dark:text-slate-500" />
           </div>
 
           {(user?.plan === "pro" && !isExpired) ? (
             <div className="space-y-8">
               {modeStats.map((mode) => {
                 const percent = totalModeUsage > 0 ? ((mode.count / totalModeUsage) * 100).toFixed(0) : 0;
+                const progressWidth = mode.count > 0 ? Math.max(Number(percent), 4) : 0;
                 return (
                   <div key={mode._id} className="group">
-                    <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 group-hover:text-slate-600 transition-colors">
+                    <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-300 mb-3 group-hover:text-slate-600 dark:group-hover:text-slate-100 transition-colors">
                       <span>{mode._id}</span>
                       <span>{percent}%</span>
                     </div>
-                    <div className="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden ring-1 ring-slate-200/60 dark:ring-slate-600/70">
-                      <div className="h-full bg-emerald-500 dark:bg-emerald-400 rounded-full transition-all duration-1000 group-hover:bg-emerald-400 dark:group-hover:bg-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.35)]" style={{ width: `${percent}%` }} />
+                    <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden ring-1 ring-slate-200/70 dark:ring-slate-500/70">
+                      <div
+                        className="h-full bg-emerald-500 dark:bg-emerald-400 rounded-full transition-all duration-1000 group-hover:bg-emerald-400 dark:group-hover:bg-emerald-300 shadow-[0_0_0_1px_rgba(16,185,129,0.45)] dark:shadow-[0_0_10px_rgba(52,211,153,0.5)]"
+                        style={{ width: `${progressWidth}%` }}
+                      />
                     </div>
                   </div>
                 );

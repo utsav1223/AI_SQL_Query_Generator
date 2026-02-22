@@ -7,6 +7,7 @@ const Query = require("../models/Query");
 const Schema = require("../models/Schema");
 const Feedback = require("../models/Feedback");
 const { sendEmail, buildPasswordResetOtpEmail } = require("../utils/sendEmail");
+const { createSecurityEvent } = require("../utils/securityMonitor");
 
 const generateToken = (user) =>
   jwt.sign(
@@ -23,6 +24,7 @@ const toPublicUser = (user) => ({
   name: user.name,
   email: user.email,
   role: user.role,
+  status: user.status || "active",
   plan: user.plan || "free",
   dailyUsage: user.dailyUsage || 0
 });
@@ -61,11 +63,50 @@ exports.login = async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user || !user.password) {
+      await createSecurityEvent({
+        emailSnapshot: email,
+        type: "user_login_failed",
+        severity: "medium",
+        source: "auth",
+        message: "Login failed due to invalid credentials.",
+        ipAddress: req.ip,
+        userAgent: req.get("user-agent"),
+        metadata: { reason: "user_not_found_or_password_missing" }
+      });
       return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    if (user.status === "suspended") {
+      await createSecurityEvent({
+        userId: user._id,
+        emailSnapshot: user.email,
+        type: "suspended_user_login_attempt",
+        severity: "high",
+        source: "auth",
+        message: "Suspended user attempted login.",
+        ipAddress: req.ip,
+        userAgent: req.get("user-agent"),
+        riskDelta: 5,
+        riskFlag: "suspended_login_attempt"
+      });
+
+      return res.status(403).json({ message: "Account suspended. Contact support." });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      await createSecurityEvent({
+        userId: user._id,
+        emailSnapshot: user.email,
+        type: "user_login_failed",
+        severity: "medium",
+        source: "auth",
+        message: "Login failed due to invalid password.",
+        ipAddress: req.ip,
+        userAgent: req.get("user-agent"),
+        riskDelta: 4,
+        riskFlag: "repeated_login_failure"
+      });
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
@@ -85,6 +126,15 @@ exports.forgotPassword = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
+      await createSecurityEvent({
+        emailSnapshot: email,
+        type: "password_reset_unknown_email",
+        severity: "low",
+        source: "auth",
+        message: "Password reset requested for non-existing email.",
+        ipAddress: req.ip,
+        userAgent: req.get("user-agent")
+      });
       return res.status(404).json({ message: "User not found" });
     }
 
@@ -127,6 +177,18 @@ exports.verifyOTPAndReset = async (req, res) => {
     }
 
     if (user.resetOTPAttempts >= 5) {
+      await createSecurityEvent({
+        userId: user._id,
+        emailSnapshot: user.email,
+        type: "password_reset_otp_limit_hit",
+        severity: "high",
+        source: "auth",
+        message: "OTP attempt limit exceeded for password reset.",
+        ipAddress: req.ip,
+        userAgent: req.get("user-agent"),
+        riskDelta: 10,
+        riskFlag: "otp_abuse_pattern"
+      });
       return res.status(400).json({ message: "Too many attempts" });
     }
 
@@ -134,6 +196,20 @@ exports.verifyOTPAndReset = async (req, res) => {
     if (hashedOTP !== user.resetOTP) {
       user.resetOTPAttempts += 1;
       await user.save();
+
+      await createSecurityEvent({
+        userId: user._id,
+        emailSnapshot: user.email,
+        type: "password_reset_otp_failed",
+        severity: user.resetOTPAttempts >= 3 ? "medium" : "low",
+        source: "auth",
+        message: "Invalid OTP submitted for password reset.",
+        ipAddress: req.ip,
+        userAgent: req.get("user-agent"),
+        riskDelta: 2,
+        riskFlag: "otp_failure"
+      });
+
       return res.status(400).json({ message: "Invalid OTP" });
     }
 

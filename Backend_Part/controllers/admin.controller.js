@@ -7,6 +7,9 @@ const Schema = require("../models/Schema");
 const Payment = require("../models/Payment");
 const Invoice = require("../models/Invoice");
 const Feedback = require("../models/Feedback");
+const SecurityEvent = require("../models/SecurityEvent");
+const AdminAuditLog = require("../models/AdminAuditLog");
+const { createSecurityEvent } = require("../utils/securityMonitor");
 
 const generateAdminToken = (adminId) =>
   jwt.sign(
@@ -54,6 +57,122 @@ const getRecentMonthBuckets = (count = 6) => {
   return buckets;
 };
 
+const ADMIN_USER_ACTIONS = {
+  setPro: "set_pro",
+  setFree: "set_free",
+  suspend: "suspend",
+  unsuspend: "unsuspend",
+  delete: "delete"
+};
+
+const MODERATION_ACTIONS = new Set(Object.values(ADMIN_USER_ACTIONS));
+
+const normalizeReason = (reason) => String(reason || "").trim();
+
+const snapshotUserState = (user) => ({
+  id: user._id,
+  email: user.email,
+  role: user.role,
+  status: user.status,
+  plan: user.plan,
+  billingRenewal: user.billingRenewal,
+  riskScore: user.riskScore || 0,
+  riskFlags: Array.isArray(user.riskFlags) ? [...user.riskFlags] : []
+});
+
+const getRequestMeta = (req) => ({
+  ipAddress: req.ip || "",
+  userAgent: req.get("user-agent") || ""
+});
+
+const createAdminAuditLog = async ({
+  req,
+  action,
+  reason,
+  targetUser,
+  previousState,
+  nextState
+}) =>
+  AdminAuditLog.create({
+    adminId: req.admin?.adminId || "admin",
+    action,
+    targetUserId: targetUser?._id || null,
+    targetEmailSnapshot: targetUser?.email || "",
+    reason,
+    previousState,
+    nextState,
+    ...getRequestMeta(req)
+  });
+
+const runModerationAction = async ({ user, action, reason, req }) => {
+  const previousState = snapshotUserState(user);
+
+  if (action === ADMIN_USER_ACTIONS.setPro) {
+    user.plan = "pro";
+    if (!user.billingRenewal || user.billingRenewal < new Date()) {
+      const renewalDate = new Date();
+      renewalDate.setMonth(renewalDate.getMonth() + 1);
+      user.billingRenewal = renewalDate;
+    }
+    await user.save();
+  } else if (action === ADMIN_USER_ACTIONS.setFree) {
+    user.plan = "free";
+    user.billingRenewal = null;
+    await user.save();
+  } else if (action === ADMIN_USER_ACTIONS.suspend) {
+    user.status = "suspended";
+    await user.save();
+  } else if (action === ADMIN_USER_ACTIONS.unsuspend) {
+    user.status = "active";
+    await user.save();
+  } else if (action === ADMIN_USER_ACTIONS.delete) {
+    await Promise.all([
+      Query.deleteMany({ userId: user._id }),
+      Schema.deleteMany({ userId: user._id }),
+      Payment.deleteMany({ userId: user._id }),
+      Invoice.deleteMany({ userId: user._id }),
+      Feedback.deleteMany({ userId: user._id }),
+      User.findByIdAndDelete(user._id)
+    ]);
+  }
+
+  const nextState =
+    action === ADMIN_USER_ACTIONS.delete ? { deleted: true } : snapshotUserState(user);
+
+  await createAdminAuditLog({
+    req,
+    action,
+    reason,
+    targetUser: user,
+    previousState,
+    nextState
+  });
+
+  const severity =
+    action === ADMIN_USER_ACTIONS.delete || action === ADMIN_USER_ACTIONS.suspend
+      ? "high"
+      : "medium";
+
+  await createSecurityEvent({
+    userId: user._id,
+    emailSnapshot: user.email,
+    type: "admin_user_moderation_action",
+    severity,
+    source: "admin",
+    message: `Admin action "${action}" applied. Reason: ${reason}`,
+    ...getRequestMeta(req),
+    metadata: {
+      action,
+      reason,
+      adminId: req.admin?.adminId || "admin"
+    },
+    riskDelta: action === ADMIN_USER_ACTIONS.suspend ? 20 : 0,
+    riskFlag: action === ADMIN_USER_ACTIONS.suspend ? "suspended_by_admin" : ""
+  });
+
+  return { previousState, nextState };
+};
+
 exports.adminLogin = async (req, res) => {
   try {
     const { userId, password } = req.body;
@@ -67,6 +186,16 @@ exports.adminLogin = async (req, res) => {
     const passwordMatches = await verifyPassword(password, adminCreds.password);
 
     if (!userMatches || !passwordMatches) {
+      await createSecurityEvent({
+        emailSnapshot: userId,
+        type: "admin_login_failed",
+        severity: "high",
+        source: "auth",
+        message: "Invalid admin login attempt.",
+        ...getRequestMeta(req),
+        metadata: { attemptedUserId: userId }
+      });
+
       return res.status(401).json({ message: "Invalid admin credentials" });
     }
 
@@ -114,7 +243,12 @@ exports.getAdminOverview = async (req, res) => {
       feedbackStatusAgg,
       recentUsers,
       recentInvoices,
-      recentFeedback
+      recentFeedback,
+      pendingSecurityEvents,
+      recentHighSeverityEvents,
+      recentSecurityEvents,
+      riskyUsers,
+      recentAdminActions
     ] = await Promise.all([
       User.countDocuments({}),
       User.countDocuments({ plan: "pro" }),
@@ -205,7 +339,28 @@ exports.getAdminOverview = async (req, res) => {
         .sort({ createdAt: -1 })
         .limit(6)
         .select("rating topic message status createdAt userId")
-        .populate("userId", "name email")
+        .populate("userId", "name email"),
+      SecurityEvent.countDocuments({ status: "new" }),
+      SecurityEvent.countDocuments({
+        severity: { $in: ["high", "critical"] },
+        createdAt: { $gte: trendStart }
+      }),
+      SecurityEvent.find({})
+        .sort({ createdAt: -1 })
+        .limit(8)
+        .select("type severity status message createdAt userId emailSnapshot metadata")
+        .populate("userId", "name email status riskScore"),
+      User.find({
+        $or: [{ riskScore: { $gt: 0 } }, { status: "suspended" }]
+      })
+        .sort({ riskScore: -1, updatedAt: -1 })
+        .limit(8)
+        .select("name email status plan riskScore riskFlags lastSecurityEventAt createdAt"),
+      AdminAuditLog.find({})
+        .sort({ createdAt: -1 })
+        .limit(8)
+        .select("action reason targetUserId targetEmailSnapshot adminId createdAt")
+        .populate("targetUserId", "name email status")
     ]);
 
     const totalRevenue = revenueSummary[0]?.totalRevenue || 0;
@@ -270,7 +425,9 @@ exports.getAdminOverview = async (req, res) => {
         totalRevenue,
         totalFeedback,
         avgFeedbackRating: Number(avgRating.toFixed(2)),
-        pendingFeedback
+        pendingFeedback,
+        pendingSecurityEvents,
+        recentHighSeverityEvents
       },
       charts: {
         monthlyBusiness,
@@ -279,7 +436,10 @@ exports.getAdminOverview = async (req, res) => {
       },
       recentUsers,
       recentInvoices,
-      recentFeedback
+      recentFeedback,
+      recentSecurityEvents,
+      riskyUsers,
+      recentAdminActions
     });
   } catch (error) {
     console.error(error);
@@ -309,7 +469,9 @@ exports.getAdminUsers = async (req, res) => {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .select("name email role plan billingRenewal createdAt dailyUsage usageDate"),
+        .select(
+          "name email role status plan billingRenewal createdAt dailyUsage usageDate riskScore riskFlags lastSecurityEventAt"
+        ),
       User.countDocuments(filter)
     ]);
 
@@ -328,43 +490,68 @@ exports.getAdminUsers = async (req, res) => {
   }
 };
 
+const executeModeration = async ({ req, res, action }) => {
+  const { userId } = req.params;
+  const reason = normalizeReason(req.body?.reason || req.query?.reason);
+
+  if (!MODERATION_ACTIONS.has(action)) {
+    return res.status(400).json({ message: "Invalid moderation action" });
+  }
+
+  if (!reason) {
+    return res.status(400).json({ message: "Reason is required for moderation actions" });
+  }
+
+  const user = await User.findById(userId);
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  if (user.role === "admin") {
+    return res.status(403).json({ message: "Admin users cannot be moderated from this panel" });
+  }
+
+  const { nextState } = await runModerationAction({
+    user,
+    action,
+    reason,
+    req
+  });
+
+  const messageMap = {
+    [ADMIN_USER_ACTIONS.setPro]: "User upgraded to pro",
+    [ADMIN_USER_ACTIONS.setFree]: "User moved to free plan",
+    [ADMIN_USER_ACTIONS.suspend]: "User suspended",
+    [ADMIN_USER_ACTIONS.unsuspend]: "User unsuspended",
+    [ADMIN_USER_ACTIONS.delete]: "User and related records deleted successfully"
+  };
+
+  return res.json({
+    message: messageMap[action] || "Moderation action applied",
+    action,
+    user: nextState
+  });
+};
+
+exports.moderateUserByAdmin = async (req, res) => {
+  try {
+    const action = String(req.body?.action || "").trim().toLowerCase();
+    return await executeModeration({ req, res, action });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Failed to moderate user" });
+  }
+};
+
 exports.updateUserPlanByAdmin = async (req, res) => {
   try {
-    const { userId } = req.params;
-    const { plan } = req.body;
-
+    const plan = String(req.body?.plan || "").trim().toLowerCase();
     if (!["free", "pro"].includes(plan)) {
       return res.status(400).json({ message: "Plan must be free or pro" });
     }
 
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    user.plan = plan;
-    if (plan === "pro") {
-      if (!user.billingRenewal || user.billingRenewal < new Date()) {
-        const renewalDate = new Date();
-        renewalDate.setMonth(renewalDate.getMonth() + 1);
-        user.billingRenewal = renewalDate;
-      }
-    } else {
-      user.billingRenewal = null;
-    }
-
-    await user.save();
-
-    return res.json({
-      message: "User plan updated",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        plan: user.plan,
-        billingRenewal: user.billingRenewal
-      }
-    });
+    const action = plan === "pro" ? ADMIN_USER_ACTIONS.setPro : ADMIN_USER_ACTIONS.setFree;
+    return await executeModeration({ req, res, action });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Failed to update user plan" });
@@ -373,27 +560,11 @@ exports.updateUserPlanByAdmin = async (req, res) => {
 
 exports.deleteUserByAdmin = async (req, res) => {
   try {
-    const { userId } = req.params;
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    if (user.role === "admin") {
-      return res.status(403).json({ message: "Admin users cannot be deleted from this panel" });
-    }
-
-    await Promise.all([
-      Query.deleteMany({ userId }),
-      Schema.deleteMany({ userId }),
-      Payment.deleteMany({ userId }),
-      Invoice.deleteMany({ userId }),
-      Feedback.deleteMany({ userId }),
-      User.findByIdAndDelete(userId)
-    ]);
-
-    return res.json({ message: "User and related records deleted successfully" });
+    return await executeModeration({
+      req,
+      res,
+      action: ADMIN_USER_ACTIONS.delete
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Failed to delete user" });
@@ -473,5 +644,85 @@ exports.updateFeedbackStatusByAdmin = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Failed to update feedback status" });
+  }
+};
+
+exports.getAdminSecurityEvents = async (req, res) => {
+  try {
+    const page = Math.max(parseInt(req.query.page || "1", 10), 1);
+    const limit = Math.min(Math.max(parseInt(req.query.limit || "10", 10), 1), 50);
+    const severity = String(req.query.severity || "all").trim().toLowerCase();
+    const status = String(req.query.status || "all").trim().toLowerCase();
+    const search = String(req.query.search || "").trim();
+    const skip = (page - 1) * limit;
+
+    const filter = {};
+
+    if (["low", "medium", "high", "critical"].includes(severity)) {
+      filter.severity = severity;
+    }
+
+    if (["new", "reviewed", "resolved"].includes(status)) {
+      filter.status = status;
+    }
+
+    if (search) {
+      filter.$or = [
+        { type: { $regex: search, $options: "i" } },
+        { message: { $regex: search, $options: "i" } },
+        { emailSnapshot: { $regex: search, $options: "i" } }
+      ];
+    }
+
+    const [events, total] = await Promise.all([
+      SecurityEvent.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("userId", "name email status riskScore riskFlags"),
+      SecurityEvent.countDocuments(filter)
+    ]);
+
+    return res.json({
+      events,
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.max(Math.ceil(total / limit), 1)
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Failed to fetch security events" });
+  }
+};
+
+exports.updateSecurityEventStatusByAdmin = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { status } = req.body;
+
+    if (!["new", "reviewed", "resolved"].includes(status)) {
+      return res.status(400).json({ message: "Invalid security event status" });
+    }
+
+    const event = await SecurityEvent.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ message: "Security event not found" });
+    }
+
+    event.status = status;
+    event.reviewedBy = req.admin?.adminId || "admin";
+    event.reviewedAt = new Date();
+    await event.save();
+
+    return res.json({
+      message: "Security event status updated",
+      event
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Failed to update security event status" });
   }
 };

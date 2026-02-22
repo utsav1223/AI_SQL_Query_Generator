@@ -105,15 +105,15 @@ html.dark .dashboard-shell [class*="bg-[#FDFDFD]"] {
 }
 
 html.dark .dashboard-shell [class*="bg-white"] {
-  background-color: #0b1220 !important;
+  background-color: #0f172a !important;
 }
 
 html.dark .dashboard-shell [class*="bg-slate-50"] {
-  background-color: #111827 !important;
+  background-color: #101b2e !important;
 }
 
 html.dark .dashboard-shell [class*="bg-slate-100"] {
-  background-color: #1f2937 !important;
+  background-color: #1a2a41 !important;
 }
 
 html.dark .dashboard-shell [class*="bg-slate-900"] {
@@ -137,20 +137,20 @@ html.dark .dashboard-shell [class*="text-slate-700"] {
 }
 
 html.dark .dashboard-shell [class*="text-slate-600"] {
-  color: #94a3b8 !important;
+  color: #b5c3d7 !important;
 }
 
 html.dark .dashboard-shell [class*="text-slate-500"],
 html.dark .dashboard-shell [class*="text-slate-400"],
 html.dark .dashboard-shell [class*="text-slate-300"] {
-  color: #9ca3af !important;
+  color: #c5d1e3 !important;
 }
 
 html.dark .dashboard-shell [class*="border-slate-50"],
 html.dark .dashboard-shell [class*="border-slate-100"],
 html.dark .dashboard-shell [class*="border-slate-200"],
 html.dark .dashboard-shell [class*="border-slate-300"] {
-  border-color: #334155 !important;
+  border-color: #41536d !important;
 }
 
 html.dark .dashboard-shell [class*="shadow-slate-200"],
@@ -158,13 +158,32 @@ html.dark .dashboard-shell [class*="shadow-slate-300"] {
   --tw-shadow-color: rgba(0, 0, 0, 0.5) !important;
 }
 
+html.dark .dashboard-shell [class*="ring-slate-200"],
+html.dark .dashboard-shell [class*="ring-slate-300"] {
+  --tw-ring-color: rgba(148, 163, 184, 0.55) !important;
+}
+
 html.dark .dashboard-shell button[class*="bg-white"],
 html.dark .dashboard-shell a[class*="bg-white"] {
   background-color: #1f2937 !important;
-  border-color: #334155 !important;
+  border-color: #41536d !important;
 }
 
 /* Keep accent statuses vivid in dark mode */
 html.dark .dashboard-shell [class*="bg-emerald-50"] {
   background-color: rgba(16, 185, 129, 0.14) !important;
+}
+
+html.dark .dashboard-shell input::placeholder,
+html.dark .dashboard-shell textarea::placeholder {
+  color: #93a4bd !important;
+}
+
+html.dark .dashboard-shell select {
+  color: #e2e8f0 !important;
+}
+
+html.dark .dashboard-shell select option {
+  background-color: #0b1220;
+  color: #e2e8f0;
 }

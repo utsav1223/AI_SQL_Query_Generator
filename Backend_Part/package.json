@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node -e \"require('dotenv').config(); require('./controllers/auth.controller'); require('./controllers/admin.controller'); require('./controllers/ai.controller'); require('./controllers/payment.controller'); require('./routes/admin.routes'); require('./routes/auth.routes'); require('./routes/payment.routes'); console.log('backend smoke test passed'); process.exit(0);\""
   },
   "keywords": [],
   "author": "",

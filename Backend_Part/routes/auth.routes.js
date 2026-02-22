@@ -3,6 +3,14 @@ const jwt = require("jsonwebtoken");
 const passport = require("passport");
 const FRONTEND_URL = (process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/+$/, "");
 
+const ensureGoogleOAuthConfigured = (req, res, next) => {
+  if (!passport._strategy("google")) {
+    return res.status(503).json({ message: "Google OAuth is not configured on server." });
+  }
+
+  return next();
+};
+
 const authMiddleware = require("../middleware/auth.middleware");
 const validate = require("../middleware/validate.middleware");
 const { registerValidator, loginValidator } = require("../validators/auth.validator");
@@ -29,6 +37,7 @@ router.delete("/delete-account", authMiddleware, deleteAccount);
 
 router.get(
   "/google",
+  ensureGoogleOAuthConfigured,
   passport.authenticate("google", {
     scope: ["profile", "email"]
   })
@@ -36,6 +45,7 @@ router.get(
 
 router.get(
   "/google/callback",
+  ensureGoogleOAuthConfigured,
   passport.authenticate("google", { session: false }),
   (req, res) => {
     const token = jwt.sign(
@@ -51,6 +61,7 @@ router.get(
       id: req.user._id,
       name: req.user.name,
       role: req.user.role,
+      status: req.user.status || "active",
       plan: req.user.plan || "free",
       dailyUsage: req.user.dailyUsage || 0
     };

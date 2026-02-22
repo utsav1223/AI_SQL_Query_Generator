@@ -157,7 +157,7 @@ export default function Feedback() {
 
           <div className="space-y-3 max-h-[520px] overflow-auto pr-1 custom-scrollbar">
             {loadingHistory ? (
-              <p className="text-sm font-semibold text-slate-500">Loading feedback history...</p>
+              <FeedbackHistorySkeleton />
             ) : history.length === 0 ? (
               <p className="text-sm font-semibold text-slate-500">No feedback submitted yet.</p>
             ) : (
@@ -185,6 +185,26 @@ export default function Feedback() {
           </div>
         </section>
       </div>
+    </div>
+  );
+}
+
+function FeedbackHistorySkeleton() {
+  return (
+    <div className="space-y-3 animate-pulse">
+      {[1, 2, 3].map((id) => (
+        <div key={id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="mb-3 flex items-start justify-between gap-3">
+            <div className="space-y-2">
+              <div className="h-4 w-40 rounded-lg bg-slate-200" />
+              <div className="h-3 w-28 rounded-lg bg-slate-200" />
+            </div>
+            <div className="h-5 w-14 rounded-full bg-slate-200" />
+          </div>
+          <div className="h-12 rounded-xl bg-slate-200" />
+          <div className="mt-3 h-3 w-24 rounded-lg bg-slate-200" />
+        </div>
+      ))}
     </div>
   );
 }

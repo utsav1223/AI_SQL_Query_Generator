@@ -3,7 +3,7 @@ import { apiRequest } from "../../services/api";
 import { AuthContext } from "../../context/AuthContext";
 import { 
   Search, Filter, Pin, Trash2, Calendar, ChevronRight,
-  PinOff, ArrowUpDown, Copy, Check, History as HistoryIcon,
+  PinOff, ArrowUpDown, Copy, Check, History as HistoryIcon, ChevronDown,
   Sparkles, Code2, Trash, Database
 } from "lucide-react";
 
@@ -71,14 +71,7 @@ export default function History() {
   };
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in duration-500">
-        <div className="relative mb-6">
-          <LoaderPulse />
-        </div>
-        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Synchronizing Vault...</p>
-      </div>
-    );
+    return <HistorySkeleton />;
   }
 
   return (
@@ -101,15 +94,15 @@ export default function History() {
       </header>
 
       {/* --- CONTROLS --- */}
-      <div className="sticky top-4 z-30 bg-white/80 backdrop-blur-xl border border-slate-200 p-2 md:p-3 rounded-[28px] shadow-2xl shadow-slate-200/40 flex flex-col lg:flex-row items-center gap-4 transition-all focus-within:border-emerald-500/30">
+      <div className="sticky top-4 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-600 p-2 md:p-3 rounded-[28px] shadow-2xl shadow-slate-200/40 dark:shadow-black/40 flex flex-col lg:flex-row items-center gap-4 transition-all focus-within:border-emerald-500/30">
         <div className="relative flex-1 w-full flex items-center">
-          <Search className="absolute left-5 text-slate-400" size={20} />
+          <Search className="absolute left-5 text-slate-400 dark:text-slate-300" size={20} />
           <input
             type="text"
             placeholder="Search prompts or SQL architecture..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-14 pr-6 py-3.5 text-sm bg-transparent border-none focus:ring-0 placeholder:text-slate-400 font-medium"
+            className="w-full pl-14 pr-6 py-3.5 text-sm text-slate-900 dark:text-slate-100 bg-transparent border-none focus:ring-0 placeholder:text-slate-400 dark:placeholder:text-slate-400 font-medium"
           />
         </div>
         
@@ -118,7 +111,7 @@ export default function History() {
             <select
               value={modeFilter}
               onChange={(e) => setModeFilter(e.target.value)}
-              className="bg-transparent text-[10px] font-black uppercase tracking-widest border-none focus:ring-0 p-0 cursor-pointer w-full"
+              className="w-full appearance-none bg-transparent pr-6 text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-slate-100 border-none focus:ring-0 p-0 cursor-pointer"
             >
               <option value="all">Global</option>
               <option value="generate">Generate</option>
@@ -132,7 +125,7 @@ export default function History() {
             <select
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value)}
-              className="bg-transparent text-[10px] font-black uppercase tracking-widest border-none focus:ring-0 p-0 cursor-pointer w-full"
+              className="w-full appearance-none bg-transparent pr-6 text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-slate-100 border-none focus:ring-0 p-0 cursor-pointer"
             >
               <option value="newest">Newest</option>
               <option value="oldest">Legacy</option>
@@ -254,22 +247,39 @@ export default function History() {
 
 function SelectWrapper({ icon, label, children }) {
   return (
-    <div className="flex flex-col gap-1 px-4 py-2 bg-white border border-slate-200 rounded-2xl w-full sm:w-auto shadow-sm">
-      <div className="flex items-center gap-2 text-[8px] font-black text-slate-400 uppercase tracking-widest">
+    <div className="flex flex-col gap-1 px-4 py-2 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-600 rounded-2xl w-full sm:w-auto shadow-sm">
+      <div className="flex items-center gap-2 text-[8px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-widest">
         {icon}
         {label}
       </div>
-      {children}
+      <div className="relative">
+        {children}
+        <ChevronDown
+          size={14}
+          className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-300"
+        />
+      </div>
     </div>
   );
 }
 
-function LoaderPulse() {
+function HistorySkeleton() {
   return (
-    <div className="relative flex h-16 w-16">
-      <span className="animate-ping absolute inline-flex h-full w-full rounded-3xl bg-emerald-400 opacity-20"></span>
-      <div className="relative flex items-center justify-center rounded-3xl h-16 w-16 bg-emerald-50 text-emerald-600 border border-emerald-100">
-        <HistoryIcon size={32} className="animate-pulse" />
+    <div className="dashboard-page space-y-8 animate-pulse">
+      <div className="space-y-3 border-b border-slate-100 pb-10">
+        <div className="h-5 w-28 rounded-full bg-slate-200" />
+        <div className="h-10 w-72 rounded-2xl bg-slate-200" />
+        <div className="h-5 w-96 max-w-full rounded-xl bg-slate-200" />
+      </div>
+      <div className="h-20 rounded-[28px] bg-slate-100" />
+      <div className="space-y-6">
+        {[1, 2, 3].map((id) => (
+          <div key={id} className="rounded-[40px] border border-slate-100 bg-white p-8">
+            <div className="mb-6 h-6 w-52 rounded-xl bg-slate-100" />
+            <div className="mb-6 h-8 w-3/4 rounded-xl bg-slate-100" />
+            <div className="h-44 rounded-[28px] bg-slate-100" />
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -20,7 +20,6 @@ import {
   Calendar, 
   Lock, 
   ArrowUpRight, 
-  Loader2,
   Sparkles,
   Zap,
   Activity,
@@ -56,17 +55,7 @@ export default function Analytics() {
 
   // --- LOADING STATE ---
   if (loading || (user?.plan === "pro" && isLoading)) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in zoom-in duration-500">
-        <div className="relative flex items-center justify-center">
-          <Loader2 className="animate-spin text-emerald-500 relative z-10" size={48} strokeWidth={1.5} />
-          <div className="absolute inset-0 blur-3xl bg-emerald-500/30 animate-pulse rounded-full" />
-        </div>
-        <p className="mt-10 text-[11px] font-bold uppercase tracking-[0.5em] text-slate-500 transition-all">
-          Initialising Neural Engine
-        </p>
-      </div>
-    );
+    return <AnalyticsSkeleton />;
   }
 
   // --- PRO UPSELL ---
@@ -251,6 +240,32 @@ function InsightCard({ title, value, highlight, icon }) {
         <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-all duration-500 border border-slate-100 group-hover:border-emerald-400">
             <ChevronRight size={18} className="text-slate-300 group-hover:text-white transition-colors" />
         </div>
+      </div>
+    </div>
+  );
+}
+
+function AnalyticsSkeleton() {
+  return (
+    <div className="dashboard-page space-y-8 animate-pulse">
+      <div className="space-y-4 border-b border-slate-200/60 pb-8">
+        <div className="h-6 w-44 rounded-full bg-slate-200" />
+        <div className="h-12 w-80 max-w-full rounded-2xl bg-slate-200" />
+        <div className="h-5 w-72 max-w-full rounded-xl bg-slate-200" />
+      </div>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        {[1, 2, 3].map((id) => (
+          <div key={id} className="h-44 rounded-[36px] bg-slate-100" />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+        <div className="h-[360px] rounded-[40px] bg-slate-100 lg:col-span-8" />
+        <div className="h-[360px] rounded-[40px] bg-slate-100 lg:col-span-4" />
+      </div>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {[1, 2, 3, 4, 5, 6].map((id) => (
+          <div key={id} className="h-40 rounded-[32px] bg-slate-100" />
+        ))}
       </div>
     </div>
   );

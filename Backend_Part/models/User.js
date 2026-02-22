@@ -26,10 +26,30 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "user"],
       default: "user"
     },
+    status: {
+      type: String,
+      enum: ["active", "suspended"],
+      default: "active",
+      index: true
+    },
     plan: {
       type: String,
       enum: ["free", "pro"],
       default: "free"
+    },
+    riskScore: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100
+    },
+    riskFlags: {
+      type: [String],
+      default: []
+    },
+    lastSecurityEventAt: {
+      type: Date,
+      default: null
     },
     dailyUsage: {
       type: Number,

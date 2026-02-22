@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   BadgeIndianRupee,
   CheckCircle2,
+  Clock3,
   Crown,
   Filter,
   LogOut,
@@ -10,6 +11,7 @@ import {
   Moon,
   RefreshCw,
   Search,
+  ShieldAlert,
   Sun,
   UserRoundPlus,
   Users
@@ -40,7 +42,9 @@ const initialOverview = {
     totalRevenue: 0,
     totalFeedback: 0,
     avgFeedbackRating: 0,
-    pendingFeedback: 0
+    pendingFeedback: 0,
+    pendingSecurityEvents: 0,
+    recentHighSeverityEvents: 0
   },
   charts: {
     monthlyBusiness: [],
@@ -49,7 +53,10 @@ const initialOverview = {
   },
   recentUsers: [],
   recentInvoices: [],
-  recentFeedback: []
+  recentFeedback: [],
+  recentSecurityEvents: [],
+  riskyUsers: [],
+  recentAdminActions: []
 };
 
 const FEEDBACK_STATUSES = ["all", "new", "reviewed", "resolved"];
@@ -69,6 +76,7 @@ export default function AdminDashboard() {
   const [feedbackStatus, setFeedbackStatus] = useState("all");
   const [feedbackSearchInput, setFeedbackSearchInput] = useState("");
   const [feedbackSearchQuery, setFeedbackSearchQuery] = useState("");
+  const [securityEvents, setSecurityEvents] = useState([]);
 
   const [loadingOverview, setLoadingOverview] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
@@ -91,6 +99,7 @@ export default function AdminDashboard() {
     try {
       const data = await adminApiRequest("/admin/overview", "GET");
       setOverview(data);
+      setSecurityEvents(data.recentSecurityEvents || []);
     } catch (err) {
       setError(err.message || "Failed to load overview");
     } finally {
@@ -188,10 +197,23 @@ export default function AdminDashboard() {
 
   const handleTogglePlan = async (user) => {
     const nextPlan = user.plan === "pro" ? "free" : "pro";
+    const reason = window.prompt(
+      `Reason required: ${nextPlan === "pro" ? "upgrade to pro" : "set to free"} for ${user.email}`
+    );
+    if (reason === null) return;
+    if (!reason.trim()) {
+      setError("Moderation reason is required.");
+      return;
+    }
+
+    const action = nextPlan === "pro" ? "set_pro" : "set_free";
     setActioningId(user._id);
     setError("");
     try {
-      await adminApiRequest(`/admin/users/${user._id}/plan`, "PATCH", { plan: nextPlan });
+      await adminApiRequest(`/admin/users/${user._id}/moderate`, "POST", {
+        action,
+        reason: reason.trim()
+      });
       await Promise.all([
         loadOverview(),
         loadUsers(usersPagination.page, usersSearchQuery)
@@ -207,10 +229,20 @@ export default function AdminDashboard() {
     const confirmed = window.confirm(`Delete ${user.email}? This action cannot be undone.`);
     if (!confirmed) return;
 
+    const reason = window.prompt(`Reason required: delete user ${user.email}`);
+    if (reason === null) return;
+    if (!reason.trim()) {
+      setError("Moderation reason is required.");
+      return;
+    }
+
     setActioningId(user._id);
     setError("");
     try {
-      await adminApiRequest(`/admin/users/${user._id}`, "DELETE");
+      await adminApiRequest(`/admin/users/${user._id}/moderate`, "POST", {
+        action: "delete",
+        reason: reason.trim()
+      });
       const targetPage =
         users.length === 1 && usersPagination.page > 1
           ? usersPagination.page - 1
@@ -227,6 +259,35 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSuspendToggle = async (user) => {
+    const action = user.status === "suspended" ? "unsuspend" : "suspend";
+    const label = action === "suspend" ? "suspend" : "unsuspend";
+    const reason = window.prompt(`Reason required: ${label} user ${user.email}`);
+    if (reason === null) return;
+    if (!reason.trim()) {
+      setError("Moderation reason is required.");
+      return;
+    }
+
+    setActioningId(user._id);
+    setError("");
+    try {
+      await adminApiRequest(`/admin/users/${user._id}/moderate`, "POST", {
+        action,
+        reason: reason.trim()
+      });
+
+      await Promise.all([
+        loadOverview(),
+        loadUsers(usersPagination.page, usersSearchQuery)
+      ]);
+    } catch (err) {
+      setError(err.message || "Failed to update user status");
+    } finally {
+      setActioningId("");
+    }
+  };
+
   const handleFeedbackStatusUpdate = async (feedbackId, status) => {
     setActioningId(feedbackId);
     setError("");
@@ -238,6 +299,22 @@ export default function AdminDashboard() {
       ]);
     } catch (err) {
       setError(err.message || "Failed to update feedback");
+    } finally {
+      setActioningId("");
+    }
+  };
+
+  const handleSecurityEventStatusUpdate = async (eventId, status) => {
+    setActioningId(eventId);
+    setError("");
+    try {
+      await adminApiRequest(`/admin/security-events/${eventId}/status`, "PATCH", { status });
+      setSecurityEvents((prev) =>
+        prev.map((event) => (event._id === eventId ? { ...event, status } : event))
+      );
+      await loadOverview();
+    } catch (err) {
+      setError(err.message || "Failed to update security event status");
     } finally {
       setActioningId("");
     }
@@ -298,12 +375,20 @@ export default function AdminDashboard() {
           </div>
         ) : null}
 
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
           <StatCard isDark={isDark} title="Total Users" value={loadingOverview ? "..." : overview.stats.totalUsers} subtitle="All registered accounts" icon={Users} />
           <StatCard isDark={isDark} title="Pro Users" value={loadingOverview ? "..." : overview.stats.proUsers} subtitle={`${proPercent}% of users`} icon={Crown} accent="emerald" />
           <StatCard isDark={isDark} title="Total Queries" value={loadingOverview ? "..." : overview.stats.totalQueries} subtitle="All-time generated SQL" icon={UserRoundPlus} />
           <StatCard isDark={isDark} title="Revenue (INR)" value={loadingOverview ? "..." : overview.stats.totalRevenue} subtitle={`Invoices: ${overview.stats.totalInvoices || 0}`} icon={BadgeIndianRupee} accent="blue" />
           <StatCard isDark={isDark} title="Feedback" value={loadingOverview ? "..." : overview.stats.totalFeedback} subtitle={`Pending: ${overview.stats.pendingFeedback || 0}`} icon={MessageSquareText} accent="amber" />
+          <StatCard
+            isDark={isDark}
+            title="Security Events"
+            value={loadingOverview ? "..." : overview.stats.pendingSecurityEvents}
+            subtitle={`High severity (6m): ${overview.stats.recentHighSeverityEvents || 0}`}
+            icon={ShieldAlert}
+            accent="rose"
+          />
         </section>
 
         <section className="grid gap-6 xl:grid-cols-2">
@@ -324,23 +409,27 @@ export default function AdminDashboard() {
             </div>
 
             <div className="h-[220px] w-full sm:h-[280px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={monthlyBusinessData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-                  <CartesianGrid stroke={chartGridColor} strokeDasharray="3 3" />
-                  <XAxis dataKey="month" stroke={chartAxisColor} tick={{ fill: chartAxisColor, fontSize: 12, fontWeight: 700 }} axisLine={false} tickLine={false} />
-                  <YAxis stroke={chartAxisColor} tick={{ fill: chartAxisColor, fontSize: 12, fontWeight: 700 }} axisLine={false} tickLine={false} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: chartTooltipBg,
-                      borderColor: chartTooltipBorder,
-                      borderRadius: 12,
-                      color: chartAxisColor
-                    }}
-                    labelStyle={{ color: chartAxisColor, fontWeight: 800 }}
-                  />
-                  <Line type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={3} dot={{ r: 3, fill: "#10b981" }} activeDot={{ r: 5 }} />
-                </LineChart>
-              </ResponsiveContainer>
+              {loadingOverview ? (
+                <ChartSkeleton isDark={isDark} />
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={monthlyBusinessData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+                    <CartesianGrid stroke={chartGridColor} strokeDasharray="3 3" />
+                    <XAxis dataKey="month" stroke={chartAxisColor} tick={{ fill: chartAxisColor, fontSize: 12, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                    <YAxis stroke={chartAxisColor} tick={{ fill: chartAxisColor, fontSize: 12, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: chartTooltipBg,
+                        borderColor: chartTooltipBorder,
+                        borderRadius: 12,
+                        color: chartAxisColor
+                      }}
+                      labelStyle={{ color: chartAxisColor, fontWeight: 800 }}
+                    />
+                    <Line type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={3} dot={{ r: 3, fill: "#10b981" }} activeDot={{ r: 5 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </article>
 
@@ -360,33 +449,37 @@ export default function AdminDashboard() {
             </div>
 
             <div className="h-[210px] w-full sm:h-[220px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={feedbackStatusData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-                  <CartesianGrid stroke={chartGridColor} strokeDasharray="3 3" />
-                  <XAxis dataKey="status" stroke={chartAxisColor} tick={{ fill: chartAxisColor, fontSize: 12, fontWeight: 700 }} axisLine={false} tickLine={false} />
-                  <YAxis stroke={chartAxisColor} tick={{ fill: chartAxisColor, fontSize: 12, fontWeight: 700 }} axisLine={false} tickLine={false} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: chartTooltipBg,
-                      borderColor: chartTooltipBorder,
-                      borderRadius: 12,
-                      color: chartAxisColor
-                    }}
-                    labelStyle={{ color: chartAxisColor, fontWeight: 800 }}
-                  />
-                  <Bar dataKey="count" radius={[8, 8, 0, 0]}>
-                    {(feedbackStatusData || []).map((entry) => {
-                      const color =
-                        entry.status === "Resolved"
-                          ? "#10b981"
-                          : entry.status === "Reviewed"
-                          ? "#0ea5e9"
-                          : "#f59e0b";
-                      return <Cell key={`feedback-bar-${entry.status}`} fill={color} />;
-                    })}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              {loadingOverview ? (
+                <ChartSkeleton isDark={isDark} />
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={feedbackStatusData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+                    <CartesianGrid stroke={chartGridColor} strokeDasharray="3 3" />
+                    <XAxis dataKey="status" stroke={chartAxisColor} tick={{ fill: chartAxisColor, fontSize: 12, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                    <YAxis stroke={chartAxisColor} tick={{ fill: chartAxisColor, fontSize: 12, fontWeight: 700 }} axisLine={false} tickLine={false} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: chartTooltipBg,
+                        borderColor: chartTooltipBorder,
+                        borderRadius: 12,
+                        color: chartAxisColor
+                      }}
+                      labelStyle={{ color: chartAxisColor, fontWeight: 800 }}
+                    />
+                    <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+                      {(feedbackStatusData || []).map((entry) => {
+                        const color =
+                          entry.status === "Resolved"
+                            ? "#10b981"
+                            : entry.status === "Reviewed"
+                            ? "#0ea5e9"
+                            : "#f59e0b";
+                        return <Cell key={`feedback-bar-${entry.status}`} fill={color} />;
+                      })}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
 
             <div className="mt-4 border-t border-slate-200/70 pt-4 dark:border-slate-700">
@@ -394,10 +487,13 @@ export default function AdminDashboard() {
                 Plan Distribution
               </p>
               <div className="space-y-2">
-                {planDistributionData.map((item) => {
-                  const total = (overview.stats.totalUsers || 0) || 1;
-                  const percent = ((item.value || 0) / total) * 100;
-                  return (
+                {loadingOverview ? (
+                  <PlanDistributionSkeleton isDark={isDark} />
+                ) : (
+                  planDistributionData.map((item) => {
+                    const total = (overview.stats.totalUsers || 0) || 1;
+                    const percent = ((item.value || 0) / total) * 100;
+                    return (
                     <div key={item.name}>
                       <div className="mb-1 flex items-center justify-between">
                         <span className={`text-xs font-black ${isDark ? "text-slate-200" : "text-slate-700"}`}>{item.name}</span>
@@ -413,7 +509,8 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   );
-                })}
+                  })
+                )}
               </div>
             </div>
           </article>
@@ -446,7 +543,7 @@ export default function AdminDashboard() {
 
             <div className="md:hidden space-y-3">
               {loadingUsers ? (
-                <p className={`text-sm font-semibold ${mutedTextClass}`}>Loading users...</p>
+                <UserCardsSkeleton isDark={isDark} />
               ) : users.length === 0 ? (
                 <p className={`text-sm font-semibold ${mutedTextClass}`}>No users found.</p>
               ) : (
@@ -458,10 +555,18 @@ export default function AdminDashboard() {
                         <div>
                           <p className={`text-sm font-black break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>{user.name}</p>
                           <p className={`text-xs font-semibold break-all ${mutedTextClass}`}>{user.email}</p>
+                          <p className={`mt-1 text-[10px] font-black uppercase tracking-[0.14em] ${user.riskScore > 40 ? "text-rose-500" : mutedTextClass}`}>
+                            Risk Score: {user.riskScore || 0}
+                          </p>
                         </div>
-                        <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${user.plan === "pro" ? "bg-emerald-100 text-emerald-700" : isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700"}`}>
-                          {user.plan}
-                        </span>
+                        <div className="flex flex-col items-end gap-1.5">
+                          <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${user.plan === "pro" ? "bg-emerald-100 text-emerald-700" : isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700"}`}>
+                            {user.plan}
+                          </span>
+                          <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${user.status === "suspended" ? "bg-rose-100 text-rose-700" : isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700"}`}>
+                            {user.status || "active"}
+                          </span>
+                        </div>
                       </div>
                       <p className={`mt-3 text-[11px] font-semibold ${mutedTextClass}`}>
                         Joined: {new Date(user.createdAt).toLocaleDateString()}
@@ -474,6 +579,14 @@ export default function AdminDashboard() {
                           className={`rounded-lg border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] disabled:opacity-60 ${isDark ? "border-slate-600 text-slate-200" : "border-slate-200 text-slate-700"}`}
                         >
                           {user.plan === "pro" ? "Set Free" : "Set Pro"}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isBusy}
+                          onClick={() => handleSuspendToggle(user)}
+                          className={`rounded-lg border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] disabled:opacity-60 ${user.status === "suspended" ? "border-emerald-300 text-emerald-500" : "border-amber-300 text-amber-500"}`}
+                        >
+                          {user.status === "suspended" ? "Unsuspend" : "Suspend"}
                         </button>
                         <button
                           type="button"
@@ -496,20 +609,18 @@ export default function AdminDashboard() {
                   <tr className={`text-left text-[10px] font-black uppercase tracking-[0.16em] ${mutedTextClass}`}>
                     <th className="px-3 py-3">User</th>
                     <th className="px-3 py-3">Plan</th>
+                    <th className="px-3 py-3">Status</th>
+                    <th className="px-3 py-3">Risk</th>
                     <th className="px-3 py-3">Joined</th>
                     <th className="px-3 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {loadingUsers ? (
-                    <tr>
-                      <td className={`px-3 py-6 text-sm font-semibold ${mutedTextClass}`} colSpan={4}>
-                        Loading users...
-                      </td>
-                    </tr>
+                    <UserTableSkeletonRows isDark={isDark} />
                   ) : users.length === 0 ? (
                     <tr>
-                      <td className={`px-3 py-6 text-sm font-semibold ${mutedTextClass}`} colSpan={4}>
+                      <td className={`px-3 py-6 text-sm font-semibold ${mutedTextClass}`} colSpan={6}>
                         No users found.
                       </td>
                     </tr>
@@ -527,6 +638,14 @@ export default function AdminDashboard() {
                               {user.plan}
                             </span>
                           </td>
+                          <td className="px-3 py-4">
+                            <span className={`inline-flex rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${user.status === "suspended" ? "bg-rose-100 text-rose-700" : isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700"}`}>
+                              {user.status || "active"}
+                            </span>
+                          </td>
+                          <td className={`px-3 py-4 text-xs font-black uppercase tracking-[0.12em] ${user.riskScore > 40 ? "text-rose-500" : mutedTextClass}`}>
+                            {user.riskScore || 0}
+                          </td>
                           <td className={`px-3 py-4 text-xs font-semibold ${mutedTextClass}`}>
                             {new Date(user.createdAt).toLocaleDateString()}
                           </td>
@@ -539,6 +658,14 @@ export default function AdminDashboard() {
                                 className={`rounded-lg border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] disabled:opacity-60 ${isDark ? "border-slate-600 text-slate-200" : "border-slate-200 text-slate-700"}`}
                               >
                                 {user.plan === "pro" ? "Set Free" : "Set Pro"}
+                              </button>
+                              <button
+                                type="button"
+                                disabled={isBusy}
+                                onClick={() => handleSuspendToggle(user)}
+                                className={`rounded-lg border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] disabled:opacity-60 ${user.status === "suspended" ? "border-emerald-300 text-emerald-500" : "border-amber-300 text-amber-500"}`}
+                              >
+                                {user.status === "suspended" ? "Unsuspend" : "Suspend"}
                               </button>
                               <button
                                 type="button"
@@ -568,6 +695,109 @@ export default function AdminDashboard() {
           </section>
 
           <div className="min-w-0 space-y-6">
+            <section className={`min-w-0 rounded-3xl border p-5 shadow-sm ${surfaceClass}`}>
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <h3 className={`text-sm font-black uppercase tracking-[0.1em] sm:tracking-[0.18em] ${mutedTextClass}`}>
+                  Security Alerts
+                </h3>
+                <div className="inline-flex items-center gap-2">
+                  <span className="inline-flex rounded-full bg-rose-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-rose-700">
+                    New: {overview.stats.pendingSecurityEvents || 0}
+                  </span>
+                  <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-amber-700">
+                    High: {overview.stats.recentHighSeverityEvents || 0}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-3 max-h-[360px] overflow-auto pr-1 custom-scrollbar">
+                {loadingOverview ? (
+                  <FeedbackCardsSkeleton isDark={isDark} />
+                ) : securityEvents.length === 0 ? (
+                  <p className={`text-sm font-semibold ${mutedTextClass}`}>No security events found.</p>
+                ) : (
+                  securityEvents.map((event) => {
+                    const isBusy = actioningId === event._id;
+                    const eventActor = event.userId?.email || event.emailSnapshot || "Unknown user";
+
+                    return (
+                      <article key={event._id} className={`rounded-2xl border p-4 ${subtleBgClass}`}>
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className={`text-sm font-black break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>
+                              {event.type?.replace(/_/g, " ") || "security_event"}
+                            </p>
+                            <p className={`text-[11px] font-semibold break-all ${mutedTextClass}`}>
+                              {eventActor}
+                            </p>
+                          </div>
+                          <span className={`inline-flex rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${severityBadgeClass(event.severity)}`}>
+                            {event.severity || "low"}
+                          </span>
+                        </div>
+
+                        <p className={`mt-2 text-sm leading-relaxed ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+                          {event.message || "No details provided."}
+                        </p>
+
+                        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                          <span className={`text-[10px] font-black uppercase tracking-[0.14em] ${mutedTextClass}`}>
+                            <Clock3 size={12} className="mr-1 inline" />
+                            {new Date(event.createdAt).toLocaleString()}
+                          </span>
+                          <select
+                            value={event.status || "new"}
+                            disabled={isBusy}
+                            onChange={(e) => handleSecurityEventStatusUpdate(event._id, e.target.value)}
+                            className={`h-8 rounded-lg border px-2 text-[10px] font-black uppercase tracking-[0.12em] outline-none ${isDark ? "border-slate-600 bg-slate-800 text-slate-200" : "border-slate-200 bg-white text-slate-700"}`}
+                          >
+                            <option value="new">New</option>
+                            <option value="reviewed">Reviewed</option>
+                            <option value="resolved">Resolved</option>
+                          </select>
+                        </div>
+                      </article>
+                    );
+                  })
+                )}
+              </div>
+            </section>
+
+            <section className={`min-w-0 rounded-3xl border p-5 shadow-sm ${surfaceClass}`}>
+              <h3 className={`text-sm font-black uppercase tracking-[0.1em] sm:tracking-[0.18em] ${mutedTextClass}`}>
+                Risk Watchlist
+              </h3>
+              <div className="mt-4 space-y-3">
+                {loadingOverview ? (
+                  <RecentItemsSkeleton isDark={isDark} />
+                ) : (overview.riskyUsers || []).length === 0 ? (
+                  <p className={`text-xs font-semibold ${mutedTextClass}`}>No risky users flagged.</p>
+                ) : (
+                  (overview.riskyUsers || []).map((user) => (
+                    <div key={user._id} className={`rounded-xl border p-3 ${subtleBgClass}`}>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className={`text-sm font-black break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>
+                          {user.name}
+                        </p>
+                        <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${user.status === "suspended" ? "bg-rose-100 text-rose-700" : "bg-slate-200 text-slate-700"}`}>
+                          {user.status || "active"}
+                        </span>
+                      </div>
+                      <p className={`text-xs font-semibold break-all ${mutedTextClass}`}>{user.email}</p>
+                      <p className={`mt-2 text-[10px] font-black uppercase tracking-[0.14em] ${user.riskScore > 40 ? "text-rose-500" : mutedTextClass}`}>
+                        Risk Score: {user.riskScore || 0}
+                      </p>
+                      {Array.isArray(user.riskFlags) && user.riskFlags.length > 0 ? (
+                        <p className={`mt-1 text-[10px] font-semibold ${mutedTextClass}`}>
+                          Flags: {user.riskFlags.join(", ")}
+                        </p>
+                      ) : null}
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+
             <section className={`min-w-0 rounded-3xl border p-5 shadow-sm ${surfaceClass}`}>
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <h3 className={`text-sm font-black uppercase tracking-[0.1em] sm:tracking-[0.18em] ${mutedTextClass}`}>Feedback Triage</h3>
@@ -614,7 +844,7 @@ export default function AdminDashboard() {
 
               <div className="space-y-3 max-h-[380px] overflow-auto pr-1 custom-scrollbar">
                 {loadingFeedback ? (
-                  <p className={`text-sm font-semibold ${mutedTextClass}`}>Loading feedback...</p>
+                  <FeedbackCardsSkeleton isDark={isDark} />
                 ) : feedbackItems.length === 0 ? (
                   <p className={`text-sm font-semibold ${mutedTextClass}`}>No feedback found.</p>
                 ) : (
@@ -673,12 +903,16 @@ export default function AdminDashboard() {
             <section className={`min-w-0 rounded-3xl border p-5 shadow-sm ${surfaceClass}`}>
               <h3 className={`text-sm font-black uppercase tracking-[0.1em] sm:tracking-[0.18em] ${mutedTextClass}`}>Recent Signups</h3>
               <div className="mt-4 space-y-3">
-                {(overview.recentUsers || []).map((user) => (
-                  <div key={user._id} className={`rounded-xl border p-3 ${subtleBgClass}`}>
-                    <p className={`text-sm font-black break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>{user.name}</p>
-                    <p className={`text-xs font-semibold break-all ${mutedTextClass}`}>{user.email}</p>
-                  </div>
-                ))}
+                {loadingOverview ? (
+                  <RecentItemsSkeleton isDark={isDark} />
+                ) : (
+                  (overview.recentUsers || []).map((user) => (
+                    <div key={user._id} className={`rounded-xl border p-3 ${subtleBgClass}`}>
+                      <p className={`text-sm font-black break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>{user.name}</p>
+                      <p className={`text-xs font-semibold break-all ${mutedTextClass}`}>{user.email}</p>
+                    </div>
+                  ))
+                )}
                 {!loadingOverview && (overview.recentUsers || []).length === 0 ? (
                   <p className={`text-xs font-semibold ${mutedTextClass}`}>No signup data.</p>
                 ) : null}
@@ -686,19 +920,55 @@ export default function AdminDashboard() {
             </section>
 
             <section className={`min-w-0 rounded-3xl border p-5 shadow-sm ${surfaceClass}`}>
+              <h3 className={`text-sm font-black uppercase tracking-[0.1em] sm:tracking-[0.18em] ${mutedTextClass}`}>
+                Recent Moderation Actions
+              </h3>
+              <div className="mt-4 space-y-3">
+                {loadingOverview ? (
+                  <RecentItemsSkeleton isDark={isDark} />
+                ) : (overview.recentAdminActions || []).length === 0 ? (
+                  <p className={`text-xs font-semibold ${mutedTextClass}`}>No moderation actions yet.</p>
+                ) : (
+                  (overview.recentAdminActions || []).map((action) => (
+                    <div key={action._id} className={`rounded-xl border p-3 ${subtleBgClass}`}>
+                      <div className="flex items-start justify-between gap-2">
+                        <p className={`text-sm font-black break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>
+                          {action.action?.replace(/_/g, " ") || "action"}
+                        </p>
+                        <span className={`text-[10px] font-black uppercase tracking-[0.14em] ${mutedTextClass}`}>
+                          {new Date(action.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className={`mt-1 text-xs font-semibold break-all ${mutedTextClass}`}>
+                        Target: {action.targetUserId?.email || action.targetEmailSnapshot || "Unknown user"}
+                      </p>
+                      <p className={`mt-1 text-xs leading-relaxed ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+                        Reason: {action.reason}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </section>
+
+            <section className={`min-w-0 rounded-3xl border p-5 shadow-sm ${surfaceClass}`}>
               <h3 className={`text-sm font-black uppercase tracking-[0.1em] sm:tracking-[0.18em] ${mutedTextClass}`}>Recent Invoices</h3>
               <div className="mt-4 space-y-3">
-                {(overview.recentInvoices || []).map((invoice) => (
-                  <div key={invoice._id} className={`rounded-xl border p-3 ${subtleBgClass}`}>
-                    <p className={`text-sm font-black break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>{invoice.invoiceNumber}</p>
-                    <p className={`text-xs font-semibold break-all ${mutedTextClass}`}>
-                      {invoice.userId?.email || "Unknown user"}
-                    </p>
-                    <p className="mt-1 text-xs font-black uppercase tracking-[0.12em] text-emerald-500">
-                      INR {invoice.amount}
-                    </p>
-                  </div>
-                ))}
+                {loadingOverview ? (
+                  <RecentItemsSkeleton isDark={isDark} />
+                ) : (
+                  (overview.recentInvoices || []).map((invoice) => (
+                    <div key={invoice._id} className={`rounded-xl border p-3 ${subtleBgClass}`}>
+                      <p className={`text-sm font-black break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>{invoice.invoiceNumber}</p>
+                      <p className={`text-xs font-semibold break-all ${mutedTextClass}`}>
+                        {invoice.userId?.email || "Unknown user"}
+                      </p>
+                      <p className="mt-1 text-xs font-black uppercase tracking-[0.12em] text-emerald-500">
+                        INR {invoice.amount}
+                      </p>
+                    </div>
+                  ))
+                )}
                 {!loadingOverview && (overview.recentInvoices || []).length === 0 ? (
                   <p className={`text-xs font-semibold ${mutedTextClass}`}>No invoice data.</p>
                 ) : null}
@@ -728,7 +998,8 @@ function StatCard({ title, value, subtitle, icon, accent = "slate", isDark }) {
     slate: isDark ? "bg-slate-800 text-slate-200" : "bg-slate-100 text-slate-700",
     emerald: "bg-emerald-100 text-emerald-700",
     blue: "bg-sky-100 text-sky-700",
-    amber: "bg-amber-100 text-amber-700"
+    amber: "bg-amber-100 text-amber-700",
+    rose: "bg-rose-100 text-rose-700"
   };
 
   return (
@@ -777,4 +1048,110 @@ function statusBadgeClass(status) {
   if (status === "resolved") return "bg-emerald-100 text-emerald-700";
   if (status === "reviewed") return "bg-sky-100 text-sky-700";
   return "bg-amber-100 text-amber-700";
+}
+
+function severityBadgeClass(severity) {
+  if (severity === "critical") return "bg-rose-100 text-rose-700";
+  if (severity === "high") return "bg-amber-100 text-amber-700";
+  if (severity === "medium") return "bg-sky-100 text-sky-700";
+  return "bg-emerald-100 text-emerald-700";
+}
+
+function ChartSkeleton({ isDark }) {
+  return (
+    <div className="h-full w-full animate-pulse">
+      <div className={`h-full rounded-2xl ${isDark ? "bg-slate-800" : "bg-slate-100"}`} />
+    </div>
+  );
+}
+
+function PlanDistributionSkeleton({ isDark }) {
+  return (
+    <div className="space-y-2 animate-pulse">
+      {[1, 2].map((id) => (
+        <div key={id}>
+          <div className="mb-1 flex items-center justify-between">
+            <div className={`h-3 w-16 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
+            <div className={`h-3 w-20 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
+          </div>
+          <div className={`h-2 rounded-full ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function UserCardsSkeleton({ isDark }) {
+  return (
+    <div className="space-y-3 animate-pulse">
+      {[1, 2, 3].map((id) => (
+        <div key={id} className={`rounded-2xl border p-4 ${isDark ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-slate-50"}`}>
+          <div className={`mb-2 h-4 w-36 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
+          <div className={`mb-3 h-3 w-48 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
+          <div className={`h-8 w-32 rounded-lg ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function UserTableSkeletonRows({ isDark }) {
+  return (
+    <>
+      {[1, 2, 3].map((id) => (
+        <tr key={id} className="animate-pulse">
+          <td className="px-3 py-4">
+            <div className={`h-4 w-32 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
+            <div className={`mt-2 h-3 w-48 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
+          </td>
+          <td className="px-3 py-4">
+            <div className={`h-5 w-16 rounded-full ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
+          </td>
+          <td className="px-3 py-4">
+            <div className={`h-5 w-20 rounded-full ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
+          </td>
+          <td className="px-3 py-4">
+            <div className={`h-3 w-8 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
+          </td>
+          <td className="px-3 py-4">
+            <div className={`h-3 w-20 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
+          </td>
+          <td className="px-3 py-4 text-right">
+            <div className="ml-auto inline-flex items-center gap-2">
+              <div className={`h-7 w-16 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
+              <div className={`h-7 w-16 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
+              <div className={`h-7 w-20 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
+            </div>
+          </td>
+        </tr>
+      ))}
+    </>
+  );
+}
+
+function FeedbackCardsSkeleton({ isDark }) {
+  return (
+    <div className="space-y-3 animate-pulse">
+      {[1, 2, 3].map((id) => (
+        <div key={id} className={`rounded-2xl border p-4 ${isDark ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-slate-50"}`}>
+          <div className={`mb-2 h-4 w-44 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
+          <div className={`mb-3 h-3 w-52 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
+          <div className={`h-10 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RecentItemsSkeleton({ isDark }) {
+  return (
+    <div className="space-y-3 animate-pulse">
+      {[1, 2, 3].map((id) => (
+        <div key={id} className={`rounded-xl border p-3 ${isDark ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-slate-50"}`}>
+          <div className={`mb-2 h-4 w-28 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
+          <div className={`h-3 w-40 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
+        </div>
+      ))}
+    </div>
+  );
 }

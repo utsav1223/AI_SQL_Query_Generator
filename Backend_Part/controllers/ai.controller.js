@@ -3,6 +3,7 @@ const SchemaModel = require("../models/Schema");
 const Query = require("../models/Query");
 const { callGemini } = require("../utils/geminiClient");
 const { checkAndUpdateUsage } = require("../utils/usageManager");
+const { createSecurityEvent } = require("../utils/securityMonitor");
 
 const GEMINI_MAX_OUTPUT_TOKENS = 1024;
 
@@ -494,6 +495,18 @@ exports.handleAI = async (req, res) => {
     }
 
     if (mode !== "generate" && user.plan !== "pro") {
+      await createSecurityEvent({
+        userId: user._id,
+        emailSnapshot: user.email,
+        type: "pro_feature_access_denied",
+        severity: "low",
+        source: "ai",
+        message: `Free user attempted ${mode} mode.`,
+        ipAddress: req.ip,
+        userAgent: req.get("user-agent"),
+        metadata: { mode }
+      });
+
       return res.status(403).json({
         message: "Upgrade to Pro to use this feature."
       });
@@ -620,6 +633,16 @@ exports.handleAI = async (req, res) => {
     console.error(error);
 
     if (error.message === "FREE_LIMIT_REACHED") {
+      await createSecurityEvent({
+        userId: req.user?.userId || null,
+        type: "daily_free_limit_hit",
+        severity: "low",
+        source: "ai",
+        message: "User hit daily free credit limit.",
+        ipAddress: req.ip,
+        userAgent: req.get("user-agent")
+      });
+
       return res.status(403).json({
         code: "LIMIT",
         message: "Free 5-credit limit reached. Upgrade to Pro to continue."

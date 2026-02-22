@@ -1,6 +1,7 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { Loader2 } from "lucide-react";
 
 export default function OAuthSuccess() {
   const [params] = useSearchParams();
@@ -38,10 +39,25 @@ export default function OAuthSuccess() {
   }, [login, navigate, token, userParam]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-700">
-      <p className="text-sm font-bold tracking-wide">
-        {error || "Logging in..."}
-      </p>
+    <div className="min-h-screen bg-slate-50 px-6 py-10">
+      <div className="mx-auto flex w-full max-w-lg flex-col items-center rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+        {error ? (
+          <>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-rose-500">OAuth Failed</p>
+            <p className="mt-2 text-sm font-semibold text-slate-700">{error}</p>
+          </>
+        ) : (
+          <>
+            <div className="relative">
+              <Loader2 className="animate-spin text-emerald-500" size={36} />
+              <div className="absolute inset-0 rounded-full bg-emerald-500/20 blur-xl" />
+            </div>
+            <p className="mt-6 text-xs font-black uppercase tracking-[0.16em] text-slate-400">
+              Completing secure sign-in...
+            </p>
+          </>
+        )}
+      </div>
     </div>
   );
 }
