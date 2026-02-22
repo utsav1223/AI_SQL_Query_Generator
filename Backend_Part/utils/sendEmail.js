@@ -9,6 +9,9 @@ const EMAIL_SECURE = process.env.EMAIL_SECURE
   : EMAIL_PORT === 465;
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
+const EMAIL_CONNECTION_TIMEOUT_MS = Number(process.env.EMAIL_CONNECTION_TIMEOUT_MS || 10000);
+const EMAIL_GREETING_TIMEOUT_MS = Number(process.env.EMAIL_GREETING_TIMEOUT_MS || 10000);
+const EMAIL_SOCKET_TIMEOUT_MS = Number(process.env.EMAIL_SOCKET_TIMEOUT_MS || 15000);
 
 const emailAuthConfigured = Boolean(EMAIL_USER && EMAIL_PASS);
 const transporter = emailAuthConfigured
@@ -16,6 +19,9 @@ const transporter = emailAuthConfigured
     host: EMAIL_HOST,
     port: EMAIL_PORT,
     secure: EMAIL_SECURE,
+    connectionTimeout: EMAIL_CONNECTION_TIMEOUT_MS,
+    greetingTimeout: EMAIL_GREETING_TIMEOUT_MS,
+    socketTimeout: EMAIL_SOCKET_TIMEOUT_MS,
     auth: {
       user: EMAIL_USER,
       pass: EMAIL_PASS

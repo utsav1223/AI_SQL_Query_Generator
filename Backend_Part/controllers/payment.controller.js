@@ -219,7 +219,7 @@ exports.verifyPayment = async (req, res) => {
       orderId: razorpay_order_id
     });
 
-    await sendSubscriptionConfirmation({
+    void sendSubscriptionConfirmation({
       user,
       invoiceNumber: invoice.invoiceNumber,
       renewalDate,
@@ -303,7 +303,7 @@ exports.verifyPaymentLink = async (req, res) => {
       orderId: razorpay_payment_link_id
     });
 
-    await sendSubscriptionConfirmation({
+    void sendSubscriptionConfirmation({
       user,
       invoiceNumber: invoice.invoiceNumber,
       renewalDate,

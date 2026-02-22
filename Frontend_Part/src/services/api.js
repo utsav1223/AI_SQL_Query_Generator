@@ -2,12 +2,16 @@ const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/ap
   /\/+$/,
   ""
 );
+const API_TIMEOUT_MS = 20000;
 
 export const apiRequest = async (endpoint, method = "GET", body = null) => {
   const token = localStorage.getItem("token");
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
   const options = {
     method,
+    signal: controller.signal,
     headers: {
       "Content-Type": "application/json",
       ...(token && { Authorization: `Bearer ${token}` })
@@ -18,9 +22,24 @@ export const apiRequest = async (endpoint, method = "GET", body = null) => {
     options.body = JSON.stringify(body);
   }
 
-  const response = await fetch(`${API_BASE}${endpoint}`, options);
+  let response;
+  try {
+    response = await fetch(`${API_BASE}${endpoint}`, options);
+  } catch (error) {
+    if (error?.name === "AbortError") {
+      throw new Error("Request timed out. Please try again.");
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
-  const data = await response.json();
+  let data = {};
+  try {
+    data = await response.json();
+  } catch (_) {
+    data = {};
+  }
 
   if (!response.ok) {
     const error = new Error(data.message || "Something went wrong");
