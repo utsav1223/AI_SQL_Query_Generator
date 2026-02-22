@@ -1,7 +1,7 @@
 services:
   # Backend Service
   - type: web
-    name: ai-sql-backend
+    name: ai-sql-query-generator-b
     runtime: node
     plan: free
     buildCommand: npm install
@@ -36,6 +36,10 @@ services:
         sync: false
       - key: EMAIL_PASS
         sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_SECRET
+        sync: false
 
   # Frontend Service
   - type: web
@@ -53,12 +57,12 @@ services:
       - key: VITE_API_BASE_URL
         fromService:
           type: web
-          name: ai-sql-backend
+          name: ai-sql-query-generator-b
           property: url
-        value: ${AI_SQL_BACKEND_URL}/api
+        value: ${AI_SQL_QUERY_GENERATOR_B_URL}/api
       - key: VITE_GOOGLE_AUTH_URL
         fromService:
           type: web
-          name: ai-sql-backend
+          name: ai-sql-query-generator-b
           property: url
-        value: ${AI_SQL_BACKEND_URL}/api/auth/google
+        value: ${AI_SQL_QUERY_GENERATOR_B_URL}/api/auth/google
