@@ -1,0 +1,59 @@
+services:
+  # Backend Service
+  - type: web
+    name: ai-sql-backend
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    rootDir: Backend_Part
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        fromService:
+          type: web
+          name: ai-sql-frontend
+          property: url
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: ai-sql-frontend
+          property: url
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+
+  # Frontend Service
+  - type: web
+    name: ai-sql-frontend
+    runtime: static
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishDir: dist
+    rootDir: Frontend_Part
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: ai-sql-backend
+          property: url
+      - key: VITE_GOOGLE_AUTH_URL
+        fromService:
+          type: web
+          name: ai-sql-backend
+          property: url
+        value: ${AI_SQL_BACKEND_URL}/api/auth/google

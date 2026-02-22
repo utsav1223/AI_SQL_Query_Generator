@@ -14,6 +14,7 @@ const feedbackRoutes = require("./routes/feedback.routes");
 require("./utils/subscription.cron");
 
 const app = express();
+app.set("trust proxy", 1);
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
 
 app.use(helmet());
