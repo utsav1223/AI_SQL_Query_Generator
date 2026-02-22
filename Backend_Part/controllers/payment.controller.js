@@ -4,7 +4,11 @@ const crypto = require("crypto");
 const User = require("../models/User");
 const Payment = require("../models/Payment");
 const Invoice = require("../models/Invoice");
-const { sendEmail, buildSubscriptionActivatedEmail } = require("../utils/sendEmail");
+const {
+  sendEmail,
+  buildSubscriptionActivatedEmail,
+  generateInvoice
+} = require("../utils/sendEmail");
 
 const SUBSCRIPTION_AMOUNT_INR = 499;
 const SUBSCRIPTION_AMOUNT_PAISE = SUBSCRIPTION_AMOUNT_INR * 100;
@@ -79,7 +83,7 @@ const createBillingRecords = async ({ user, paymentId, orderId }) => {
 
 const sendSubscriptionConfirmation = async ({ user, invoiceNumber, renewalDate, paymentId }) => {
   try {
-    const pdfBuffer = await exports.generateInvoice(user, paymentId, renewalDate);
+    const pdfBuffer = await generateInvoice(user, paymentId, renewalDate);
 
     await sendEmail({
       to: user.email,
@@ -218,7 +222,8 @@ exports.verifyPayment = async (req, res) => {
     await sendSubscriptionConfirmation({
       user,
       invoiceNumber: invoice.invoiceNumber,
-      renewalDate
+      renewalDate,
+      paymentId: razorpay_payment_id
     });
 
     return res.json({
@@ -301,7 +306,8 @@ exports.verifyPaymentLink = async (req, res) => {
     await sendSubscriptionConfirmation({
       user,
       invoiceNumber: invoice.invoiceNumber,
-      renewalDate
+      renewalDate,
+      paymentId: razorpay_payment_id
     });
 
     return res.json({

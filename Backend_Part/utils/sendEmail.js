@@ -2,24 +2,41 @@ const nodemailer = require("nodemailer");
 const PDFDocument = require("pdfkit");
 const { PassThrough } = require("stream");
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true, // Use SSL/TLS
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+const EMAIL_HOST = process.env.EMAIL_HOST || "smtp.gmail.com";
+const EMAIL_PORT = Number(process.env.EMAIL_PORT || 465);
+const EMAIL_SECURE = process.env.EMAIL_SECURE
+  ? process.env.EMAIL_SECURE === "true"
+  : EMAIL_PORT === 465;
+const EMAIL_USER = process.env.EMAIL_USER;
+const EMAIL_PASS = process.env.EMAIL_PASS;
+
+const emailAuthConfigured = Boolean(EMAIL_USER && EMAIL_PASS);
+const transporter = emailAuthConfigured
+  ? nodemailer.createTransport({
+    host: EMAIL_HOST,
+    port: EMAIL_PORT,
+    secure: EMAIL_SECURE,
+    auth: {
+      user: EMAIL_USER,
+      pass: EMAIL_PASS
+    }
+  })
+  : null;
 
 // Verify connection configuration
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("Email transporter configuration error:", error);
-  } else {
-    console.log("Email server is ready to take our messages");
-  }
-});
+if (transporter) {
+  transporter.verify((error) => {
+    if (error) {
+      console.error("Email transporter configuration error:", error);
+    } else {
+      console.log("Email server is ready to take our messages");
+    }
+  });
+} else {
+  console.warn(
+    "Email transport disabled: set EMAIL_USER and EMAIL_PASS to enable outbound emails."
+  );
+}
 
 const escapeHtml = (value = "") =>
   String(value)
@@ -150,8 +167,12 @@ exports.buildSubscriptionActivatedEmail = ({ name, invoiceNumber, amount, renewa
   });
 
 exports.sendEmail = async ({ to, subject, html, attachments = [] }) => {
+  if (!transporter) {
+    throw new Error("Email transport is not configured.");
+  }
+
   await transporter.sendMail({
-    from: `"SQL Studio" <${process.env.EMAIL_USER}>`,
+    from: `"SQL Studio" <${EMAIL_USER}>`,
     to,
     subject,
     html,
