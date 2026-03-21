@@ -1,25 +1,52 @@
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
 @import "tailwindcss";
 
 :root {
-  --public-bg: #f3f4ef;
-  --public-surface: rgba(255, 255, 255, 0.86);
-  --public-border: rgba(15, 23, 42, 0.08);
-  --public-text: #101828;
-  --public-muted: #526072;
-  --public-accent: #0f766e;
-  --public-accent-strong: #0a4f4a;
-  --public-highlight: #c76b2d;
+  --app-bg: #f8fafc;
+  --app-bg-soft: #f1f5f9;
+  --surface: #ffffff;
+  --surface-soft: #f8fafc;
+  --surface-muted: #f1f5f9;
+  --surface-inverse: #0f172a;
+  --surface-inverse-soft: #111827;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-soft: #94a3b8;
+  --text-on-inverse: #f8fafc;
+  --accent: #0f766e;
+  --accent-hover: #115e59;
+  --accent-soft: rgba(15, 118, 110, 0.1);
+  --accent-soft-strong: rgba(15, 118, 110, 0.18);
+  --danger: #dc2626;
+  --danger-soft: rgba(220, 38, 38, 0.1);
+  --shadow-card: 0 10px 30px -18px rgba(15, 23, 42, 0.18);
+  --shadow-soft: 0 8px 24px -18px rgba(15, 23, 42, 0.12);
+}
 
-  --dashboard-bg: #f5f7f3;
-  --dashboard-surface: rgba(255, 255, 255, 0.9);
-  --dashboard-border: rgba(15, 23, 42, 0.08);
-  --dashboard-text: #0f172a;
-  --dashboard-muted: #5b6778;
-  --dashboard-accent: #0f766e;
-  --dashboard-sidebar: #112129;
-  --dashboard-sidebar-border: rgba(255, 255, 255, 0.08);
-  --dashboard-sidebar-text: #dce7ea;
+html.dark {
+  --app-bg: #0b1220;
+  --app-bg-soft: #111827;
+  --surface: #0f172a;
+  --surface-soft: #111827;
+  --surface-muted: #1f2937;
+  --surface-inverse: #020617;
+  --surface-inverse-soft: #0f172a;
+  --border: #243042;
+  --border-strong: #334155;
+  --text-main: #e5e7eb;
+  --text-muted: #94a3b8;
+  --text-soft: #64748b;
+  --text-on-inverse: #f8fafc;
+  --accent: #2dd4bf;
+  --accent-hover: #5eead4;
+  --accent-soft: rgba(45, 212, 191, 0.12);
+  --accent-soft-strong: rgba(45, 212, 191, 0.22);
+  --danger: #fb7185;
+  --danger-soft: rgba(251, 113, 133, 0.14);
+  --shadow-card: 0 12px 28px -20px rgba(0, 0, 0, 0.45);
+  --shadow-soft: 0 10px 22px -18px rgba(0, 0, 0, 0.4);
 }
 
 *,
@@ -40,12 +67,9 @@ html {
 
 body {
   margin: 0;
-  font-family: "Plus Jakarta Sans", "Segoe UI", sans-serif;
-  color: var(--public-text);
-  background:
-    radial-gradient(circle at top left, rgba(15, 118, 110, 0.11), transparent 28%),
-    radial-gradient(circle at 88% 8%, rgba(199, 107, 45, 0.09), transparent 22%),
-    linear-gradient(180deg, #f7f7f2 0%, #eef1eb 100%);
+  font-family: "Inter", "Segoe UI", sans-serif;
+  background: var(--app-bg);
+  color: var(--text-main);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -68,107 +92,157 @@ img {
 }
 
 ::selection {
-  background: rgba(15, 118, 110, 0.18);
-  color: #0b1c1b;
+  background: var(--accent-soft-strong);
+  color: var(--text-main);
 }
 
 .display-font,
 .dashboard-heading {
-  font-family: "Sora", "Plus Jakarta Sans", sans-serif;
+  font-family: "Manrope", "Inter", sans-serif;
 }
 
 .mono-font {
   font-family: "IBM Plex Mono", monospace;
 }
 
-.public-card {
-  background: var(--public-surface);
-  border: 1px solid var(--public-border);
-  box-shadow:
-    0 18px 60px -38px rgba(15, 23, 42, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(18px);
+.public-card,
+.dashboard-card,
+.surface-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
 }
 
-.public-outline-card {
-  background: rgba(255, 255, 255, 0.64);
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  box-shadow: 0 16px 40px -34px rgba(15, 23, 42, 0.28);
+.public-outline-card,
+.surface-card-soft {
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
 }
 
-.public-pill {
+.surface-muted {
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+}
+
+.surface-inverse {
+  background: var(--surface-inverse);
+  color: var(--text-on-inverse);
+}
+
+.badge-accent {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  border: 1px solid rgba(15, 118, 110, 0.16);
-  background: rgba(255, 255, 255, 0.72);
-  color: var(--public-accent);
-  box-shadow: 0 10px 24px -18px rgba(15, 118, 110, 0.34);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-soft-strong);
+  color: var(--accent);
+}
+
+.button-primary {
+  background: var(--accent);
+  color: #ffffff;
+  border: 1px solid transparent;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  box-shadow: 0 10px 24px -18px rgba(15, 118, 110, 0.45);
+}
+
+.button-primary:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.button-secondary {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.button-secondary:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-soft);
+}
+
+.button-danger {
+  background: transparent;
+  border: 1px solid rgba(220, 38, 38, 0.18);
+  color: var(--danger);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.button-danger:hover {
+  background: var(--danger);
+  color: #ffffff;
+}
+
+.input-control {
+  width: 100%;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.input-control::placeholder {
+  color: var(--text-soft);
+}
+
+.input-control:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+.code-shell {
+  background: var(--surface-inverse);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  color: var(--text-on-inverse);
+}
+
+.code-toolbar {
+  background: var(--surface-inverse-soft);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
 }
 
 .public-grid {
   background-image:
-    linear-gradient(rgba(15, 23, 42, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
+    linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
   background-size: 32px 32px;
-}
-
-.glow-divider {
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(15, 118, 110, 0.35),
-    rgba(199, 107, 45, 0.18),
-    transparent
-  );
-}
-
-.animated-float {
-  animation: floatSlow 8s ease-in-out infinite;
-}
-
-.animated-rise {
-  animation: riseIn 0.7s ease both;
-}
-
-.animated-pulse-soft {
-  animation: pulseSoft 3.2s ease-in-out infinite;
 }
 
 .dashboard-shell {
   min-height: 100dvh;
-  background:
-    radial-gradient(circle at top left, rgba(15, 118, 110, 0.08), transparent 26%),
-    radial-gradient(circle at 90% 0%, rgba(199, 107, 45, 0.07), transparent 20%),
-    var(--dashboard-bg);
-  color: var(--dashboard-text);
+  background: var(--app-bg);
+  color: var(--text-main);
 }
 
 .dashboard-page {
-  width: min(100%, 1480px);
+  width: min(100%, 1440px);
   margin-inline: auto;
-  padding-inline: clamp(1rem, 2.5vw, 2.8rem);
-  padding-block: clamp(1rem, 2vw, 2.4rem);
-}
-
-.dashboard-card {
-  background: var(--dashboard-surface);
-  border: 1px solid var(--dashboard-border);
-  border-radius: 1.6rem;
-  box-shadow:
-    0 20px 40px -34px rgba(15, 23, 42, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.78);
-  backdrop-filter: blur(16px);
+  padding-inline: clamp(1rem, 2.5vw, 2.5rem);
+  padding-block: clamp(1rem, 2vw, 2rem);
 }
 
 .dashboard-muted {
-  color: var(--dashboard-muted);
+  color: var(--text-muted);
 }
 
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(91, 103, 120, 0.4) transparent;
+  scrollbar-color: var(--border-strong) transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -177,7 +251,7 @@ img {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.7);
+  background: var(--border-strong);
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: padding-box;
@@ -196,40 +270,6 @@ img {
   scrollbar-width: none;
 }
 
-@keyframes floatSlow {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-@keyframes riseIn {
-  0% {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulseSoft {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(15, 118, 110, 0.12);
-  }
-
-  50% {
-    box-shadow: 0 0 0 18px rgba(15, 118, 110, 0);
-  }
-}
-
 @media (max-width: 640px) {
   .dashboard-page {
     padding-inline: 0.95rem;
@@ -237,101 +277,120 @@ img {
   }
 }
 
-html.dark .dashboard-shell {
-  background:
-    radial-gradient(circle at top left, rgba(45, 212, 191, 0.12), transparent 28%),
-    radial-gradient(circle at 90% 0%, rgba(251, 191, 36, 0.08), transparent 22%),
-    #061117 !important;
-  color: #e5eef1;
-}
-
-html.dark .dashboard-shell main {
-  background:
-    radial-gradient(circle at top left, rgba(45, 212, 191, 0.1), transparent 28%),
-    radial-gradient(circle at 95% 5%, rgba(251, 191, 36, 0.08), transparent 18%),
-    transparent !important;
-}
-
-html.dark .dashboard-shell [class*="bg-[#FDFDFD]"] {
-  background-color: #061117 !important;
-}
-
 html.dark .dashboard-shell [class*="bg-white"] {
-  background-color: #0e1a22 !important;
+  background-color: var(--surface) !important;
 }
 
 html.dark .dashboard-shell [class*="bg-slate-50"] {
-  background-color: #132430 !important;
+  background-color: var(--surface-soft) !important;
 }
 
 html.dark .dashboard-shell [class*="bg-slate-100"] {
-  background-color: #1a2d39 !important;
+  background-color: var(--surface-muted) !important;
 }
 
-html.dark .dashboard-shell [class*="bg-slate-900"] {
-  background-color: #061117 !important;
+html.dark .dashboard-shell [class*="bg-slate-900"],
+html.dark .dashboard-shell [class*="bg-slate-950"] {
+  background-color: var(--surface-inverse) !important;
 }
 
 html.dark .dashboard-shell [class*="text-slate-900"],
 html.dark .dashboard-shell [class*="text-slate-950"] {
-  color: #f3f7f8 !important;
+  color: var(--text-main) !important;
 }
 
-html.dark .dashboard-shell [class*="text-slate-800"] {
-  color: #dce7ea !important;
-}
-
+html.dark .dashboard-shell [class*="text-slate-800"],
 html.dark .dashboard-shell [class*="text-slate-700"] {
-  color: #c2d0d5 !important;
+  color: #d1d5db !important;
 }
 
-html.dark .dashboard-shell [class*="text-slate-600"] {
-  color: #a5b6be !important;
-}
-
+html.dark .dashboard-shell [class*="text-slate-600"],
 html.dark .dashboard-shell [class*="text-slate-500"],
-html.dark .dashboard-shell [class*="text-slate-400"],
-html.dark .dashboard-shell [class*="text-slate-300"] {
-  color: #b9c7cd !important;
+html.dark .dashboard-shell [class*="text-slate-400"] {
+  color: var(--text-muted) !important;
 }
 
-html.dark .dashboard-shell [class*="border-slate-50"],
 html.dark .dashboard-shell [class*="border-slate-100"],
 html.dark .dashboard-shell [class*="border-slate-200"],
 html.dark .dashboard-shell [class*="border-slate-300"] {
-  border-color: rgba(148, 163, 184, 0.28) !important;
-}
-
-html.dark .dashboard-shell [class*="shadow-slate-200"],
-html.dark .dashboard-shell [class*="shadow-slate-300"] {
-  --tw-shadow-color: rgba(0, 0, 0, 0.46) !important;
-}
-
-html.dark .dashboard-shell [class*="ring-slate-200"],
-html.dark .dashboard-shell [class*="ring-slate-300"] {
-  --tw-ring-color: rgba(148, 163, 184, 0.42) !important;
-}
-
-html.dark .dashboard-shell button[class*="bg-white"],
-html.dark .dashboard-shell a[class*="bg-white"] {
-  background-color: #132430 !important;
-  border-color: rgba(148, 163, 184, 0.22) !important;
+  border-color: var(--border) !important;
 }
 
 html.dark .dashboard-shell [class*="bg-emerald-50"] {
-  background-color: rgba(16, 185, 129, 0.14) !important;
+  background-color: rgba(45, 212, 191, 0.12) !important;
+}
+
+html.dark .dashboard-shell [class*="text-emerald-700"],
+html.dark .dashboard-shell [class*="text-emerald-600"],
+html.dark .dashboard-shell [class*="text-emerald-500"] {
+  color: #5eead4 !important;
+}
+
+html.dark .dashboard-shell [class*="border-emerald-100"],
+html.dark .dashboard-shell [class*="border-emerald-200"],
+html.dark .dashboard-shell [class*="border-emerald-300"] {
+  border-color: rgba(45, 212, 191, 0.26) !important;
+}
+
+html.dark .dashboard-shell [class*="bg-amber-50"] {
+  background-color: rgba(245, 158, 11, 0.12) !important;
+}
+
+html.dark .dashboard-shell [class*="text-amber-700"],
+html.dark .dashboard-shell [class*="text-amber-600"],
+html.dark .dashboard-shell [class*="text-amber-500"] {
+  color: #fbbf24 !important;
+}
+
+html.dark .dashboard-shell [class*="border-amber-100"],
+html.dark .dashboard-shell [class*="border-amber-200"] {
+  border-color: rgba(245, 158, 11, 0.24) !important;
+}
+
+html.dark .dashboard-shell [class*="bg-rose-50"] {
+  background-color: rgba(251, 113, 133, 0.12) !important;
+}
+
+html.dark .dashboard-shell [class*="text-rose-700"],
+html.dark .dashboard-shell [class*="text-rose-600"],
+html.dark .dashboard-shell [class*="text-rose-500"] {
+  color: #fda4af !important;
+}
+
+html.dark .dashboard-shell [class*="border-rose-100"],
+html.dark .dashboard-shell [class*="border-rose-200"] {
+  border-color: rgba(251, 113, 133, 0.24) !important;
+}
+
+html.dark .dashboard-shell [class*="text-blue-500"],
+html.dark .dashboard-shell [class*="text-sky-700"],
+html.dark .dashboard-shell [class*="text-sky-600"],
+html.dark .dashboard-shell [class*="text-sky-500"] {
+  color: #60a5fa !important;
+}
+
+html.dark .dashboard-shell [class*="bg-sky-100"] {
+  background-color: rgba(96, 165, 250, 0.12) !important;
+}
+
+html.dark .dashboard-shell [class*="text-purple-500"] {
+  color: #c084fc !important;
+}
+
+html.dark .dashboard-shell input,
+html.dark .dashboard-shell textarea,
+html.dark .dashboard-shell select {
+  color: var(--text-main) !important;
+  background-color: var(--surface-soft);
+  border-color: var(--border);
 }
 
 html.dark .dashboard-shell input::placeholder,
 html.dark .dashboard-shell textarea::placeholder {
-  color: #8ca0a8 !important;
-}
-
-html.dark .dashboard-shell select {
-  color: #e5eef1 !important;
+  color: var(--text-soft) !important;
 }
 
 html.dark .dashboard-shell select option {
-  background-color: #0e1a22;
-  color: #e5eef1;
+  background: var(--surface);
+  color: var(--text-main);
 }

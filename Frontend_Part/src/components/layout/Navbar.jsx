@@ -1,53 +1,53 @@
 import { useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { LogOut, Menu, Moon, Sparkles, Sun } from "lucide-react";
+import { LogOut, Menu, Moon, Sun } from "lucide-react";
 import { ThemeContext } from "../../context/ThemeContext";
 import { useAuth } from "../../hooks/useAuth";
 
 const routeLabelMap = {
   dashboard: {
     title: "Overview",
-    description: "Your workspace summary and latest activity"
+    description: "Track usage and recent activity"
   },
   generate: {
     title: "AI Workspace",
-    description: "Generate, optimize, validate, and explain SQL"
+    description: "Generate, validate, and refine SQL"
   },
   schema: {
     title: "Schema Context",
-    description: "Manage the database structure used by the AI"
+    description: "Save the structure used by the AI"
   },
   history: {
-    title: "Query History",
-    description: "Review saved prompts and generated SQL"
+    title: "History",
+    description: "Review previous requests and outputs"
   },
   analytics: {
     title: "Analytics",
-    description: "Track advanced usage and activity patterns"
+    description: "See advanced usage insights"
   },
   pricing: {
     title: "Billing",
-    description: "Upgrade your plan and compare features"
+    description: "Compare plans and upgrade"
   },
   invoices: {
     title: "Invoices",
-    description: "View payment records and billing history"
+    description: "Review payment records"
   },
   settings: {
     title: "Settings",
-    description: "Manage profile, password, and account actions"
+    description: "Manage profile and account security"
   },
   support: {
     title: "Support",
-    description: "Reach the team and get help quickly"
+    description: "Get help when you need it"
   },
   faq: {
     title: "FAQ",
-    description: "Common answers about the platform"
+    description: "Common product questions"
   },
   feedback: {
     title: "Feedback",
-    description: "Share suggestions and product feedback"
+    description: "Share suggestions with the team"
   }
 };
 
@@ -67,58 +67,39 @@ export default function Navbar({ onMenuClick }) {
   const userInitial = user?.name?.trim()?.charAt(0)?.toUpperCase() || "U";
 
   return (
-    <header
-      className={`sticky top-0 z-30 border-b backdrop-blur-2xl ${
-        isDark
-          ? "border-slate-700/70 bg-slate-950/70"
-          : "border-slate-900/6 bg-white/68"
-      }`}
-    >
-      <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+    <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[var(--app-bg)]/90 backdrop-blur-xl">
+      <div className="mx-auto flex w-full max-w-[1500px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center gap-3">
           <button
             type="button"
             onClick={onMenuClick}
-            className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl border lg:hidden ${
-              isDark
-                ? "border-slate-700 bg-slate-900 text-slate-200"
-                : "border-slate-900/8 bg-white text-slate-700"
-            }`}
+            className="button-secondary inline-flex h-11 w-11 items-center justify-center rounded-xl lg:hidden"
           >
             <Menu size={18} />
           </button>
 
           <div className="min-w-0">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#0f766e]/12 bg-[#0f766e]/6 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#0f766e] dark:border-[#8fe1cf]/18 dark:bg-[#8fe1cf]/8 dark:text-[#8fe1cf]">
-              <Sparkles size={12} />
-              Active Workspace
-            </div>
-            <h1 className="display-font mt-2 truncate text-2xl font-extrabold tracking-tight text-slate-950 dark:text-slate-50">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[var(--accent)]">
+              Workspace
+            </p>
+            <h1 className="dashboard-heading truncate text-2xl font-extrabold tracking-tight">
               {pageMeta.title}
             </h1>
-            <p className="mt-1 hidden text-sm font-medium text-slate-500 dark:text-slate-400 md:block">
+            <p className="hidden text-sm text-slate-500 dark:text-slate-400 md:block">
               {pageMeta.description}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <div
-            className={`hidden items-center gap-3 rounded-full border px-3 py-2.5 sm:flex ${
-              isDark
-                ? "border-slate-700 bg-slate-900 text-slate-200"
-                : "border-slate-900/8 bg-white/78 text-slate-700"
-            }`}
-          >
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#112129] text-sm font-extrabold text-[#8fe1cf]">
+          <div className="surface-card hidden items-center gap-3 rounded-xl px-3 py-2 sm:flex">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--accent-soft)] text-sm font-extrabold text-[var(--accent)]">
               {userInitial}
             </span>
             <div className="leading-tight">
-              <p className="text-sm font-bold text-slate-900 dark:text-white">
-                {user?.name || "Workspace User"}
-              </p>
+              <p className="text-sm font-bold">{user?.name || "Workspace User"}</p>
               <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
-                {user?.plan === "pro" ? "Pro Plan" : "Free Plan"}
+                {user?.plan === "pro" ? "Pro plan" : "Free plan"}
               </p>
             </div>
           </div>
@@ -126,11 +107,7 @@ export default function Navbar({ onMenuClick }) {
           <button
             type="button"
             onClick={toggleTheme}
-            className={`inline-flex items-center gap-2 rounded-full border px-4 py-3 text-[10px] font-extrabold uppercase tracking-[0.16em] ${
-              isDark
-                ? "border-slate-700 bg-slate-900 text-slate-200 hover:border-slate-600"
-                : "border-slate-900/8 bg-white/78 text-slate-700 hover:border-slate-900/14"
-            }`}
+            className="button-secondary inline-flex items-center gap-2 rounded-xl px-4 py-3 text-[10px] font-extrabold uppercase tracking-[0.16em]"
             title={isDark ? "Switch to light mode" : "Switch to dark mode"}
             aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
           >
@@ -144,7 +121,7 @@ export default function Navbar({ onMenuClick }) {
               logout();
               navigate("/login");
             }}
-            className="inline-flex items-center gap-2 rounded-full bg-[#112129] px-4 py-3 text-[10px] font-extrabold uppercase tracking-[0.16em] text-white transition-all hover:-translate-y-0.5 hover:bg-[#0f766e]"
+            className="button-primary inline-flex items-center gap-2 rounded-xl px-4 py-3 text-[10px] font-extrabold uppercase tracking-[0.16em]"
           >
             <LogOut size={14} />
             <span className="hidden sm:inline">Logout</span>

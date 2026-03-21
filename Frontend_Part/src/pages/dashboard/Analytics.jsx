@@ -1,50 +1,43 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis
+} from "recharts";
+import { Activity, ArrowRight, BarChart3, Lock, TrendingUp } from "lucide-react";
+import { ThemeContext } from "../../context/ThemeContext";
 import { useAuth } from "../../hooks/useAuth";
 import { queryService } from "../../services/queryService";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  CartesianGrid
-} from "recharts";
-import { 
-  BarChart3, 
-  Layers, 
-  Calendar, 
-  Lock, 
-  ArrowUpRight, 
-  Sparkles,
-  Zap,
-  Activity,
-  ChevronRight,
-  Target,
-  TrendingUp
-} from "lucide-react";
 
-const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#6366f1"];
+const COLORS = ["#0f766e", "#0891b2", "#f59e0b", "#8b5cf6"];
 
 export default function Analytics() {
   const { user, loading } = useAuth();
+  const { isDark } = useContext(ThemeContext);
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!user || user.plan !== "pro") return;
+    if (!user || user.plan !== "pro") {
+      setIsLoading(false);
+      return;
+    }
 
     const fetchAnalytics = async () => {
       try {
-        const res = await queryService.getAdvancedAnalytics();
-        setData(res);
-      } catch (err) {
-        console.error("Analytics Fetch Error:", err);
+        const analyticsData = await queryService.getAdvancedAnalytics();
+        setData(analyticsData);
+      } catch (error) {
+        console.error("Analytics fetch error:", error);
       } finally {
         setIsLoading(false);
       }
@@ -53,219 +46,251 @@ export default function Analytics() {
     fetchAnalytics();
   }, [user]);
 
-  // --- LOADING STATE ---
+  const pieData = useMemo(() => {
+    return (
+      data?.modeStats?.map((item) => ({
+        name: item._id || "Query",
+        value: item.count
+      })) || []
+    );
+  }, [data]);
+
+  const lineData = useMemo(() => {
+    return (
+      data?.dailyStats?.map((item) => ({
+        date: item._id,
+        queries: item.count
+      })) || []
+    );
+  }, [data]);
+
+  const chartAxisColor = isDark ? "#94a3b8" : "#64748b";
+  const chartGridColor = isDark ? "#243042" : "#e2e8f0";
+  const chartTooltipBg = isDark ? "#0f172a" : "#ffffff";
+  const chartTooltipText = isDark ? "#e5e7eb" : "#0f172a";
+
   if (loading || (user?.plan === "pro" && isLoading)) {
     return <AnalyticsSkeleton />;
   }
 
-  // --- PRO UPSELL ---
   if (!user || user.plan !== "pro") {
     return (
       <div className="dashboard-page">
-        <div className="relative overflow-hidden bg-slate-950 rounded-[40px] p-8 md:p-24 border border-slate-800 shadow-2xl">
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-600/10 blur-[140px] rounded-full -mr-64 -mt-64" />
-          <div className="relative z-10 text-center max-w-3xl mx-auto space-y-10">
-            <div className="inline-flex p-5 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-md">
-              <Lock className="text-emerald-400" size={32} />
-            </div>
-            <h2 className="text-4xl md:text-7xl font-black text-white tracking-tight leading-[1.05]">
-              Unleash <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">Advanced</span> <br /> Intelligence.
-            </h2>
-            <p className="text-slate-400 text-lg md:text-xl font-medium leading-relaxed">
-              Unlock query velocity tracking, tool efficiency heatmaps, and enterprise-grade growth metrics designed for high-performance teams.
-            </p>
-            <div className="pt-6">
-              <button
-                onClick={() => navigate("/dashboard/pricing")}
-                className="group inline-flex items-center gap-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-12 py-6 rounded-2xl font-black text-sm transition-all shadow-xl shadow-emerald-500/25 active:scale-95"
-              >
-                Upgrade to Pro <ArrowUpRight size={20} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-              </button>
-            </div>
+        <section className="dashboard-card rounded-3xl px-6 py-10 text-center sm:px-10">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--accent-soft)] text-[var(--accent)]">
+            <Lock size={28} />
           </div>
-        </div>
+          <h1 className="dashboard-heading mt-6 text-3xl font-extrabold tracking-tight">
+            Analytics is available on Pro
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-500 dark:text-slate-400">
+            Upgrade to see growth trends, tool usage, weekly movement, and activity summaries in one place.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate("/dashboard/pricing")}
+            className="button-primary mt-6 inline-flex items-center gap-2 rounded-xl px-5 py-3 text-[11px] font-extrabold uppercase tracking-[0.16em]"
+          >
+            Upgrade To Pro
+            <ArrowRight size={14} />
+          </button>
+        </section>
       </div>
     );
   }
 
-  // --- DATA MAPPING ---
-  const pieData = data?.modeStats?.map((item) => ({
-    name: item._id || "Query",
-    value: item.count
-  })) || [];
-
-  const lineData = data?.dailyStats?.map((item) => ({
-    date: item._id,
-    queries: item.count
-  })) || [];
-
   return (
-    <div className="dashboard-page space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      
-      {/* HEADER SECTION */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-8 border-b border-slate-200/60">
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 w-fit">
-            <Activity size={14} className="text-emerald-600" />
-            <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">System Operational</span>
-          </div>
-          <h1 className="dashboard-heading text-4xl md:text-6xl font-black text-slate-900 tracking-tight">Intelligence Hub</h1>
-          <p className="text-slate-500 text-lg font-medium">Monitoring real-time performance and SQL velocity.</p>
-        </div>
-        
-        <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-200/50 hidden sm:flex">
-          <div className="px-5 py-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-r border-slate-200">24H Window</div>
-          <div className="flex items-center gap-2 px-4 text-emerald-600">
-            <Sparkles size={16} fill="currentColor" className="opacity-20" />
-            <span className="text-[10px] font-black uppercase tracking-widest">Live Sync</span>
-          </div>
-        </div>
-      </header>
+    <div className="dashboard-page space-y-6">
+      <section className="dashboard-card rounded-3xl p-6 sm:p-8">
+        <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[var(--accent)]">
+          Analytics
+        </p>
+        <h1 className="dashboard-heading mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">
+          Clear usage insights for your SQL workspace
+        </h1>
+        <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500 dark:text-slate-400">
+          Review total activity, query patterns, tool distribution, and weekly growth without the extra visual noise.
+        </p>
+      </section>
 
-      {/* PRIMARY KPI GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-10">
-        <StatCard label="Total Operations" value={data?.totalQueries} trend="+14.2%" icon={<Layers />} />
-        <StatCard label="Avg. Daily Load" value={Math.round(data?.totalQueries / (data?.dailyStats?.length || 1))} trend="Stable" icon={<Zap />} />
-        <StatCard label="Operational Span" value={`${data?.dailyStats?.length || 0} Days`} trend="Active" icon={<Calendar />} />
-      </div>
+      <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <StatCard title="Total Queries" value={data?.totalQueries || 0} helper="All tracked requests" />
+        <StatCard title="Weekly Queries" value={data?.weeklyQueries || 0} helper="Requests from the last 7 days" />
+        <StatCard title="Average Per Day" value={data?.avgPerDay || 0} helper="Average daily usage" />
+        <StatCard title="Growth" value={`${data?.growth || 0}%`} helper="Compared with the previous week" accent />
+      </section>
 
-      {/* ANALYTICS VISUALIZATION GRID */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
-        {/* VELOCITY CHART */}
-        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-[40px] p-8 md:p-12 shadow-sm hover:shadow-xl hover:shadow-slate-200/30 transition-all duration-500">
-          <div className="flex items-center justify-between mb-12">
+      <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <article className="dashboard-card rounded-3xl p-6">
+          <div className="mb-5 flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-[0.2em] mb-1">Activity Velocity</h3>
-              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Historical Query Volume</p>
+              <h2 className="text-lg font-extrabold">Activity trend</h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Query volume over time
+              </p>
             </div>
-            <div className="p-4 bg-slate-50 rounded-2xl text-slate-400 border border-slate-100"><BarChart3 size={20} /></div>
+            <span className="badge-accent rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em]">
+              <Activity size={12} />
+              Live Data
+            </span>
           </div>
-          <div className="h-[300px] md:h-[400px] w-full">
+
+          <div className="h-[320px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={lineData}>
                 <defs>
-                  <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.15}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                  <linearGradient id="analyticsArea" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#0f766e" stopOpacity={0.24} />
+                    <stop offset="95%" stopColor="#0f766e" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fontSize: 11, fontWeight: 700, fill: '#64748b'}} dy={15} />
-                <YAxis axisLine={false} tickLine={false} tick={{fontSize: 11, fontWeight: 700, fill: '#64748b'}} />
-                <Tooltip 
-                  cursor={{ stroke: '#10b981', strokeWidth: 2 }}
-                  contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', padding: '12px 16px' }}
+                <CartesianGrid stroke={chartGridColor} strokeDasharray="3 3" vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 11, fill: chartAxisColor }}
                 />
-                <Area type="monotone" dataKey="queries" stroke="#10b981" strokeWidth={4} fill="url(#chartGradient)" animationDuration={1800} />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 11, fill: chartAxisColor }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: chartTooltipBg,
+                    border: `1px solid ${chartGridColor}`,
+                    borderRadius: 12,
+                    color: chartTooltipText
+                  }}
+                  labelStyle={{ color: chartTooltipText, fontWeight: 700 }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="queries"
+                  stroke="#0f766e"
+                  strokeWidth={3}
+                  fill="url(#analyticsArea)"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </article>
 
-        {/* LOGIC DISTRIBUTION */}
-        <div className="lg:col-span-4 bg-slate-900 rounded-[40px] p-10 text-white shadow-2xl relative overflow-hidden flex flex-col justify-between">
-          <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none rotate-12"><Target size={180} /></div>
-          
-          <div className="relative z-10">
-            <h3 className="text-[11px] font-black text-emerald-400 uppercase tracking-[0.3em] mb-2">Logic Distribution</h3>
-            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Mode Efficiency</p>
+        <article className="dashboard-card rounded-3xl p-6">
+          <div className="mb-5">
+            <h2 className="text-lg font-extrabold">Tool usage</h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Distribution across generate, optimize, explain, and validate
+            </p>
           </div>
-          
-          <div className="flex-1 min-h-[280px] relative z-10 my-6">
+
+          <div className="h-[260px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={pieData} dataKey="value" innerRadius="70%" outerRadius="90%" paddingAngle={10} stroke="none">
-                  {pieData.map((_, index) => <Cell key={index} fill={COLORS[index % COLORS.length]} />)}
+                <Pie
+                  data={pieData}
+                  dataKey="value"
+                  innerRadius={60}
+                  outerRadius={92}
+                  paddingAngle={4}
+                  stroke="none"
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`${entry.name}-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: chartTooltipBg,
+                    border: `1px solid ${chartGridColor}`,
+                    borderRadius: 12,
+                    color: chartTooltipText
+                  }}
+                  labelStyle={{ color: chartTooltipText, fontWeight: 700 }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
 
-          <div className="space-y-3 relative z-10">
-            {pieData.map((item, i) => (
-              <div key={i} className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-400 bg-white/5 p-4 rounded-2xl border border-white/5 group hover:bg-white/10 transition-all cursor-default">
-                <div className="flex items-center gap-3">
-                  <div className="w-2.5 h-2.5 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)]" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                  {item.name}
+          <div className="mt-5 space-y-2">
+            {pieData.length === 0 ? (
+              <p className="text-sm text-slate-500 dark:text-slate-400">No usage data available yet.</p>
+            ) : (
+              pieData.map((item, index) => (
+                <div
+                  key={`${item.name}-${index}`}
+                  className="surface-card-soft flex items-center justify-between rounded-xl px-4 py-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                    />
+                    <span className="text-sm font-semibold capitalize">{item.name}</span>
+                  </div>
+                  <span className="text-sm font-bold">{item.value}</span>
                 </div>
-                <span className="text-white font-black">{item.value}</span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
-        </div>
-      </div>
+        </article>
+      </section>
 
-      {/* SECONDARY INSIGHTS GRID */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <InsightCard title="Daily Avg Frequency" value={data?.avgPerDay} icon={<TrendingUp size={14} />} />
-        <InsightCard title="Peak Operational Day" value={data?.peakDay?._id || "N/A"} />
-        <InsightCard title="Most Active Tool" value={data?.mostActiveTool || "N/A"} />
-        <InsightCard title="Velocity Growth" value={`${data?.growth || 0}%`} highlight={data?.growth > 0} />
-        <InsightCard title="Efficiency Score" value={`${data?.optimizerUsagePercent || 0}%`} />
-        <InsightCard title="User Tier Status" value={data?.userLevel || "Standard"} highlight />
-      </div>
+      <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <InsightCard title="Peak Day" value={data?.peakDay?._id || "N/A"} />
+        <InsightCard title="Most Used Tool" value={data?.mostActiveTool || "N/A"} />
+        <InsightCard title="Optimizer Usage" value={`${data?.optimizerUsagePercent || 0}%`} />
+        <InsightCard title="User Level" value={data?.userLevel || "Starter"} icon={<TrendingUp size={16} />} />
+      </section>
     </div>
   );
 }
 
-// --- SUB-COMPONENTS ---
-
-function StatCard({ label, value, trend, icon }) {
+function StatCard({ title, value, helper, accent = false }) {
   return (
-    <div className="bg-white border border-slate-200 p-8 rounded-[36px] hover:border-emerald-500/40 hover:shadow-2xl hover:shadow-slate-200/60 transition-all duration-500 group relative overflow-hidden">
-      <div className="flex items-center justify-between mb-8 relative z-10">
-        <div className="p-4 bg-slate-50 rounded-2xl text-slate-400 group-hover:text-emerald-500 group-hover:bg-emerald-50 group-hover:scale-110 transition-all duration-500 border border-slate-100">
-          {icon && typeof icon === 'object' ? Object.assign({}, icon, { props: { ...icon.props, size: 24 } }) : icon}
-        </div>
-        <span className="text-[10px] font-black text-emerald-600 bg-emerald-50/50 px-4 py-1.5 rounded-full uppercase tracking-widest border border-emerald-100/50">
-          {trend}
-        </span>
-      </div>
-      <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.25em] mb-2 relative z-10">{label}</p>
-      <p className="text-4xl font-black text-slate-900 tracking-tight relative z-10">{value?.toLocaleString() || '0'}</p>
-    </div>
+    <article className="dashboard-card rounded-3xl p-6">
+      <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+        {title}
+      </p>
+      <p className={`dashboard-heading mt-3 text-3xl font-extrabold tracking-tight ${accent ? "text-[var(--accent)]" : ""}`}>
+        {value}
+      </p>
+      <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{helper}</p>
+    </article>
   );
 }
 
-function InsightCard({ title, value, highlight, icon }) {
+function InsightCard({ title, value, icon = null }) {
   return (
-    <div className="bg-white border border-slate-200 p-8 rounded-[32px] flex flex-col justify-between hover:border-slate-300 hover:shadow-xl transition-all duration-300 group cursor-default">
-      <div className="flex items-center justify-between mb-8">
-        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">{title}</h4>
-        {icon && <div className="text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity">{icon}</div>}
+    <article className="dashboard-card rounded-3xl p-6">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+          {title}
+        </p>
+        {icon ? <span className="text-[var(--accent)]">{icon}</span> : null}
       </div>
-      <div className="flex items-center justify-between">
-        <p className={`text-2xl font-black tracking-tight ${highlight ? 'text-emerald-600' : 'text-slate-900'}`}>{value}</p>
-        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-all duration-500 border border-slate-100 group-hover:border-emerald-400">
-            <ChevronRight size={18} className="text-slate-300 group-hover:text-white transition-colors" />
-        </div>
-      </div>
-    </div>
+      <p className="dashboard-heading mt-4 text-2xl font-extrabold tracking-tight">{value}</p>
+    </article>
   );
 }
 
 function AnalyticsSkeleton() {
   return (
-    <div className="dashboard-page space-y-8 animate-pulse">
-      <div className="space-y-4 border-b border-slate-200/60 pb-8">
-        <div className="h-6 w-44 rounded-full bg-slate-200" />
-        <div className="h-12 w-80 max-w-full rounded-2xl bg-slate-200" />
-        <div className="h-5 w-72 max-w-full rounded-xl bg-slate-200" />
+    <div className="dashboard-page space-y-6 animate-pulse">
+      <div className="dashboard-card rounded-3xl p-8">
+        <div className="h-3 w-24 rounded bg-slate-200 dark:bg-slate-700" />
+        <div className="mt-4 h-10 w-72 rounded bg-slate-200 dark:bg-slate-700" />
+        <div className="mt-3 h-4 w-80 rounded bg-slate-200 dark:bg-slate-700" />
       </div>
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        {[1, 2, 3].map((id) => (
-          <div key={id} className="h-44 rounded-[36px] bg-slate-100" />
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        {[1, 2, 3, 4].map((id) => (
+          <div key={id} className="dashboard-card h-36 rounded-3xl" />
         ))}
       </div>
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-        <div className="h-[360px] rounded-[40px] bg-slate-100 lg:col-span-8" />
-        <div className="h-[360px] rounded-[40px] bg-slate-100 lg:col-span-4" />
-      </div>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {[1, 2, 3, 4, 5, 6].map((id) => (
-          <div key={id} className="h-40 rounded-[32px] bg-slate-100" />
-        ))}
+      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <div className="dashboard-card h-[380px] rounded-3xl" />
+        <div className="dashboard-card h-[380px] rounded-3xl" />
       </div>
     </div>
   );
