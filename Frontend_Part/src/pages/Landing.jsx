@@ -1,95 +1,140 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
-  ArrowUpRight,
-  Bot,
+  BarChart3,
+  BrainCircuit,
   CheckCircle2,
-  Clock3,
   Database,
-  LineChart,
+  Menu,
+  MessageSquareMore,
   ShieldCheck,
   Sparkles,
   Workflow,
+  X,
   Zap
 } from "lucide-react";
-import { developers } from "../data/developers";
+import AuthModal from "../components/public/AuthModal";
+
+const navItems = [
+  { label: "Home", to: "/" },
+  { label: "Features", to: { pathname: "/", hash: "#features" } },
+  { label: "Pricing", to: { pathname: "/", hash: "#pricing" } },
+  { label: "Contact", to: { pathname: "/", hash: "#contact" } }
+];
 
 const featureCards = [
   {
-    title: "Prompt-to-SQL Workspace",
-    desc: "Turn plain-language requests into schema-aware SQL with a focused interface that is easy to understand.",
-    icon: Bot
+    title: "Natural language to SQL",
+    description: "Turn plain-English requests into clean SQL without making the UI feel technical or overwhelming.",
+    icon: Sparkles
   },
   {
-    title: "Performance Review Tools",
-    desc: "Validate, optimize, and inspect generated SQL before you ship it to production or show it in a demo.",
-    icon: LineChart
+    title: "Schema-aware context",
+    description: "Store tables and relationships so the generated output matches your real database structure.",
+    icon: Database
   },
   {
-    title: "Billing and Account Control",
-    desc: "Keep query history, subscription flow, and account settings in one clean product surface.",
+    title: "Review workflow",
+    description: "Validate, optimize, and inspect queries before moving them into demos, reports, or production.",
+    icon: BarChart3
+  },
+  {
+    title: "SaaS-ready surface",
+    description: "Auth, pricing, billing, and support all live inside one polished product experience.",
     icon: ShieldCheck
   }
 ];
 
-const workflow = [
+const workflowSteps = [
   {
-    title: "Add Schema Context",
-    desc: "Save the relevant table structure so the AI works with your actual columns and relations.",
+    title: "Add your schema",
+    description: "Provide table structure and columns so the app understands your project before generating SQL.",
     icon: Database
   },
   {
-    title: "Describe the Query",
-    desc: "Write a simple prompt that explains the report, analytics requirement, or SQL task you need.",
-    icon: Sparkles
+    title: "Describe the result",
+    description: "Write what you want in plain language instead of hand-crafting complex queries from scratch.",
+    icon: BrainCircuit
   },
   {
-    title: "Review and Use",
-    desc: "Check the generated SQL, refine it if needed, and keep the final output in a workspace that stays easy to debug.",
+    title: "Review and ship",
+    description: "Check the output, make quick edits, and keep the workflow readable for future updates.",
     icon: Workflow
   }
 ];
 
-const faqs = [
+const plans = [
   {
-    q: "Is this only for beginners?",
-    a: "No. The product is easy to understand, but the workflow stays useful for projects that need cleaner architecture and better delivery."
+    name: "Starter",
+    price: "Free",
+    description: "Great for student projects, demos, and learning the platform.",
+    features: ["Query generation", "Saved history", "Basic schema workspace"],
+    action: "Start Free",
+    mode: "register"
   },
   {
-    q: "Can I save schema context before generating SQL?",
-    a: "Yes. The dashboard supports schema management so the output stays closer to your actual database structure."
-  },
-  {
-    q: "Does the platform support billing and plan upgrades?",
-    a: "Yes. Subscription, invoices, and account lifecycle flows are already part of the product."
-  },
-  {
-    q: "Can I start on a free plan first?",
-    a: "Yes. The free flow lets you explore the product before moving to the professional plan."
+    name: "Pro",
+    price: "INR 499",
+    description: "For users who want optimization tools, billing flow, and a stronger SaaS experience.",
+    features: ["Unlimited generation", "Validation and explain tools", "Invoices and plan management"],
+    action: "Upgrade To Pro",
+    mode: "login",
+    highlighted: true
   }
 ];
 
-const quickStats = [
-  { label: "AI Workspace", value: "Schema-Aware" },
-  { label: "Response Style", value: "Debug Friendly" },
-  { label: "Project Fit", value: "MERN Ready" }
+const stats = [
+  { label: "Setup Time", value: "< 5 mins" },
+  { label: "Interface", value: "Modern SaaS" },
+  { label: "Flow", value: "Schema to SQL" }
 ];
 
-const platformSignals = [
-  "Natural-language SQL generation",
-  "Query history and usage flow",
-  "Billing, admin, and support visibility"
+const signals = [
+  "Prompt-based generation",
+  "Schema-aware output",
+  "History and billing",
+  "Support-ready dashboard"
 ];
-
-const developersPreview = developers.slice(0, 3);
 
 export default function Landing() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const authMode =
+    location.pathname === "/login"
+      ? "login"
+      : location.pathname === "/register"
+        ? "register"
+        : null;
+
+  const openAuthModal = (mode) => {
+    setMobileMenuOpen(false);
+    navigate(mode === "register" ? "/register" : "/login");
+  };
+
+  const closeAuthModal = () => {
+    setMobileMenuOpen(false);
+    navigate("/", { replace: true });
+  };
+
+  const switchAuthMode = (mode) => {
+    navigate(mode === "register" ? "/register" : "/login", { replace: true });
+  };
+
   return (
-    <div className="public-page text-slate-950">
-      <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/84 backdrop-blur-xl">
+    <div className="public-page relative overflow-hidden text-slate-950">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute left-[-10%] top-[-12rem] h-[28rem] w-[28rem] rounded-full bg-sky-300/25 blur-3xl" />
+        <div className="absolute right-[-10%] top-20 h-[25rem] w-[25rem] rounded-full bg-cyan-200/30 blur-3xl" />
+        <div className="absolute bottom-[-8rem] left-1/2 h-[22rem] w-[22rem] -translate-x-1/2 rounded-full bg-slate-300/20 blur-3xl" />
+      </div>
+
+      <header className="sticky top-0 z-50 border-b border-white/70 bg-white/75 backdrop-blur-xl">
         <div className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between px-5 sm:px-8">
           <Link to="/" className="inline-flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#112129] text-[#8fe1cf] shadow-[0_18px_30px_-20px_rgba(17,33,41,0.9)]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-sky-300 shadow-[0_20px_40px_-24px_rgba(15,23,42,0.9)]">
               <Database size={18} />
             </span>
             <div>
@@ -97,293 +142,254 @@ export default function Landing() {
                 AI SQL Studio
               </p>
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
-                Intelligent Query Workspace
+                Modern query workspace
               </p>
             </div>
           </Link>
 
           <nav className="hidden items-center gap-8 lg:flex">
-            {[
-              ["Features", "#features"],
-              ["Workflow", "#workflow"],
-              ["Pricing", "#pricing"],
-              ["FAQ", "#faq"]
-            ].map(([label, href]) => (
-              <a
-                key={label}
-                href={href}
-                className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-slate-500 transition-colors hover:text-slate-950"
+            {navItems.map((item) => (
+              <Link
+                key={item.label}
+                to={item.to}
+                className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-slate-500 transition-colors hover:text-slate-950"
               >
-                {label}
-              </a>
+                {item.label}
+              </Link>
             ))}
-            <Link
-              to="/developers"
-              className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-slate-500 transition-colors hover:text-slate-950"
-            >
-              Team
-            </Link>
           </nav>
 
-          <div className="flex items-center gap-3">
-            <Link
-              to="/login"
-              className="hidden rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-700 transition-all hover:border-slate-300 hover:text-slate-950 sm:inline-flex"
+          <div className="hidden items-center gap-3 lg:flex">
+            <button
+              type="button"
+              onClick={() => openAuthModal("login")}
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950"
             >
               Login
-            </Link>
-            <Link
-              to="/register"
-              className="inline-flex items-center gap-2 rounded-full bg-[#112129] px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white shadow-[0_16px_30px_-22px_rgba(17,33,41,0.95)] transition-all hover:-translate-y-0.5 hover:bg-[#0f766e]"
+            </button>
+            <button
+              type="button"
+              onClick={() => openAuthModal("register")}
+              className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white transition-all hover:-translate-y-0.5 hover:bg-sky-600"
             >
-              Get Started
+              Register
               <ArrowRight size={14} />
-            </Link>
+            </button>
           </div>
+
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen((current) => !current)}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 lg:hidden"
+            aria-label="Toggle navigation menu"
+          >
+            {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
         </div>
+
+        {mobileMenuOpen ? (
+          <div className="border-t border-slate-200/80 bg-white/92 px-5 py-4 backdrop-blur-xl lg:hidden">
+            <div className="mx-auto flex w-full max-w-7xl flex-col gap-3">
+              {navItems.map((item) => (
+                <Link
+                  key={item.label}
+                  to={item.to}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="rounded-2xl px-4 py-3 text-sm font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-950"
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <div className="grid gap-3 pt-2 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => openAuthModal("login")}
+                  className="rounded-full border border-slate-200 bg-white px-4 py-3 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-700"
+                >
+                  Login
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openAuthModal("register")}
+                  className="rounded-full bg-slate-950 px-4 py-3 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white"
+                >
+                  Register
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </header>
 
-      <main className="pb-20">
-        <section className="relative overflow-hidden px-5 pb-16 pt-14 sm:px-8 sm:pt-20">
-          <div className="public-grid absolute inset-0 opacity-45" />
-
-          <div className="relative mx-auto grid w-full max-w-7xl gap-10 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
-            <div>
-              <div className="public-pill rounded-full px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.2em]">
+      <main className="relative pb-20">
+        <section className="px-5 pb-16 pt-14 sm:px-8 sm:pb-20 sm:pt-20">
+          <div className="mx-auto grid w-full max-w-7xl gap-12 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
+            <div className="max-w-3xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/85 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.22em] text-sky-700 shadow-[0_15px_40px_-30px_rgba(14,165,233,0.45)]">
                 <Zap size={14} />
-                Clean and professional SQL workflow
+                Clean SaaS experience for AI SQL workflows
               </div>
 
-              <h1 className="display-font mt-7 max-w-4xl text-5xl font-extrabold leading-[0.95] tracking-[-0.04em] text-slate-950 sm:text-6xl lg:text-7xl">
-                Generate SQL in a workspace that feels simple, modern, and ready to ship.
+              <h1 className="display-font mt-7 text-5xl font-extrabold leading-[0.94] tracking-[-0.045em] text-slate-950 sm:text-6xl lg:text-7xl">
+                Generate better SQL with a UI that finally feels modern and professional.
               </h1>
 
               <p className="mt-6 max-w-2xl text-base font-medium leading-8 text-slate-600 sm:text-lg">
-                AI SQL Studio brings query generation, schema context, billing, history,
-                and support into one beginner-friendly SaaS interface that still looks
-                polished enough for demos, internships, and production-style projects.
+                AI SQL Studio combines natural-language query generation, schema context,
+                pricing, and support inside a product experience inspired by real startup
+                websites instead of cluttered student dashboards.
               </p>
 
               <div className="mt-8 flex flex-wrap items-center gap-4">
-                <Link
-                  to="/register"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#112129] px-6 py-4 text-[11px] font-extrabold uppercase tracking-[0.2em] text-white transition-all hover:-translate-y-0.5 hover:bg-[#0f766e]"
+                <button
+                  type="button"
+                  onClick={() => openAuthModal("register")}
+                  className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-4 text-[11px] font-extrabold uppercase tracking-[0.2em] text-white transition-all hover:-translate-y-0.5 hover:bg-sky-600"
                 >
-                  Launch Workspace
+                  Get Started
                   <ArrowRight size={15} />
-                </Link>
+                </button>
                 <Link
-                  to="/login"
+                  to={{ pathname: "/", hash: "#features" }}
                   className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-6 py-4 text-[11px] font-extrabold uppercase tracking-[0.2em] text-slate-700 transition-all hover:border-slate-300 hover:bg-white"
                 >
-                  Open Dashboard
-                </Link>
-                <Link
-                  to="/developers"
-                  className="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.2em] text-slate-600 transition-colors hover:text-slate-950"
-                >
-                  Meet The Team
-                  <ArrowUpRight size={14} />
+                  Learn More
                 </Link>
               </div>
 
               <div className="mt-10 grid gap-4 sm:grid-cols-3">
-                {quickStats.map((stat) => (
-                  <article key={stat.label} className="public-outline-card rounded-[1.6rem] px-5 py-5">
+                {stats.map((item) => (
+                  <article
+                    key={item.label}
+                    className="rounded-[1.7rem] border border-white/80 bg-white/80 px-5 py-5 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.35)] backdrop-blur-xl"
+                  >
                     <p className="display-font text-2xl font-extrabold tracking-tight text-slate-950">
-                      {stat.value}
+                      {item.value}
                     </p>
-                    <p className="mt-2 text-[10px] font-extrabold uppercase tracking-[0.2em] text-slate-500">
-                      {stat.label}
+                    <p className="mt-2 text-[10px] font-extrabold uppercase tracking-[0.22em] text-slate-500">
+                      {item.label}
                     </p>
                   </article>
                 ))}
               </div>
             </div>
 
-            <div>
-              <div className="public-card relative overflow-hidden rounded-[2rem] p-5 sm:p-6">
-                <div className="grid gap-4">
-                  <div className="public-dark-panel rounded-[1.8rem] p-5">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-[#8fe1cf]">
-                          Workspace Preview
-                        </p>
-                        <h2 className="display-font mt-2 text-2xl font-extrabold tracking-tight">
-                          Schema-aware SQL generation
-                        </h2>
-                      </div>
-                      <span className="rounded-full border border-white/10 bg-white/8 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.18em] text-white/80">
-                        Stable
-                      </span>
-                    </div>
+            <div className="overflow-hidden rounded-[2rem] border border-white/80 bg-white/80 p-5 shadow-[0_40px_120px_-55px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:p-6">
+              <div className="rounded-[1.8rem] bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_28%),linear-gradient(155deg,#020617_0%,#0f172a_56%,#111827_100%)] p-5 text-white sm:p-6">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-sky-200">
+                      Workspace Preview
+                    </p>
+                    <h2 className="display-font mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">
+                      Schema-aware SQL generation
+                    </h2>
+                  </div>
+                  <span className="rounded-full border border-white/10 bg-white/8 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.18em] text-white/85">
+                    Live
+                  </span>
+                </div>
 
-                    <div className="mt-5 rounded-[1.4rem] border border-white/8 bg-slate-950/45 p-4">
-                      <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">
-                        Prompt
-                      </p>
-                      <p className="mt-2 text-sm font-medium leading-7 text-slate-100">
-                        Show active subscriptions by plan for the current month.
-                      </p>
-                    </div>
+                <div className="mt-6 rounded-[1.6rem] border border-white/10 bg-white/6 p-4">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-300">
+                    Prompt
+                  </p>
+                  <p className="mt-3 text-sm font-medium leading-7 text-slate-100">
+                    Show monthly active subscriptions grouped by plan with total revenue.
+                  </p>
+                </div>
 
-                    <div className="rounded-[1.4rem] border border-white/8 bg-slate-950/55 p-4">
-                      <div className="mb-3 flex items-center justify-between text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">
-                        <span>Generated SQL</span>
-                        <span>Schema aware</span>
-                      </div>
-                      <pre className="mono-font overflow-x-auto text-[12px] leading-6 text-slate-200">
+                <div className="mt-4 rounded-[1.6rem] border border-white/10 bg-slate-950/40 p-4">
+                  <div className="mb-3 flex items-center justify-between text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">
+                    <span>Generated SQL</span>
+                    <span>Optimized</span>
+                  </div>
+                  <pre className="mono-font overflow-x-auto text-[12px] leading-6 text-slate-200">
 {`SELECT plan,
-       COUNT(user_id) AS active_users
+       COUNT(user_id) AS active_users,
+       SUM(amount) AS monthly_revenue
 FROM subscriptions
 WHERE status = 'active'
-GROUP BY plan
-ORDER BY active_users DESC;`}
-                      </pre>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-[1.2fr_0.8fr]">
-                    <article className="public-outline-card rounded-[1.6rem] p-5">
-                      <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-slate-500">
-                        Product Surface
-                      </p>
-                      <div className="mt-4 grid gap-3">
-                        {platformSignals.map((item) => (
-                          <div
-                            key={item}
-                            className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/84 px-4 py-3"
-                          >
-                            <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#112129] text-[#8fe1cf]">
-                              <CheckCircle2 size={16} />
-                            </span>
-                            <span className="text-sm font-semibold text-slate-700">{item}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </article>
-
-                    <article className="public-outline-card rounded-[1.6rem] p-5">
-                      <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-slate-500">
-                        Why It Works
-                      </p>
-                      <p className="display-font mt-3 text-4xl font-extrabold tracking-tight text-[#0f766e]">
-                        Simple
-                      </p>
-                      <div className="mt-4 space-y-4">
-                        <div>
-                          <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">
-                            Architecture
-                          </p>
-                          <p className="mt-1 text-lg font-bold text-slate-900">Service layer + dashboard</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">
-                            User flow
-                          </p>
-                          <p className="mt-1 text-lg font-bold text-slate-900">Auth, billing, history</p>
-                        </div>
-                      </div>
-                    </article>
-                  </div>
+GROUP BY plan;`}
+                  </pre>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
 
-        <section className="px-5 pb-6 sm:px-8">
-          <div className="mx-auto grid w-full max-w-7xl gap-4 md:grid-cols-3">
-            {[
-              {
-                title: "Professional First Impression",
-                text: "The UI uses calmer colors, clearer contrast, and better spacing so every section feels more reliable."
-              },
-              {
-                title: "Clear Product Story",
-                text: "Users can understand the flow quickly: schema, prompt, result, billing, and support."
-              },
-              {
-                title: "Better Trust Signals",
-                text: "Pricing, workflow steps, and team visibility make the SaaS product feel more complete."
-              }
-            ].map((item) => (
-              <article key={item.title} className="public-outline-card rounded-[1.7rem] p-6">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#0f766e]">
-                  Why it feels better
-                </p>
-                <h3 className="display-font mt-3 text-2xl font-extrabold tracking-tight text-slate-950">
-                  {item.title}
-                </h3>
-                <p className="mt-3 text-sm font-medium leading-7 text-slate-600">{item.text}</p>
-              </article>
-            ))}
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                {signals.map((item) => (
+                  <div
+                    key={item}
+                    className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.35)]"
+                  >
+                    <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-950 text-sky-300">
+                      <CheckCircle2 size={16} />
+                    </span>
+                    <span className="text-sm font-semibold text-slate-700">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
         <section id="features" className="px-5 py-20 sm:px-8">
           <div className="mx-auto w-full max-w-7xl">
             <div className="mb-12 max-w-3xl">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.28em] text-[#0f766e]">
-                Core Features
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.28em] text-sky-700">
+                Features
               </p>
               <h2 className="display-font mt-4 text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">
-                A simple interface that still covers the full SaaS workflow.
+                Better spacing, stronger hierarchy, and cleaner cards across the full journey.
               </h2>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
               {featureCards.map((item) => (
-                <article key={item.title} className="public-card rounded-[1.8rem] p-7">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-[1.2rem] bg-[#112129] text-[#8fe1cf] shadow-[0_18px_30px_-22px_rgba(17,33,41,0.9)]">
+                <article
+                  key={item.title}
+                  className="rounded-[1.9rem] border border-white/80 bg-white/82 p-7 shadow-[0_26px_70px_-50px_rgba(15,23,42,0.35)] transition-all hover:-translate-y-1"
+                >
+                  <div className="flex h-14 w-14 items-center justify-center rounded-[1.2rem] bg-slate-950 text-sky-300">
                     <item.icon size={20} />
                   </div>
                   <h3 className="display-font mt-6 text-2xl font-extrabold tracking-tight text-slate-950">
                     {item.title}
                   </h3>
-                  <p className="mt-3 text-sm font-medium leading-7 text-slate-600">{item.desc}</p>
+                  <p className="mt-3 text-sm font-medium leading-7 text-slate-600">
+                    {item.description}
+                  </p>
                 </article>
               ))}
             </div>
           </div>
         </section>
 
-        <section id="workflow" className="px-5 py-20 sm:px-8">
-          <div className="public-dark-panel mx-auto w-full max-w-7xl rounded-[2.2rem] px-6 py-8 sm:px-10 sm:py-12">
-            <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-              <div className="max-w-2xl">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.28em] text-[#8fe1cf]">
-                  Workflow
-                </p>
-                <h2 className="display-font mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl">
-                  Three simple steps from idea to executable SQL.
-                </h2>
-              </div>
-              <p className="max-w-md text-sm font-medium leading-7 text-slate-300">
-                The structure stays beginner-friendly while still matching what a real SaaS
-                product should look and feel like.
+        <section className="px-5 py-20 sm:px-8">
+          <div className="mx-auto max-w-7xl rounded-[2.2rem] border border-slate-200/70 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.12),transparent_26%),linear-gradient(180deg,rgba(255,255,255,0.92)_0%,rgba(248,250,252,0.9)_100%)] px-6 py-8 shadow-[0_32px_90px_-60px_rgba(15,23,42,0.35)] sm:px-10 sm:py-12">
+            <div className="mb-10 max-w-2xl">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.28em] text-sky-700">
+                Workflow
               </p>
+              <h2 className="display-font mt-4 text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">
+                Three simple steps from idea to executable SQL.
+              </h2>
             </div>
 
             <div className="grid gap-5 md:grid-cols-3">
-              {workflow.map((step, index) => (
-                <article
-                  key={step.title}
-                  className="rounded-[1.8rem] border border-white/8 bg-white/6 p-6"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-white/55">
+              {workflowSteps.map((step, index) => (
+                <article key={step.title} className="rounded-[1.8rem] border border-slate-200 bg-white/90 p-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-slate-400">
                       Step {index + 1}
                     </span>
-                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#8fe1cf] text-[#112129]">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
                       <step.icon size={18} />
                     </span>
                   </div>
-                  <h3 className="display-font mt-6 text-2xl font-extrabold tracking-tight">
+                  <h3 className="display-font mt-6 text-2xl font-extrabold tracking-tight text-slate-950">
                     {step.title}
                   </h3>
-                  <p className="mt-3 text-sm font-medium leading-7 text-slate-300">{step.desc}</p>
+                  <p className="mt-3 text-sm font-medium leading-7 text-slate-600">{step.description}</p>
                 </article>
               ))}
             </div>
@@ -393,228 +399,149 @@ ORDER BY active_users DESC;`}
         <section id="pricing" className="px-5 py-20 sm:px-8">
           <div className="mx-auto w-full max-w-6xl">
             <div className="mb-12 text-center">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.28em] text-[#0f766e]">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.28em] text-sky-700">
                 Pricing
               </p>
               <h2 className="display-font mt-4 text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">
-                Start simple, then unlock the full workspace.
+                Clear plans with room to scale when the project grows.
               </h2>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-              <article className="public-card rounded-[2rem] p-8">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-slate-500">
-                  Starter
-                </p>
-                <p className="display-font mt-4 text-6xl font-extrabold tracking-tight text-slate-950">
-                  Free
-                </p>
-                <p className="mt-2 text-sm font-semibold text-slate-500">
-                  Good for learning the platform and testing the core generation flow.
-                </p>
-                <ul className="mt-8 space-y-3">
-                  {["Core SQL generation", "Saved history", "Simple onboarding"].map((item) => (
-                    <li key={item} className="flex items-center gap-3 text-sm font-semibold text-slate-700">
-                      <CheckCircle2 size={17} className="text-[#0f766e]" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  to="/register"
-                  className="mt-8 inline-flex w-full items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50"
+            <div className="grid gap-6 lg:grid-cols-2">
+              {plans.map((plan) => (
+                <article
+                  key={plan.name}
+                  className={`rounded-[2rem] border p-8 ${
+                    plan.highlighted
+                      ? "border-slate-900/10 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_24%),linear-gradient(160deg,#020617_0%,#0f172a_60%,#111827_100%)] text-white"
+                      : "border-white/80 bg-white/85 text-slate-950"
+                  }`}
                 >
-                  Create Free Account
-                </Link>
-              </article>
-
-              <article className="public-dark-panel relative overflow-hidden rounded-[2rem] p-8">
-                <div>
-                  <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
-                      <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#8fe1cf]">
-                        Professional
+                      <p className={`text-[10px] font-extrabold uppercase tracking-[0.22em] ${plan.highlighted ? "text-sky-200" : "text-slate-500"}`}>
+                        {plan.name}
                       </p>
-                      <p className="display-font mt-4 text-6xl font-extrabold tracking-tight">
-                        INR 499
+                      <p className="display-font mt-4 text-5xl font-extrabold tracking-tight sm:text-6xl">
+                        {plan.price}
                       </p>
                     </div>
-                    <span className="rounded-full border border-white/10 bg-white/8 px-4 py-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-white/80">
-                      Most Complete
-                    </span>
+                    {plan.highlighted ? (
+                      <span className="rounded-full border border-white/10 bg-white/8 px-4 py-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-white/85">
+                        Most Popular
+                      </span>
+                    ) : null}
                   </div>
 
-                  <p className="mt-4 max-w-xl text-sm font-medium leading-7 text-slate-300">
-                    Built for users who want optimization, validation, explain mode, invoices,
-                    and a more complete SaaS workflow.
+                  <p className={`mt-4 text-sm font-medium leading-7 ${plan.highlighted ? "text-slate-300" : "text-slate-600"}`}>
+                    {plan.description}
                   </p>
 
-                  <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                    {[
-                      "Unlimited generation and query review",
-                      "Advanced optimize, validate, and explain tools",
-                      "Invoices and subscription management",
-                      "Priority support and stronger workflow visibility"
-                    ].map((item) => (
-                      <div key={item} className="rounded-[1.4rem] border border-white/8 bg-white/6 px-4 py-4">
-                        <div className="flex items-start gap-3">
-                          <span className="mt-0.5 text-[#8fe1cf]">
-                            <CheckCircle2 size={16} />
-                          </span>
-                          <p className="text-sm font-semibold leading-6 text-slate-100">{item}</p>
-                        </div>
+                  <div className="mt-8 space-y-3">
+                    {plan.features.map((item) => (
+                      <div
+                        key={item}
+                        className={`flex items-center gap-3 rounded-2xl border px-4 py-3 ${
+                          plan.highlighted ? "border-white/10 bg-white/6 text-slate-100" : "border-slate-200 bg-slate-50 text-slate-700"
+                        }`}
+                      >
+                        <CheckCircle2 size={17} className={plan.highlighted ? "text-sky-200" : "text-sky-700"} />
+                        <span className="text-sm font-semibold">{item}</span>
                       </div>
                     ))}
                   </div>
 
-                  <Link
-                    to="/billing"
-                    className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#8fe1cf] px-6 py-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#112129] transition-all hover:-translate-y-0.5 hover:bg-[#a4eadb]"
+                  <button
+                    type="button"
+                    onClick={() => openAuthModal(plan.mode)}
+                    className={`mt-8 inline-flex w-full items-center justify-center rounded-full px-5 py-4 text-[11px] font-extrabold uppercase tracking-[0.2em] transition-all ${
+                      plan.highlighted
+                        ? "bg-white text-slate-950 hover:-translate-y-0.5 hover:bg-sky-50"
+                        : "border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                    }`}
                   >
-                    Upgrade To Pro
-                    <ArrowRight size={15} />
-                  </Link>
-                </div>
-              </article>
+                    {plan.action}
+                  </button>
+                </article>
+              ))}
             </div>
           </div>
         </section>
 
-        <section id="faq" className="px-5 py-20 sm:px-8">
-          <div className="mx-auto w-full max-w-6xl">
-            <div className="mb-10 max-w-3xl">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.28em] text-[#0f766e]">
-                FAQ
+        <section id="contact" className="px-5 py-20 sm:px-8">
+          <div className="mx-auto grid w-full max-w-6xl gap-6 rounded-[2.2rem] border border-white/80 bg-white/84 p-6 shadow-[0_32px_90px_-60px_rgba(15,23,42,0.4)] backdrop-blur-xl sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div className="max-w-2xl">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-sky-700">
+                Contact
               </p>
               <h2 className="display-font mt-4 text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">
-                Common questions before someone signs up.
+                Need a sharper first impression for demos, reviews, or internships?
               </h2>
-            </div>
+              <p className="mt-4 text-base font-medium leading-8 text-slate-600">
+                Start with the polished auth flow, show the pricing surface, and present the whole product like a real startup build.
+              </p>
 
-            <div className="grid gap-5 md:grid-cols-2">
-              {faqs.map((item) => (
-                <article key={item.q} className="public-card rounded-[1.6rem] p-6">
-                  <h3 className="display-font text-2xl font-extrabold tracking-tight text-slate-950">
-                    {item.q}
-                  </h3>
-                  <p className="mt-3 text-sm font-medium leading-7 text-slate-600">{item.a}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="px-5 py-20 sm:px-8">
-          <div className="mx-auto w-full max-w-7xl">
-            <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-              <div className="max-w-3xl">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.28em] text-[#0f766e]">
-                  Team
-                </p>
-                <h2 className="display-font mt-4 text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">
-                  The people behind the product experience.
-                </h2>
+              <div className="mt-6 flex flex-wrap items-center gap-3 text-sm font-semibold text-slate-600">
+                <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2">
+                  <MessageSquareMore size={15} className="text-sky-700" />
+                  Student-friendly code
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2">
+                  <ShieldCheck size={15} className="text-sky-700" />
+                  Clean auth experience
+                </span>
               </div>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+              <button
+                type="button"
+                onClick={() => openAuthModal("register")}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-6 py-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white transition-all hover:-translate-y-0.5 hover:bg-sky-600"
+              >
+                Get Started
+                <ArrowRight size={14} />
+              </button>
               <Link
                 to="/developers"
-                className="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-600 transition-colors hover:text-slate-950"
+                className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50"
               >
-                Full Team Page
-                <ArrowUpRight size={14} />
+                Meet The Team
               </Link>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-3">
-              {developersPreview.map((dev) => (
-                <article key={dev.name} className="public-card overflow-hidden rounded-[1.8rem]">
-                  <div className="bg-slate-100 p-4">
-                    <img
-                      src={dev.image}
-                      alt={dev.name}
-                      className="h-64 w-full rounded-[1.35rem] object-cover object-top"
-                    />
-                  </div>
-                  <div className="p-6">
-                    <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#0f766e]">
-                      {dev.role}
-                    </p>
-                    <h3 className="display-font mt-3 text-2xl font-extrabold tracking-tight text-slate-950">
-                      {dev.name}
-                    </h3>
-                    <p className="mt-3 text-sm font-medium leading-7 text-slate-600">
-                      {dev.shortBio}
-                    </p>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="px-5 pb-20 sm:px-8">
-          <div className="public-dark-panel mx-auto w-full max-w-6xl rounded-[2.2rem] px-6 py-8 sm:px-10 sm:py-12">
-            <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
-              <div>
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-[#8fe1cf]">
-                  Ready To Build
-                </p>
-                <h2 className="display-font mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl">
-                  Give your project a cleaner, more professional frontend.
-                </h2>
-                <p className="mt-4 max-w-2xl text-sm font-medium leading-7 text-slate-300 sm:text-base">
-                  Start with the free workspace, move into advanced tools when needed,
-                  and keep the whole product looking polished from landing page to dashboard.
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-                <Link
-                  to="/register"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-[#8fe1cf] px-6 py-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#112129] transition-all hover:-translate-y-0.5 hover:bg-[#a4eadb]"
-                >
-                  Start Free
-                  <ArrowRight size={14} />
-                </Link>
-                <Link
-                  to="/login"
-                  className="inline-flex items-center justify-center rounded-full border border-white/12 bg-white/8 px-6 py-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white transition-all hover:bg-white/14"
-                >
-                  Login
-                </Link>
-              </div>
             </div>
           </div>
         </section>
       </main>
 
-      <footer className="border-t border-slate-200 bg-white/76 px-5 py-8 backdrop-blur-xl sm:px-8">
+      <footer className="border-t border-white/70 bg-white/72 px-5 py-8 backdrop-blur-xl sm:px-8">
         <div className="mx-auto flex w-full max-w-7xl flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-slate-500">
               AI SQL Studio
             </p>
             <p className="mt-1 text-sm font-semibold text-slate-600">
-              Designed to feel clean, capable, and deployment-ready.
+              Modern SaaS UI for schema-aware SQL generation.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
-            <Link to="/login" className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500 hover:text-slate-950">
-              Login
-            </Link>
-            <Link to="/register" className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500 hover:text-slate-950">
-              Register
-            </Link>
-            <Link to="/developers" className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500 hover:text-slate-950">
-              Developers
-            </Link>
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#0f766e]/14 bg-white/75 px-4 py-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#0f766e]">
-              <Clock3 size={12} />
-              Workspace Online
+            {navItems.map((item) => (
+              <Link
+                key={item.label}
+                to={item.to}
+                className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500 transition-colors hover:text-slate-950"
+              >
+                {item.label}
+              </Link>
+            ))}
+            <span className="text-sm font-semibold text-slate-400">
+              Copyright 2026 AI SQL Studio
             </span>
           </div>
         </div>
       </footer>
+
+      <AuthModal mode={authMode} onClose={closeAuthModal} onSwitchMode={switchAuthMode} />
     </div>
   );
 }

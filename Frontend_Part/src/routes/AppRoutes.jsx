@@ -2,8 +2,6 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import Landing from "../pages/Landing";
 import Developers from "../pages/Developers";
-import Login from "../pages/Login";
-import Register from "../pages/Register";
 import OAuthSuccess from "../pages/OAuthSuccess";
 import ForgotPassword from "../pages/ForgotPassword";
 import ResetWithOTP from "../pages/ResetWithOTP";
@@ -73,7 +71,7 @@ export default function AppRoutes() {
         path="/login"
         element={
           <PublicRoute>
-            <Login />
+            <Landing />
           </PublicRoute>
         }
       />
@@ -82,7 +80,7 @@ export default function AppRoutes() {
         path="/register"
         element={
           <PublicRoute>
-            <Register />
+            <Landing />
           </PublicRoute>
         }
       />
