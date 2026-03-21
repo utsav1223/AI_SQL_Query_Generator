@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, Eye, EyeOff, Lock, Mail, ShieldCheck, Sparkles, User } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Lock, Mail, Sparkles, User } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { useAuth } from "../../hooks/useAuth";
 import { authService } from "../../services/authService";
@@ -110,13 +110,13 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
     setRegisterErrors((current) => ({ ...current, [name]: "", server: "" }));
   };
 
-  const changeMode = (nextMode) => {
+  const changeMode = (nextMode, routeState) => {
     setLoginErrors({});
     setRegisterErrors({});
     if (nextMode === "register") {
       setMessage("");
     }
-    onSwitchMode(nextMode);
+    onSwitchMode(nextMode, routeState);
   };
 
   const validateLogin = () => {
@@ -189,62 +189,50 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
     }
   };
 
-  const title =
+  const title = mode === "register" ? "Create your account" : "Welcome back";
+  const description =
     mode === "register"
-      ? "Create your workspace and start shipping cleaner SQL flows."
-      : "Access your dashboard with a faster, cleaner auth flow.";
+      ? "Start with a clean and compact onboarding flow."
+      : "Log in to continue to your workspace.";
 
   return (
-    <Modal isOpen={Boolean(mode)} onClose={onClose}>
-      <div className="relative overflow-hidden bg-slate-950 px-6 pb-9 pt-8 text-white sm:px-8">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.28),transparent_34%),radial-gradient(circle_at_top_right,rgba(34,211,238,0.16),transparent_24%),linear-gradient(160deg,#020617_0%,#0f172a_45%,#111827_100%)]" />
-        <div className="relative">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/8 px-3 py-2 text-[11px] font-extrabold uppercase tracking-[0.22em] text-sky-100">
-            <Sparkles size={14} />
+    <Modal isOpen={Boolean(mode)} onClose={onClose} className="max-w-lg">
+      <div className="border-b border-slate-200 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.12),transparent_34%),linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-6 py-5 sm:px-7">
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <div className="inline-flex items-center gap-2 rounded-full border border-sky-100 bg-sky-50 px-3 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-sky-700">
+            <Sparkles size={13} />
             AI SQL Studio
           </div>
-
-          <h2 className="display-font mt-6 max-w-xl text-3xl font-extrabold leading-tight tracking-[-0.03em] sm:text-4xl">
-            {title}
-          </h2>
-
-          <div className="mt-6 grid gap-3 text-sm sm:grid-cols-2">
-            {["Schema-aware SQL generation", "Billing, history, and support ready"].map((item) => (
-              <div
-                key={item}
-                className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/6 px-4 py-3 text-slate-100"
+          <div className="inline-flex rounded-full border border-slate-200 bg-slate-100 p-1">
+            {[
+              ["login", "Login"],
+              ["register", "Register"]
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => changeMode(value)}
+                className={`rounded-full px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] transition-all ${
+                  mode === value
+                    ? "bg-white text-slate-950 shadow-[0_10px_30px_-18px_rgba(15,23,42,0.4)]"
+                    : "text-slate-500 hover:text-slate-900"
+                }`}
               >
-                <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-sky-400/15 text-sky-200">
-                  <ShieldCheck size={16} />
-                </span>
-                <span className="font-semibold">{item}</span>
-              </div>
+                {label}
+              </button>
             ))}
           </div>
         </div>
+
+        <div className="space-y-2">
+          <h2 className="display-font text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl">
+            {title}
+          </h2>
+          <p className="text-sm font-medium leading-6 text-slate-500">{description}</p>
+        </div>
       </div>
 
-      <div className="bg-[linear-gradient(180deg,rgba(248,250,252,0.96)_0%,rgba(255,255,255,0.98)_100%)] px-6 py-6 sm:px-8 sm:py-8">
-        <div className="mb-6 inline-flex rounded-full border border-slate-200 bg-slate-100 p-1">
-          {[
-            ["login", "Login"],
-            ["register", "Register"]
-          ].map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => changeMode(value)}
-              className={`rounded-full px-4 py-2 text-xs font-extrabold uppercase tracking-[0.2em] transition-all ${
-                mode === value
-                  ? "bg-white text-slate-950 shadow-[0_10px_30px_-18px_rgba(15,23,42,0.4)]"
-                  : "text-slate-500 hover:text-slate-900"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
+      <div className="bg-[linear-gradient(180deg,rgba(248,250,252,0.96)_0%,rgba(255,255,255,0.98)_100%)] px-6 py-5 sm:px-7 sm:py-6">
         {message && mode === "login" ? (
           <div className="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
             {message}
@@ -255,9 +243,9 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
           {mode === "login" ? (
             <motion.div key="login" variants={panelMotion} initial="hidden" animate="visible" exit="exit">
               <div className="space-y-2">
-                <h3 className="display-font text-3xl font-extrabold tracking-tight text-slate-950">Welcome back</h3>
+                <h3 className="display-font text-2xl font-extrabold tracking-tight text-slate-950">Sign in</h3>
                 <p className="text-sm font-medium leading-7 text-slate-500">
-                  Log in to continue working inside your SQL dashboard.
+                  Continue to your SQL dashboard.
                 </p>
               </div>
 
@@ -267,7 +255,7 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
                 </div>
               ) : null}
 
-              <form onSubmit={submitLogin} className="mt-6 space-y-5">
+              <form onSubmit={submitLogin} className="mt-5 space-y-4">
                 <Field
                   label="Email"
                   name="email"
@@ -303,43 +291,44 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
                 />
 
                 <div className="flex items-center justify-between gap-4">
-                  <p className="text-xs font-semibold text-slate-500">Soft validation, clear focus states, zero clutter.</p>
-                  <Link
-                    to="/forgot-password"
+                  <p className="text-xs font-semibold text-slate-500">Small, fast, and focused.</p>
+                  <button
+                    type="button"
+                    onClick={() => changeMode("forgot", { email: loginForm.email.trim() })}
                     className="text-xs font-bold uppercase tracking-[0.16em] text-sky-600 transition-colors hover:text-sky-700"
                   >
                     Forgot Password
-                  </Link>
+                  </button>
                 </div>
 
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-4 text-xs font-black uppercase tracking-[0.22em] text-white transition-all hover:-translate-y-0.5 hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] text-white transition-all hover:-translate-y-0.5 hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting ? "Logging in..." : "Login"}
-                  {!isSubmitting ? <ArrowRight size={16} /> : null}
+                  {!isSubmitting ? <ArrowRight size={15} /> : null}
                 </button>
               </form>
 
-              <div className="my-6 flex items-center gap-3">
+              <div className="my-5 flex items-center gap-3">
                 <div className="h-px flex-1 bg-slate-200" />
                 <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">or</span>
                 <div className="h-px flex-1 bg-slate-200" />
               </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  window.location.href = GOOGLE_AUTH_URL;
-                }}
-                className="inline-flex w-full items-center justify-center gap-3 rounded-full border border-slate-200 bg-white px-5 py-3.5 text-sm font-bold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50"
-              >
-                <FcGoogle className="h-5 w-5" />
-                Continue with Google
-              </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.location.href = GOOGLE_AUTH_URL;
+                  }}
+                  className="inline-flex w-full items-center justify-center gap-3 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50"
+                >
+                  <FcGoogle className="h-5 w-5" />
+                  Continue with Google
+                </button>
 
-              <p className="mt-7 text-center text-sm font-semibold text-slate-500">
+              <p className="mt-5 text-center text-sm font-semibold text-slate-500">
                 Don&apos;t have an account?{" "}
                 <button
                   type="button"
@@ -353,9 +342,9 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
           ) : (
             <motion.div key="register" variants={panelMotion} initial="hidden" animate="visible" exit="exit">
               <div className="space-y-2">
-                <h3 className="display-font text-3xl font-extrabold tracking-tight text-slate-950">Create account</h3>
+                <h3 className="display-font text-2xl font-extrabold tracking-tight text-slate-950">Register</h3>
                 <p className="text-sm font-medium leading-7 text-slate-500">
-                  A simple onboarding flow that still looks product-ready.
+                  Clean onboarding without another page.
                 </p>
               </div>
 
@@ -365,7 +354,7 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
                 </div>
               ) : null}
 
-              <form onSubmit={submitRegister} className="mt-6 space-y-5">
+              <form onSubmit={submitRegister} className="mt-5 space-y-4">
                 <Field
                   label="Name"
                   name="name"
@@ -437,14 +426,14 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-4 text-xs font-black uppercase tracking-[0.22em] text-white transition-all hover:-translate-y-0.5 hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] text-white transition-all hover:-translate-y-0.5 hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting ? "Creating..." : "Register"}
-                  {!isSubmitting ? <ArrowRight size={16} /> : null}
+                  {!isSubmitting ? <ArrowRight size={15} /> : null}
                 </button>
               </form>
 
-              <p className="mt-7 text-center text-sm font-semibold text-slate-500">
+              <p className="mt-5 text-center text-sm font-semibold text-slate-500">
                 Already have an account?{" "}
                 <button
                   type="button"

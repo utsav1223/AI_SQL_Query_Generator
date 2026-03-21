@@ -3,8 +3,6 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import Landing from "../pages/Landing";
 import Developers from "../pages/Developers";
 import OAuthSuccess from "../pages/OAuthSuccess";
-import ForgotPassword from "../pages/ForgotPassword";
-import ResetWithOTP from "../pages/ResetWithOTP";
 import Billing from "../pages/Billing";
 import BillingSuccess from "../pages/BillingSuccess";
 import ProtectedRoute from "../components/ProtectedRoute";
@@ -33,7 +31,14 @@ export default function AppRoutes() {
       <Route path="/" element={<Landing />} />
       <Route path="/developers" element={<Developers />} />
       <Route path="/oauth-success" element={<OAuthSuccess />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route
+        path="/forgot-password"
+        element={
+          <PublicRoute>
+            <Landing />
+          </PublicRoute>
+        }
+      />
       <Route
         path="/billing"
         element={
@@ -88,9 +93,11 @@ export default function AppRoutes() {
       <Route
         path="/reset-with-otp"
         element={
-          <ResetRouteGuard>
-            <ResetWithOTP />
-          </ResetRouteGuard>
+          <PublicRoute>
+            <ResetRouteGuard>
+              <Landing />
+            </ResetRouteGuard>
+          </PublicRoute>
         }
       />
 

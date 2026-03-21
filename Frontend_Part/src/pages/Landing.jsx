@@ -15,12 +15,15 @@ import {
   Zap
 } from "lucide-react";
 import AuthModal from "../components/public/AuthModal";
+import ForgotPasswordModal from "../components/public/ForgotPasswordModal";
+import ResetPasswordModal from "../components/public/ResetPasswordModal";
+import { developers } from "../data/developers";
 
 const navItems = [
-  { label: "Home", to: "/" },
-  { label: "Features", to: { pathname: "/", hash: "#features" } },
-  { label: "Pricing", to: { pathname: "/", hash: "#pricing" } },
-  { label: "Contact", to: { pathname: "/", hash: "#contact" } }
+  { label: "Home", sectionId: null },
+  { label: "Features", sectionId: "features" },
+  { label: "Pricing", sectionId: "pricing" },
+  { label: "Contact", sectionId: "contact" }
 ];
 
 const featureCards = [
@@ -97,6 +100,8 @@ const signals = [
   "Support-ready dashboard"
 ];
 
+const developersPreview = developers.slice(0, 3);
+
 export default function Landing() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -107,11 +112,25 @@ export default function Landing() {
       ? "login"
       : location.pathname === "/register"
         ? "register"
-        : null;
+        : location.pathname === "/forgot-password"
+          ? "forgot"
+          : location.pathname === "/reset-with-otp"
+            ? "reset"
+            : null;
+
+  const recoveryEmail = location.state?.email || "";
 
   const openAuthModal = (mode) => {
     setMobileMenuOpen(false);
-    navigate(mode === "register" ? "/register" : "/login");
+    navigate(
+      mode === "register"
+        ? "/register"
+        : mode === "forgot"
+          ? "/forgot-password"
+          : mode === "reset"
+            ? "/reset-with-otp"
+            : "/login"
+    );
   };
 
   const closeAuthModal = () => {
@@ -119,8 +138,41 @@ export default function Landing() {
     navigate("/", { replace: true });
   };
 
-  const switchAuthMode = (mode) => {
-    navigate(mode === "register" ? "/register" : "/login", { replace: true });
+  const scrollToSection = (sectionId) => {
+    const performScroll = () => {
+      if (!sectionId) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    };
+
+    setMobileMenuOpen(false);
+
+    if (location.pathname !== "/" || authMode) {
+      navigate("/", { replace: Boolean(authMode) });
+      window.setTimeout(performScroll, 80);
+      return;
+    }
+
+    performScroll();
+  };
+
+  const switchAuthMode = (mode, routeState) => {
+    const nextPath =
+      mode === "register"
+        ? "/register"
+        : mode === "forgot"
+          ? "/forgot-password"
+          : mode === "reset"
+            ? "/reset-with-otp"
+            : "/login";
+
+    navigate(nextPath, { replace: true, state: routeState });
   };
 
   return (
@@ -149,13 +201,14 @@ export default function Landing() {
 
           <nav className="hidden items-center gap-8 lg:flex">
             {navItems.map((item) => (
-              <Link
+              <button
                 key={item.label}
-                to={item.to}
+                type="button"
+                onClick={() => scrollToSection(item.sectionId)}
                 className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-slate-500 transition-colors hover:text-slate-950"
               >
                 {item.label}
-              </Link>
+              </button>
             ))}
           </nav>
 
@@ -191,14 +244,14 @@ export default function Landing() {
           <div className="border-t border-slate-200/80 bg-white/92 px-5 py-4 backdrop-blur-xl lg:hidden">
             <div className="mx-auto flex w-full max-w-7xl flex-col gap-3">
               {navItems.map((item) => (
-                <Link
+                <button
                   key={item.label}
-                  to={item.to}
-                  onClick={() => setMobileMenuOpen(false)}
+                  type="button"
+                  onClick={() => scrollToSection(item.sectionId)}
                   className="rounded-2xl px-4 py-3 text-sm font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-950"
                 >
                   {item.label}
-                </Link>
+                </button>
               ))}
               <div className="grid gap-3 pt-2 sm:grid-cols-2">
                 <button
@@ -249,12 +302,13 @@ export default function Landing() {
                   Get Started
                   <ArrowRight size={15} />
                 </button>
-                <Link
-                  to={{ pathname: "/", hash: "#features" }}
+                <button
+                  type="button"
+                  onClick={() => scrollToSection("features")}
                   className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-6 py-4 text-[11px] font-extrabold uppercase tracking-[0.2em] text-slate-700 transition-all hover:border-slate-300 hover:bg-white"
                 >
                   Learn More
-                </Link>
+                </button>
               </div>
 
               <div className="mt-10 grid gap-4 sm:grid-cols-3">
@@ -468,6 +522,65 @@ GROUP BY plan;`}
           </div>
         </section>
 
+        <section id="about" className="px-5 py-20 sm:px-8">
+          <div className="mx-auto w-full max-w-7xl">
+            <div className="mb-12 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+              <div className="max-w-3xl">
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.28em] text-sky-700">
+                  About Us
+                </p>
+                <h2 className="display-font mt-4 text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">
+                  The team building the product behind the landing page.
+                </h2>
+                <p className="mt-4 text-base font-medium leading-8 text-slate-600">
+                  These are the developers shaping the frontend, backend, and AI workflow
+                  inside AI SQL Studio.
+                </p>
+              </div>
+
+              <Link
+                to="/developers"
+                className="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-600 transition-colors hover:text-slate-950"
+              >
+                Full Team Page
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              {developersPreview.map((dev) => (
+                <article
+                  key={dev.name}
+                  className="overflow-hidden rounded-[1.9rem] border border-white/80 bg-white/84 shadow-[0_26px_70px_-50px_rgba(15,23,42,0.35)]"
+                >
+                  <div className="p-4">
+                    <div className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-100">
+                      <img
+                        src={dev.image}
+                        alt={dev.name}
+                        loading="lazy"
+                        className="aspect-[4/5] w-full bg-slate-100 object-contain object-center"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="px-6 pb-6">
+                    <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-sky-700">
+                      {dev.role}
+                    </p>
+                    <h3 className="display-font mt-3 text-2xl font-extrabold tracking-tight text-slate-950">
+                      {dev.name}
+                    </h3>
+                    <p className="mt-3 text-sm font-medium leading-7 text-slate-600">
+                      {dev.shortBio}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section id="contact" className="px-5 py-20 sm:px-8">
           <div className="mx-auto grid w-full max-w-6xl gap-6 rounded-[2.2rem] border border-white/80 bg-white/84 p-6 shadow-[0_32px_90px_-60px_rgba(15,23,42,0.4)] backdrop-blur-xl sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center">
             <div className="max-w-2xl">
@@ -526,13 +639,14 @@ GROUP BY plan;`}
 
           <div className="flex flex-wrap items-center gap-4">
             {navItems.map((item) => (
-              <Link
+              <button
                 key={item.label}
-                to={item.to}
+                type="button"
+                onClick={() => scrollToSection(item.sectionId)}
                 className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500 transition-colors hover:text-slate-950"
               >
                 {item.label}
-              </Link>
+              </button>
             ))}
             <span className="text-sm font-semibold text-slate-400">
               Copyright 2026 AI SQL Studio
@@ -541,7 +655,27 @@ GROUP BY plan;`}
         </div>
       </footer>
 
-      <AuthModal mode={authMode} onClose={closeAuthModal} onSwitchMode={switchAuthMode} />
+      {authMode === "login" || authMode === "register" ? (
+        <AuthModal mode={authMode} onClose={closeAuthModal} onSwitchMode={switchAuthMode} />
+      ) : null}
+
+      {authMode === "forgot" ? (
+        <ForgotPasswordModal
+          isOpen
+          onClose={closeAuthModal}
+          onSwitchMode={switchAuthMode}
+          recoveryEmail={recoveryEmail}
+        />
+      ) : null}
+
+      {authMode === "reset" ? (
+        <ResetPasswordModal
+          isOpen
+          onClose={closeAuthModal}
+          onSwitchMode={switchAuthMode}
+          recoveryEmail={recoveryEmail}
+        />
+      ) : null}
     </div>
   );
 }

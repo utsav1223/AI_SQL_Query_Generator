@@ -24,7 +24,7 @@ const panel = {
   }
 };
 
-export default function Modal({ isOpen, onClose, children }) {
+export default function Modal({ isOpen, onClose, children, className = "" }) {
   useEffect(() => {
     if (!isOpen) {
       return undefined;
@@ -66,7 +66,7 @@ export default function Modal({ isOpen, onClose, children }) {
           <motion.div
             role="dialog"
             aria-modal="true"
-            className="relative w-full max-w-2xl overflow-hidden rounded-[2rem] border border-white/15 bg-white/92 shadow-[0_40px_120px_-40px_rgba(15,23,42,0.45)] backdrop-blur-2xl"
+            className={`relative w-full overflow-hidden rounded-[2rem] border border-white/15 bg-white/92 shadow-[0_40px_120px_-40px_rgba(15,23,42,0.45)] backdrop-blur-2xl ${className}`}
             variants={panel}
             onClick={(event) => event.stopPropagation()}
           >

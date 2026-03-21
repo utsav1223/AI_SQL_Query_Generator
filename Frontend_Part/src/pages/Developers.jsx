@@ -49,7 +49,8 @@ export default function Developers() {
                   <img
                     src={dev.image}
                     alt={dev.name}
-                    className="h-80 w-full rounded-[1.5rem] object-cover object-top"
+                    loading="lazy"
+                    className="h-80 w-full rounded-[1.5rem] bg-slate-100 object-contain object-center"
                   />
                 </div>
 

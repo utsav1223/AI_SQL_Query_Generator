@@ -16,14 +16,28 @@ const feedbackRoutes = require("./routes/feedback.routes");
 require("./utils/subscription.cron");
 
 const app = express();
-const allowedOrigin = process.env.CORS_ORIGIN || "http://localhost:5173";
+const defaultOrigins = ["http://localhost:5173", "http://127.0.0.1:5173"];
+const configuredOrigins = [
+  process.env.CORS_ORIGIN,
+  process.env.FRONTEND_URL
+]
+  .flatMap((value) => (value ? value.split(",") : []))
+  .map((value) => value.trim())
+  .filter(Boolean);
+const allowedOrigins = [...new Set([...defaultOrigins, ...configuredOrigins])];
 
 app.set("trust proxy", 1);
 
 app.use(helmet());
 app.use(
   cors({
-    origin: allowedOrigin,
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`Origin ${origin} is not allowed by CORS`));
+    },
     credentials: true
   })
 );
