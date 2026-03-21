@@ -47,7 +47,7 @@ export default function Billing() {
   };
 
   return (
-    <div className="min-h-screen px-5 py-6 sm:px-8 sm:py-8">
+    <div className="public-page px-5 py-6 sm:px-8 sm:py-8">
       <div className="mx-auto w-full max-w-6xl">
         <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="inline-flex items-center gap-3">

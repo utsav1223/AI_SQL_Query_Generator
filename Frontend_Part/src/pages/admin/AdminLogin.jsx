@@ -122,7 +122,7 @@ export default function AdminLogin() {
           </div>
         </section>
 
-        <section className={`public-card rounded-[2.2rem] border p-6 shadow-[0_28px_80px_-44px_rgba(15,23,42,0.5)] sm:p-8 ${cardClass}`}>
+        <section className={`rounded-[2.2rem] border p-6 shadow-[0_28px_80px_-44px_rgba(15,23,42,0.5)] sm:p-8 ${cardClass}`}>
           <div className="mb-8">
             <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-[#0f766e] dark:text-[#8fe1cf]">
               Restricted Access

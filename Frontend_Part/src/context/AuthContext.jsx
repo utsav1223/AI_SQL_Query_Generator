@@ -27,6 +27,23 @@ const clearUserSession = () => {
   removeItems(STORAGE_KEYS.token, STORAGE_KEYS.user);
 };
 
+const syncCurrentUserSession = async (token, setUser, fallbackUser = null) => {
+  try {
+    const freshUser = normalizeUser(await authService.getCurrentUser());
+    saveUserSession(token, freshUser);
+    setUser(freshUser);
+    return freshUser;
+  } catch (error) {
+    if (fallbackUser) {
+      return fallbackUser;
+    }
+
+    clearUserSession();
+    setUser(null);
+    throw error;
+  }
+};
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => normalizeUser(readJson(STORAGE_KEYS.user)));
   const [loading, setLoading] = useState(true);
@@ -41,9 +58,7 @@ export function AuthProvider({ children }) {
       }
 
       try {
-        const freshUser = normalizeUser(await authService.getCurrentUser());
-        saveUserSession(token, freshUser);
-        setUser(freshUser);
+        await syncCurrentUserSession(token, setUser);
       } catch {
         clearUserSession();
         setUser(null);
@@ -65,20 +80,18 @@ export function AuthProvider({ children }) {
     if (incomingUser) {
       saveUserSession(data.token, incomingUser);
       setUser(incomingUser);
-    } else {
-      localStorage.setItem(STORAGE_KEYS.token, data.token);
+      setLoading(false);
+
+      syncCurrentUserSession(data.token, setUser, incomingUser).catch(() => {});
+      return incomingUser;
     }
 
-    try {
-      const freshUser = normalizeUser(await authService.getCurrentUser());
-      saveUserSession(data.token, freshUser);
-      setUser(freshUser);
-      return freshUser;
-    } catch {
-      if (incomingUser) {
-        return incomingUser;
-      }
+    localStorage.setItem(STORAGE_KEYS.token, data.token);
+    setLoading(false);
 
+    try {
+      return await syncCurrentUserSession(data.token, setUser);
+    } catch {
       throw new Error("Failed to load account details");
     }
   };

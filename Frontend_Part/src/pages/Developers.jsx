@@ -4,12 +4,12 @@ import { developers } from "../data/developers";
 
 export default function Developers() {
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-40 border-b border-slate-900/6 bg-white/72 backdrop-blur-2xl">
+    <div className="public-page">
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/82 backdrop-blur-xl">
         <div className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between px-5 sm:px-8">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 rounded-full border border-slate-900/8 bg-white/70 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-700 transition-all hover:border-slate-900/18 hover:text-slate-950"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-700 transition-all hover:border-slate-300 hover:text-slate-950"
           >
             <ArrowLeft size={14} />
             Back Home
@@ -44,17 +44,13 @@ export default function Developers() {
 
           <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {developers.map((dev) => (
-              <article
-                key={dev.name}
-                className="public-card overflow-hidden rounded-[1.9rem]"
-              >
-                <div className="relative h-80 overflow-hidden bg-slate-200">
+              <article key={dev.name} className="public-card overflow-hidden rounded-[1.9rem]">
+                <div className="bg-slate-100 p-4">
                   <img
                     src={dev.image}
                     alt={dev.name}
-                    className="h-full w-full object-cover object-top transition-transform duration-700 hover:scale-105"
+                    className="h-80 w-full rounded-[1.5rem] object-cover object-top"
                   />
-                  <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-slate-950/55 to-transparent" />
                 </div>
 
                 <div className="p-6">
@@ -67,7 +63,7 @@ export default function Developers() {
                         {dev.name}
                       </h2>
                     </div>
-                    <span className="rounded-full border border-slate-900/8 bg-white/70 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">
+                    <span className="rounded-full border border-slate-200 bg-white/90 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">
                       Builder
                     </span>
                   </div>
@@ -77,7 +73,7 @@ export default function Developers() {
                   <div className="mt-6 flex flex-wrap items-center gap-2">
                     <a
                       href={`mailto:${dev.email}`}
-                      className="inline-flex items-center gap-2 rounded-full border border-slate-900/8 bg-white px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-600 transition-all hover:border-slate-900/16 hover:text-slate-950"
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-600 transition-all hover:border-slate-300 hover:text-slate-950"
                     >
                       <Mail size={12} />
                       Mail
@@ -86,7 +82,7 @@ export default function Developers() {
                       href={dev.github}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-2 rounded-full border border-slate-900/8 bg-white px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-600 transition-all hover:border-slate-900/16 hover:text-slate-950"
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-600 transition-all hover:border-slate-300 hover:text-slate-950"
                     >
                       <Github size={12} />
                       GitHub
@@ -95,7 +91,7 @@ export default function Developers() {
                       href={dev.linkedin}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-2 rounded-full border border-slate-900/8 bg-white px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-600 transition-all hover:border-slate-900/16 hover:text-slate-950"
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-600 transition-all hover:border-slate-300 hover:text-slate-950"
                     >
                       <Linkedin size={12} />
                       LinkedIn

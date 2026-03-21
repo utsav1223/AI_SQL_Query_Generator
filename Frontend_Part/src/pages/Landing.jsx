@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   Clock3,
   Database,
-  Layers3,
   LineChart,
   ShieldCheck,
   Sparkles,
@@ -18,17 +17,17 @@ import { developers } from "../data/developers";
 const featureCards = [
   {
     title: "Prompt-to-SQL Workspace",
-    desc: "Turn plain-language requests into schema-aware SQL with a focused interface built for real project work.",
+    desc: "Turn plain-language requests into schema-aware SQL with a focused interface that is easy to understand.",
     icon: Bot
   },
   {
     title: "Performance Review Tools",
-    desc: "Validate, optimize, and inspect generated SQL before it reaches production or a client demo.",
+    desc: "Validate, optimize, and inspect generated SQL before you ship it to production or show it in a demo.",
     icon: LineChart
   },
   {
-    title: "Billing and Workspace Control",
-    desc: "Manage plan upgrades, query history, support flows, and user lifecycle from the same product.",
+    title: "Billing and Account Control",
+    desc: "Keep query history, subscription flow, and account settings in one clean product surface.",
     icon: ShieldCheck
   }
 ];
@@ -36,17 +35,17 @@ const featureCards = [
 const workflow = [
   {
     title: "Add Schema Context",
-    desc: "Paste or save table structure so the AI works with your real columns and relationships.",
+    desc: "Save the relevant table structure so the AI works with your actual columns and relations.",
     icon: Database
   },
   {
     title: "Describe the Query",
-    desc: "Use simple language to explain the report, analytics requirement, or SQL task you need.",
+    desc: "Write a simple prompt that explains the report, analytics requirement, or SQL task you need.",
     icon: Sparkles
   },
   {
-    title: "Review and Ship",
-    desc: "Generate, validate, format, and store the final query in a dashboard that is easy to audit later.",
+    title: "Review and Use",
+    desc: "Check the generated SQL, refine it if needed, and keep the final output in a workspace that stays easy to debug.",
     icon: Workflow
   }
 ];
@@ -54,47 +53,47 @@ const workflow = [
 const faqs = [
   {
     q: "Is this only for beginners?",
-    a: "No. The UI is easy to understand, but the workflow is designed to stay useful as your project becomes more production-focused."
+    a: "No. The product is easy to understand, but the workflow stays useful for projects that need cleaner architecture and better delivery."
   },
   {
     q: "Can I save schema context before generating SQL?",
-    a: "Yes. The dashboard supports schema management so generated output stays closer to your actual database structure."
+    a: "Yes. The dashboard supports schema management so the output stays closer to your actual database structure."
   },
   {
-    q: "Does the platform support billing and account upgrades?",
+    q: "Does the platform support billing and plan upgrades?",
     a: "Yes. Subscription, invoices, and account lifecycle flows are already part of the product."
   },
   {
     q: "Can I start on a free plan first?",
-    a: "Yes. Free access lets you explore the core workflow before moving to Pro features."
+    a: "Yes. The free flow lets you explore the product before moving to the professional plan."
   }
 ];
 
 const quickStats = [
   { label: "AI Workspace", value: "Schema-Aware" },
   { label: "Response Style", value: "Debug Friendly" },
-  { label: "Deployment Fit", value: "MERN Ready" }
+  { label: "Project Fit", value: "MERN Ready" }
 ];
 
 const platformSignals = [
   "Natural-language SQL generation",
-  "Usage-aware SaaS flow",
-  "Admin, billing, and support surface"
+  "Query history and usage flow",
+  "Billing, admin, and support visibility"
 ];
 
 const developersPreview = developers.slice(0, 3);
 
 export default function Landing() {
   return (
-    <div className="min-h-screen text-slate-950">
-      <header className="sticky top-0 z-50 border-b border-slate-900/6 bg-white/72 backdrop-blur-2xl">
+    <div className="public-page text-slate-950">
+      <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/84 backdrop-blur-xl">
         <div className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between px-5 sm:px-8">
           <Link to="/" className="inline-flex items-center gap-3">
             <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#112129] text-[#8fe1cf] shadow-[0_18px_30px_-20px_rgba(17,33,41,0.9)]">
               <Database size={18} />
             </span>
             <div>
-              <p className="display-font text-sm font-extrabold tracking-[0.24em] text-slate-950 uppercase">
+              <p className="display-font text-sm font-extrabold uppercase tracking-[0.24em] text-slate-950">
                 AI SQL Studio
               </p>
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
@@ -129,7 +128,7 @@ export default function Landing() {
           <div className="flex items-center gap-3">
             <Link
               to="/login"
-              className="hidden rounded-full border border-slate-900/10 bg-white/70 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-700 transition-all hover:border-slate-900/18 hover:text-slate-950 sm:inline-flex"
+              className="hidden rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-700 transition-all hover:border-slate-300 hover:text-slate-950 sm:inline-flex"
             >
               Login
             </Link>
@@ -144,27 +143,25 @@ export default function Landing() {
         </div>
       </header>
 
-      <main>
-        <section className="relative overflow-hidden px-5 pb-20 pt-14 sm:px-8 sm:pt-20">
-          <div className="public-grid absolute inset-0 opacity-50" />
-          <div className="absolute -left-24 top-10 h-72 w-72 rounded-full bg-[#0f766e]/14 blur-3xl" />
-          <div className="absolute right-0 top-12 h-80 w-80 rounded-full bg-[#c76b2d]/12 blur-3xl" />
+      <main className="pb-20">
+        <section className="relative overflow-hidden px-5 pb-16 pt-14 sm:px-8 sm:pt-20">
+          <div className="public-grid absolute inset-0 opacity-45" />
 
-          <div className="relative mx-auto grid w-full max-w-7xl gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-            <div className="animated-rise">
+          <div className="relative mx-auto grid w-full max-w-7xl gap-10 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
+            <div>
               <div className="public-pill rounded-full px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.2em]">
                 <Zap size={14} />
-                Production-focused SQL workflow
+                Clean and professional SQL workflow
               </div>
 
               <h1 className="display-font mt-7 max-w-4xl text-5xl font-extrabold leading-[0.95] tracking-[-0.04em] text-slate-950 sm:text-6xl lg:text-7xl">
-                A professional frontend for generating, refining, and managing SQL.
+                Generate SQL in a workspace that feels simple, modern, and ready to ship.
               </h1>
 
               <p className="mt-6 max-w-2xl text-base font-medium leading-8 text-slate-600 sm:text-lg">
                 AI SQL Studio brings query generation, schema context, billing, history,
-                and support into one clean SaaS workspace that feels ready for internships,
-                demos, and real deployment.
+                and support into one beginner-friendly SaaS interface that still looks
+                polished enough for demos, internships, and production-style projects.
               </p>
 
               <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -177,7 +174,7 @@ export default function Landing() {
                 </Link>
                 <Link
                   to="/login"
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-900/10 bg-white/70 px-6 py-4 text-[11px] font-extrabold uppercase tracking-[0.2em] text-slate-700 transition-all hover:border-slate-900/18 hover:bg-white"
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-6 py-4 text-[11px] font-extrabold uppercase tracking-[0.2em] text-slate-700 transition-all hover:border-slate-300 hover:bg-white"
                 >
                   Open Dashboard
                 </Link>
@@ -190,12 +187,9 @@ export default function Landing() {
                 </Link>
               </div>
 
-              <div className="mt-10 grid gap-3 sm:grid-cols-3">
+              <div className="mt-10 grid gap-4 sm:grid-cols-3">
                 {quickStats.map((stat) => (
-                  <article
-                    key={stat.label}
-                    className="public-card rounded-[1.6rem] px-5 py-5"
-                  >
+                  <article key={stat.label} className="public-outline-card rounded-[1.6rem] px-5 py-5">
                     <p className="display-font text-2xl font-extrabold tracking-tight text-slate-950">
                       {stat.value}
                     </p>
@@ -207,18 +201,17 @@ export default function Landing() {
               </div>
             </div>
 
-            <div className="animated-rise [animation-delay:140ms]">
-              <div className="public-card animated-float relative overflow-hidden rounded-[2rem] p-5 sm:p-6">
-                <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-[#0f766e]/40 to-transparent" />
+            <div>
+              <div className="public-card relative overflow-hidden rounded-[2rem] p-5 sm:p-6">
                 <div className="grid gap-4">
-                  <div className="rounded-[1.8rem] bg-[#112129] p-5 text-white shadow-[0_30px_60px_-40px_rgba(17,33,41,0.95)]">
+                  <div className="public-dark-panel rounded-[1.8rem] p-5">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-[#8fe1cf]">
-                          Workspace Signal
+                          Workspace Preview
                         </p>
                         <h2 className="display-font mt-2 text-2xl font-extrabold tracking-tight">
-                          Live Query Pipeline
+                          Schema-aware SQL generation
                         </h2>
                       </div>
                       <span className="rounded-full border border-white/10 bg-white/8 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.18em] text-white/80">
@@ -226,7 +219,16 @@ export default function Landing() {
                       </span>
                     </div>
 
-                    <div className="mt-5 rounded-[1.4rem] border border-white/8 bg-[#0b171d] p-4">
+                    <div className="mt-5 rounded-[1.4rem] border border-white/8 bg-slate-950/45 p-4">
+                      <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">
+                        Prompt
+                      </p>
+                      <p className="mt-2 text-sm font-medium leading-7 text-slate-100">
+                        Show active subscriptions by plan for the current month.
+                      </p>
+                    </div>
+
+                    <div className="rounded-[1.4rem] border border-white/8 bg-slate-950/55 p-4">
                       <div className="mb-3 flex items-center justify-between text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">
                         <span>Generated SQL</span>
                         <span>Schema aware</span>
@@ -251,7 +253,7 @@ ORDER BY active_users DESC;`}
                         {platformSignals.map((item) => (
                           <div
                             key={item}
-                            className="flex items-center gap-3 rounded-2xl border border-slate-900/8 bg-white/80 px-4 py-3"
+                            className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/84 px-4 py-3"
                           >
                             <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#112129] text-[#8fe1cf]">
                               <CheckCircle2 size={16} />
@@ -264,24 +266,23 @@ ORDER BY active_users DESC;`}
 
                     <article className="public-outline-card rounded-[1.6rem] p-5">
                       <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-slate-500">
-                        Runtime
+                        Why It Works
                       </p>
                       <p className="display-font mt-3 text-4xl font-extrabold tracking-tight text-[#0f766e]">
-                        12ms
+                        Simple
                       </p>
-                      <div className="glow-divider mt-4" />
                       <div className="mt-4 space-y-4">
                         <div>
                           <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">
-                            Accuracy
+                            Architecture
                           </p>
-                          <p className="mt-1 text-lg font-bold text-slate-900">Schema constrained</p>
+                          <p className="mt-1 text-lg font-bold text-slate-900">Service layer + dashboard</p>
                         </div>
                         <div>
                           <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">
-                            Visibility
+                            User flow
                           </p>
-                          <p className="mt-1 text-lg font-bold text-slate-900">History + billing</p>
+                          <p className="mt-1 text-lg font-bold text-slate-900">Auth, billing, history</p>
                         </div>
                       </div>
                     </article>
@@ -297,15 +298,15 @@ ORDER BY active_users DESC;`}
             {[
               {
                 title: "Professional First Impression",
-                text: "Clean sections, stronger typography, and balanced spacing make the product feel deployment-ready."
+                text: "The UI uses calmer colors, clearer contrast, and better spacing so every section feels more reliable."
               },
               {
                 title: "Clear Product Story",
-                text: "Users immediately understand the flow: schema, prompt, result, billing, and support."
+                text: "Users can understand the flow quickly: schema, prompt, result, billing, and support."
               },
               {
                 title: "Better Trust Signals",
-                text: "Metrics, workflow steps, and team visibility make the frontend feel more credible and complete."
+                text: "Pricing, workflow steps, and team visibility make the SaaS product feel more complete."
               }
             ].map((item) => (
               <article key={item.title} className="public-outline-card rounded-[1.7rem] p-6">
@@ -328,14 +329,14 @@ ORDER BY active_users DESC;`}
                 Core Features
               </p>
               <h2 className="display-font mt-4 text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">
-                A frontend that looks polished and still explains the product clearly.
+                A simple interface that still covers the full SaaS workflow.
               </h2>
             </div>
 
             <div className="grid gap-6 md:grid-cols-3">
               {featureCards.map((item) => (
                 <article key={item.title} className="public-card rounded-[1.8rem] p-7">
-                  <div className="flex h-13 w-13 items-center justify-center rounded-[1.2rem] bg-[#112129] text-[#8fe1cf] shadow-[0_18px_30px_-22px_rgba(17,33,41,0.9)]">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-[1.2rem] bg-[#112129] text-[#8fe1cf] shadow-[0_18px_30px_-22px_rgba(17,33,41,0.9)]">
                     <item.icon size={20} />
                   </div>
                   <h3 className="display-font mt-6 text-2xl font-extrabold tracking-tight text-slate-950">
@@ -349,7 +350,7 @@ ORDER BY active_users DESC;`}
         </section>
 
         <section id="workflow" className="px-5 py-20 sm:px-8">
-          <div className="mx-auto w-full max-w-7xl rounded-[2.2rem] bg-[#112129] px-6 py-8 text-white shadow-[0_40px_90px_-48px_rgba(17,33,41,0.95)] sm:px-10 sm:py-12">
+          <div className="public-dark-panel mx-auto w-full max-w-7xl rounded-[2.2rem] px-6 py-8 sm:px-10 sm:py-12">
             <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-2xl">
                 <p className="text-[10px] font-extrabold uppercase tracking-[0.28em] text-[#8fe1cf]">
@@ -369,7 +370,7 @@ ORDER BY active_users DESC;`}
               {workflow.map((step, index) => (
                 <article
                   key={step.title}
-                  className="rounded-[1.8rem] border border-white/8 bg-white/6 p-6 backdrop-blur-sm"
+                  className="rounded-[1.8rem] border border-white/8 bg-white/6 p-6"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-white/55">
@@ -409,7 +410,7 @@ ORDER BY active_users DESC;`}
                   Free
                 </p>
                 <p className="mt-2 text-sm font-semibold text-slate-500">
-                  Good for learning the platform and testing core generation flow.
+                  Good for learning the platform and testing the core generation flow.
                 </p>
                 <ul className="mt-8 space-y-3">
                   {["Core SQL generation", "Saved history", "Simple onboarding"].map((item) => (
@@ -421,16 +422,14 @@ ORDER BY active_users DESC;`}
                 </ul>
                 <Link
                   to="/register"
-                  className="mt-8 inline-flex w-full items-center justify-center rounded-full border border-slate-900/10 bg-white px-5 py-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-700 transition-all hover:border-slate-900/18 hover:bg-slate-50"
+                  className="mt-8 inline-flex w-full items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50"
                 >
                   Create Free Account
                 </Link>
               </article>
 
-              <article className="relative overflow-hidden rounded-[2rem] bg-[#112129] p-8 text-white shadow-[0_40px_90px_-50px_rgba(17,33,41,0.95)]">
-                <div className="absolute -right-16 top-0 h-48 w-48 rounded-full bg-[#8fe1cf]/18 blur-3xl" />
-                <div className="absolute -left-10 bottom-0 h-48 w-48 rounded-full bg-[#c76b2d]/18 blur-3xl" />
-                <div className="relative">
+              <article className="public-dark-panel relative overflow-hidden rounded-[2rem] p-8">
+                <div>
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#8fe1cf]">
@@ -528,13 +527,12 @@ ORDER BY active_users DESC;`}
             <div className="grid gap-6 md:grid-cols-3">
               {developersPreview.map((dev) => (
                 <article key={dev.name} className="public-card overflow-hidden rounded-[1.8rem]">
-                  <div className="relative h-72 overflow-hidden bg-slate-200">
+                  <div className="bg-slate-100 p-4">
                     <img
                       src={dev.image}
                       alt={dev.name}
-                      className="h-full w-full object-cover object-top transition-transform duration-700 hover:scale-105"
+                      className="h-64 w-full rounded-[1.35rem] object-cover object-top"
                     />
-                    <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-slate-950/45 to-transparent" />
                   </div>
                   <div className="p-6">
                     <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#0f766e]">
@@ -554,7 +552,7 @@ ORDER BY active_users DESC;`}
         </section>
 
         <section className="px-5 pb-20 sm:px-8">
-          <div className="mx-auto w-full max-w-6xl rounded-[2.2rem] bg-[#112129] px-6 py-8 text-white shadow-[0_40px_90px_-50px_rgba(17,33,41,0.95)] sm:px-10 sm:py-12">
+          <div className="public-dark-panel mx-auto w-full max-w-6xl rounded-[2.2rem] px-6 py-8 sm:px-10 sm:py-12">
             <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
               <div>
                 <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-[#8fe1cf]">
@@ -589,7 +587,7 @@ ORDER BY active_users DESC;`}
         </section>
       </main>
 
-      <footer className="border-t border-slate-900/6 bg-white/72 px-5 py-8 backdrop-blur-xl sm:px-8">
+      <footer className="border-t border-slate-200 bg-white/76 px-5 py-8 backdrop-blur-xl sm:px-8">
         <div className="mx-auto flex w-full max-w-7xl flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-slate-500">

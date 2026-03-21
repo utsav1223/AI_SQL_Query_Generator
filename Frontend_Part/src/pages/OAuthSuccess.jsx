@@ -23,7 +23,7 @@ export default function OAuthSuccess() {
       try {
         let user = null;
         if (userParam) {
-          user = JSON.parse(decodeURIComponent(userParam));
+          user = JSON.parse(userParam);
         }
 
         await login({ token, user });
@@ -39,8 +39,8 @@ export default function OAuthSuccess() {
   }, [login, navigate, token, userParam]);
 
   return (
-    <div className="min-h-screen bg-slate-50 px-6 py-10">
-      <div className="mx-auto flex w-full max-w-lg flex-col items-center rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+    <div className="public-page px-6 py-10">
+      <div className="public-card mx-auto flex w-full max-w-lg flex-col items-center rounded-3xl p-10 text-center">
         {error ? (
           <>
             <p className="text-xs font-black uppercase tracking-[0.16em] text-rose-500">OAuth Failed</p>
@@ -53,7 +53,7 @@ export default function OAuthSuccess() {
               <div className="absolute inset-0 rounded-full bg-emerald-500/20 blur-xl" />
             </div>
             <p className="mt-6 text-xs font-black uppercase tracking-[0.16em] text-slate-400">
-              Completing secure sign-in...
+              Finishing sign-in...
             </p>
           </>
         )}
