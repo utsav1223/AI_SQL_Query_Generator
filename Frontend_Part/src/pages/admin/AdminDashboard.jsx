@@ -28,9 +28,9 @@ import {
   XAxis,
   YAxis
 } from "recharts";
-import { AdminAuthContext } from "../../context/AdminAuthContext";
-import { adminApiRequest } from "../../services/adminApi";
 import { ThemeContext } from "../../context/ThemeContext";
+import { useAdminAuth } from "../../hooks/useAdminAuth";
+import { adminService } from "../../services/adminService";
 
 const initialOverview = {
   stats: {
@@ -62,7 +62,7 @@ const initialOverview = {
 const FEEDBACK_STATUSES = ["all", "new", "reviewed", "resolved"];
 
 export default function AdminDashboard() {
-  const { admin, logout } = useContext(AdminAuthContext);
+  const { admin, logout } = useAdminAuth();
   const { isDark, toggleTheme } = useContext(ThemeContext);
 
   const [overview, setOverview] = useState(initialOverview);
@@ -97,7 +97,7 @@ export default function AdminDashboard() {
   const loadOverview = useCallback(async () => {
     setLoadingOverview(true);
     try {
-      const data = await adminApiRequest("/admin/overview", "GET");
+      const data = await adminService.getOverview();
       setOverview(data);
       setSecurityEvents(data.recentSecurityEvents || []);
     } catch (err) {
@@ -116,7 +116,7 @@ export default function AdminDashboard() {
         ...(query ? { search: query } : {})
       });
 
-      const data = await adminApiRequest(`/admin/users?${params.toString()}`, "GET");
+      const data = await adminService.getUsers(params.toString());
       setUsers(data.users || []);
       setUsersPagination(data.pagination || { total: 0, page: 1, limit: 10, pages: 1 });
     } catch (err) {
@@ -136,7 +136,7 @@ export default function AdminDashboard() {
         ...(query ? { search: query } : {})
       });
 
-      const data = await adminApiRequest(`/admin/feedback?${params.toString()}`, "GET");
+      const data = await adminService.getFeedback(params.toString());
       setFeedbackItems(data.feedback || []);
       setFeedbackPagination(data.pagination || { total: 0, page: 1, limit: 10, pages: 1 });
     } catch (err) {
@@ -210,7 +210,7 @@ export default function AdminDashboard() {
     setActioningId(user._id);
     setError("");
     try {
-      await adminApiRequest(`/admin/users/${user._id}/moderate`, "POST", {
+      await adminService.moderateUser(user._id, {
         action,
         reason: reason.trim()
       });
@@ -239,7 +239,7 @@ export default function AdminDashboard() {
     setActioningId(user._id);
     setError("");
     try {
-      await adminApiRequest(`/admin/users/${user._id}/moderate`, "POST", {
+      await adminService.moderateUser(user._id, {
         action: "delete",
         reason: reason.trim()
       });
@@ -272,7 +272,7 @@ export default function AdminDashboard() {
     setActioningId(user._id);
     setError("");
     try {
-      await adminApiRequest(`/admin/users/${user._id}/moderate`, "POST", {
+      await adminService.moderateUser(user._id, {
         action,
         reason: reason.trim()
       });
@@ -292,7 +292,7 @@ export default function AdminDashboard() {
     setActioningId(feedbackId);
     setError("");
     try {
-      await adminApiRequest(`/admin/feedback/${feedbackId}/status`, "PATCH", { status });
+      await adminService.updateFeedbackStatus(feedbackId, { status });
       await Promise.all([
         loadOverview(),
         loadFeedback(feedbackPagination.page, feedbackStatus, feedbackSearchQuery)
@@ -308,7 +308,7 @@ export default function AdminDashboard() {
     setActioningId(eventId);
     setError("");
     try {
-      await adminApiRequest(`/admin/security-events/${eventId}/status`, "PATCH", { status });
+      await adminService.updateSecurityEventStatus(eventId, { status });
       setSecurityEvents((prev) =>
         prev.map((event) => (event._id === eventId ? { ...event, status } : event))
       );

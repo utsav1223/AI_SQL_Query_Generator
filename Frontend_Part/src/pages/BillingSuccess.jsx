@@ -1,7 +1,8 @@
-import { useEffect, useState, useContext, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
-import { apiRequest } from "../services/api";
+import { useAuth } from "../hooks/useAuth";
+import { authService } from "../services/authService";
+import { paymentService } from "../services/paymentService";
 import { 
   CheckCircle2, 
   ArrowRight, 
@@ -13,7 +14,7 @@ import {
 } from "lucide-react";
 
 export default function BillingSuccess() {
-  const { user, login } = useContext(AuthContext);
+  const { user, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(true);
@@ -50,13 +51,13 @@ export default function BillingSuccess() {
 
       try {
         if (hasOrderCallback) {
-          await apiRequest("/payment/verify", "POST", {
+          await paymentService.verifyPayment({
             razorpay_order_id,
             razorpay_payment_id,
             razorpay_signature
           });
         } else if (hasPaymentLinkCallback) {
-          await apiRequest("/payment/verify-payment-link", "POST", {
+          await paymentService.verifyPaymentLink({
             razorpay_payment_link_id,
             razorpay_payment_link_reference_id,
             razorpay_payment_link_status,
@@ -65,7 +66,7 @@ export default function BillingSuccess() {
           });
         }
 
-        const updatedUser = await apiRequest("/auth/me", "GET");
+        const updatedUser = await authService.getCurrentUser();
         await login({ token: localStorage.getItem("token"), user: updatedUser });
         setIsVerified(true);
       } catch (err) {

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
-import { apiRequest } from "../services/api";
+import { authService } from "../services/authService";
 import PublicAuthLayout from "../components/public/PublicAuthLayout";
 import AuthField from "../components/public/AuthField";
 
@@ -50,7 +50,7 @@ export default function Register() {
 
     setIsLoading(true);
     try {
-      await apiRequest("/auth/register", "POST", form);
+      await authService.register(form);
       navigate("/login", { replace: true });
     } catch (err) {
       if (err.errors) setErrors({ server: err.errors.join(", ") });
@@ -74,8 +74,8 @@ export default function Register() {
       ]}
     >
       <div className="space-y-2">
-        <h2 className="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Create Account</h2>
-        <p className="text-sm font-medium text-slate-500">
+        <h2 className="display-font text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Create Account</h2>
+        <p className="text-sm font-medium leading-7 text-slate-500">
           Start building faster with AI-powered SQL workflows.
         </p>
       </div>
@@ -135,7 +135,7 @@ export default function Register() {
         <button
           type="submit"
           disabled={isLoading}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-4 text-xs font-black uppercase tracking-[0.2em] text-white transition-all hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-[#112129] px-5 py-4 text-xs font-black uppercase tracking-[0.2em] text-white transition-all hover:-translate-y-0.5 hover:bg-[#0f766e] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isLoading ? "Creating..." : "Create Account"}
           {!isLoading ? <ArrowRight size={16} /> : null}
@@ -153,7 +153,7 @@ export default function Register() {
         onClick={() => {
           window.location.href = GOOGLE_AUTH_URL;
         }}
-        className="flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-bold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
+        className="flex w-full items-center justify-center gap-3 rounded-full border border-slate-900/8 bg-white px-5 py-3.5 text-sm font-bold text-slate-700 transition-all hover:border-slate-900/16 hover:bg-slate-50"
       >
         <FcGoogle className="h-5 w-5" />
         Continue with Google
@@ -161,7 +161,7 @@ export default function Register() {
 
       <p className="mt-8 text-center text-sm font-semibold text-slate-500">
         Already have an account?{" "}
-        <Link to="/login" className="text-emerald-700 hover:text-emerald-800">
+        <Link to="/login" className="text-[#0f766e] hover:text-[#0a4f4a]">
           Sign in
         </Link>
       </p>

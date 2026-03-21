@@ -1,7 +1,7 @@
-import { useEffect, useState, useContext } from "react";
-import { AuthContext } from "../../context/AuthContext";
-import { apiRequest } from "../../services/api";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+import { queryService } from "../../services/queryService";
 import {
   PieChart,
   Pie,
@@ -31,7 +31,7 @@ import {
 const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#6366f1"];
 
 export default function Analytics() {
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,7 +41,7 @@ export default function Analytics() {
 
     const fetchAnalytics = async () => {
       try {
-        const res = await apiRequest("/queries/advanced-analytics", "GET");
+        const res = await queryService.getAdvancedAnalytics();
         setData(res);
       } catch (err) {
         console.error("Analytics Fetch Error:", err);

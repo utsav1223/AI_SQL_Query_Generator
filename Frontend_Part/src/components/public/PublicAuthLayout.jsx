@@ -1,5 +1,11 @@
 import { Link } from "react-router-dom";
-import { Database, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, Database, ShieldCheck, Sparkles } from "lucide-react";
+
+const defaultMetrics = [
+  { label: "Workspace", value: "Secure" },
+  { label: "SQL Flow", value: "Guided" },
+  { label: "Access", value: "Token Based" }
+];
 
 export default function PublicAuthLayout({
   badge,
@@ -10,68 +16,123 @@ export default function PublicAuthLayout({
   children
 }) {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <div className="mx-auto flex min-h-screen w-full max-w-[1500px] gap-4 p-4 sm:p-6">
-        <aside className="relative hidden w-1/2 overflow-hidden rounded-[2rem] border border-slate-200 bg-slate-900 lg:flex">
-          <img
-            src={imageUrl}
-            alt="Workspace"
-            className="absolute inset-0 h-full w-full object-cover opacity-65"
-          />
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-950/85 via-slate-900/75 to-emerald-950/75" />
+    <div className="min-h-screen overflow-hidden px-4 py-4 sm:px-6 sm:py-6">
+      <div className="mx-auto grid min-h-[calc(100dvh-2rem)] w-full max-w-[1500px] gap-4 lg:grid-cols-[1.05fr_0.95fr]">
+        <aside className="relative hidden overflow-hidden rounded-[2.2rem] bg-[#112129] text-white shadow-[0_40px_90px_-48px_rgba(17,33,41,0.98)] lg:flex">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt="Workspace preview"
+              className="absolute inset-0 h-full w-full object-cover opacity-30"
+            />
+          ) : null}
 
-          <div className="relative z-10 flex h-full flex-col justify-between p-10 xl:p-14 text-white">
-            <div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(143,225,207,0.22),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(199,107,45,0.18),transparent_28%),linear-gradient(145deg,rgba(17,33,41,0.96),rgba(11,23,29,0.95))]" />
+          <div className="public-grid absolute inset-0 opacity-20" />
+
+          <div className="relative z-10 flex h-full flex-col justify-between p-10 xl:p-14">
+            <div className="flex items-center justify-between gap-4">
+              <Link to="/" className="inline-flex items-center gap-3">
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-[#8fe1cf]">
+                  <Database size={18} />
+                </span>
+                <div>
+                  <p className="display-font text-sm font-extrabold uppercase tracking-[0.24em]">
+                    AI SQL Studio
+                  </p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/55">
+                    Clean SQL workspace
+                  </p>
+                </div>
+              </Link>
+
               <Link
                 to="/"
-                className="inline-flex items-center gap-3 rounded-2xl border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-md transition-colors hover:bg-white/15"
+                className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/7 px-4 py-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-white/85 transition-all hover:bg-white/12"
               >
-                <div className="rounded-xl bg-emerald-500/20 p-2">
-                  <Database size={16} className="text-emerald-300" />
-                </div>
-                <span className="text-xs font-black uppercase tracking-[0.2em]">AI SQL Studio</span>
+                Home
+                <ArrowUpRight size={12} />
               </Link>
             </div>
 
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-400/10 px-4 py-1.5 text-emerald-200">
+            <div className="max-w-xl space-y-7">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#8fe1cf]/26 bg-[#8fe1cf]/10 px-4 py-2 text-[#8fe1cf]">
                 <ShieldCheck size={14} />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em]">{badge}</span>
+                <span className="text-[10px] font-extrabold uppercase tracking-[0.2em]">{badge}</span>
               </div>
 
-              <h1 className="max-w-lg text-5xl font-black tracking-tight leading-tight">
-                {title}
-              </h1>
+              <div>
+                <h1 className="display-font text-5xl font-extrabold leading-[1] tracking-[-0.04em] xl:text-6xl">
+                  {title}
+                </h1>
+                <p className="mt-5 max-w-lg text-base font-medium leading-8 text-slate-200/88">
+                  {description}
+                </p>
+              </div>
 
-              <p className="max-w-md text-base font-medium text-slate-200/90 leading-relaxed">
-                {description}
-              </p>
-
-              <ul className="space-y-3">
-                {highlights.map((item) => (
-                  <li
-                    key={item}
-                    className="flex items-center gap-3 text-sm font-semibold text-white/90"
+              <div className="grid gap-3 sm:grid-cols-3">
+                {defaultMetrics.map((item) => (
+                  <article
+                    key={item.label}
+                    className="rounded-[1.4rem] border border-white/10 bg-white/7 px-4 py-4 backdrop-blur-sm"
                   >
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
-                    {item}
-                  </li>
+                    <p className="display-font text-2xl font-extrabold tracking-tight text-white">
+                      {item.value}
+                    </p>
+                    <p className="mt-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-white/50">
+                      {item.label}
+                    </p>
+                  </article>
                 ))}
-              </ul>
+              </div>
+
+              <div className="rounded-[1.8rem] border border-white/10 bg-white/6 p-6 backdrop-blur-sm">
+                <div className="mb-4 inline-flex items-center gap-2 text-[#8fe1cf]">
+                  <Sparkles size={15} />
+                  <span className="text-[10px] font-extrabold uppercase tracking-[0.18em]">
+                    What you get
+                  </span>
+                </div>
+
+                <ul className="space-y-3">
+                  {highlights.map((item) => (
+                    <li key={item} className="flex items-start gap-3 text-sm font-semibold leading-7 text-slate-100">
+                      <span className="mt-2 h-1.5 w-1.5 rounded-full bg-[#8fe1cf]" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
+
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-white/45">
+              Professional onboarding surface for your SaaS frontend
+            </p>
           </div>
         </aside>
 
-        <main className="flex w-full items-center justify-center lg:w-1/2">
-          <div className="w-full max-w-[560px] rounded-[2rem] border border-slate-200 bg-white/95 p-6 shadow-[0_30px_80px_-36px_rgba(15,23,42,0.35)] backdrop-blur-sm sm:p-8">
-            <Link to="/" className="mb-8 inline-flex items-center gap-2">
-              <span className="rounded-xl bg-emerald-600 p-2 text-white">
-                <Database size={16} />
-              </span>
-              <span className="text-sm font-black uppercase tracking-[0.18em] text-slate-900">
-                AI SQL Studio
-              </span>
-            </Link>
+        <main className="flex items-center justify-center">
+          <div className="public-card w-full max-w-[620px] rounded-[2.2rem] px-6 py-7 sm:px-8 sm:py-9">
+            <div className="mb-8 flex items-center justify-between gap-4">
+              <Link to="/" className="inline-flex items-center gap-3">
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#112129] text-[#8fe1cf]">
+                  <Database size={18} />
+                </span>
+                <div>
+                  <p className="display-font text-sm font-extrabold uppercase tracking-[0.24em] text-slate-950">
+                    AI SQL Studio
+                  </p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
+                    Secure auth flow
+                  </p>
+                </div>
+              </Link>
+
+              <div className="hidden rounded-full border border-slate-900/8 bg-white/70 px-4 py-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#0f766e] sm:inline-flex">
+                Auth Portal
+              </div>
+            </div>
+
             {children}
           </div>
         </main>

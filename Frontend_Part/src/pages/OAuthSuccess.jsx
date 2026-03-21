@@ -1,12 +1,12 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
 
 export default function OAuthSuccess() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const { login } = useContext(AuthContext);
+  const { login } = useAuth();
   const [error, setError] = useState("");
 
   const token = useMemo(() => params.get("token"), [params]);

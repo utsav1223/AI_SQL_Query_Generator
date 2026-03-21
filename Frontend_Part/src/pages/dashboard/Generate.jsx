@@ -1,223 +1,168 @@
-import { useState, useContext, useEffect, useCallback } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
+import { Loader2, Lock, Sparkles } from "lucide-react";
 import ToolSelector from "../../components/ai/ToolSelector";
 import SQLInput from "../../components/ai/SQLInput";
 import SQLOutput from "../../components/ai/SQLOutput";
-import { apiRequest } from "../../services/api";
-import { 
-  Terminal, Zap, Command, ArrowRight, 
-  Loader2, Code2, Database, Copy, Check,
-  Lock, ArrowUpRight, Cpu, Activity, ChevronRight, AlertCircle
-} from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
+import { aiService } from "../../services/aiService";
+
+const PLACEHOLDERS = {
+  generate: "Describe the SQL you want to generate. Example: Revenue by category for 2024.",
+  optimize: "Paste SQL to improve performance and readability.",
+  validate: "Paste SQL to check for obvious syntax or logic problems.",
+  explain: "Paste SQL to get a simple explanation of what it does."
+};
 
 export default function Generate() {
-  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [mode, setMode] = useState("generate");
   const [input, setInput] = useState("");
   const [result, setResult] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [error, setError] = useState(null);
 
-  // Pro logic: only "generate" is free
-  const isLocked = user?.plan !== "pro" && mode !== "generate";
+  const isProFeature = mode !== "generate";
+  const isLocked = user?.plan !== "pro" && isProFeature;
 
-  const getPlaceholder = () => {
-    switch(mode) {
-      case 'optimize': return "-- Paste SQL to analyze and improve performance...";
-      case 'explain': return "-- Paste SQL to translate into plain-English logic...";
-      case 'validate': return "-- Paste SQL to check for syntax and schema errors...";
-      default: return "Describe the data you need (e.g., 'Revenue by category for 2024')...";
+  const handleSubmit = async () => {
+    if (!input.trim() || loading || isLocked) {
+      return;
     }
-  };
 
-  const handleSubmit = useCallback(async () => {
-    if (!input.trim() || loading || isLocked) return;
+    setLoading(true);
+    setError("");
+
     try {
-      setLoading(true);
-      setError(null);
-      const isGenerate = mode === "generate";
-      const payload = { mode, [isGenerate ? "prompt" : "sql"]: input };
-      const res = await apiRequest("/ai", "POST", payload);
-      setResult(res.result);
-    } catch (err) {
-      setError(err.message || "Neural engine synchronization failed.");
+      const payload =
+        mode === "generate"
+          ? { mode, prompt: input }
+          : { mode, sql: input };
+
+      const data = await aiService.runTool(payload);
+      setResult(data.result || "");
+    } catch (requestError) {
+      setError(requestError.message || "Unable to process your request right now.");
     } finally {
       setLoading(false);
     }
-  }, [input, mode, loading, isLocked]);
+  };
+
+  const submitFromShortcut = useEffectEvent(() => {
+    handleSubmit();
+  });
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-        e.preventDefault();
-        handleSubmit();
+    const handleKeyDown = (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        event.preventDefault();
+        submitFromShortcut();
       }
     };
+
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleSubmit]);
+  }, []);
 
   return (
-    <div className="min-h-full bg-[#FDFDFD] text-slate-900 selection:bg-emerald-100 relative">
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
-      
-      <main className="dashboard-page relative z-10">
-        
-        {/* --- PROFESSIONAL HEADER --- */}
-        <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 border-b border-slate-100 pb-12 mb-12">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Core Intelligence Hub</span>
-            </div>
-            <h1 className="dashboard-heading text-4xl md:text-6xl font-black tracking-tighter text-slate-900 leading-none">
-              SQL <span className="text-emerald-500">Workspace</span>
+    <div className="dashboard-page space-y-8">
+      <section className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-2">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">
+              SQL Workspace
+            </p>
+            <h1 className="text-3xl font-black tracking-tight text-slate-900 md:text-4xl">
+              Generate, improve, and understand SQL in one place
             </h1>
-            <p className="text-slate-500 font-medium text-lg">Neural query orchestration for high-performance teams.</p>
-          </div>
-          
-          <div className="flex flex-wrap gap-4 w-full lg:w-auto">
-             <StatMini icon={<Activity size={16}/>} label="Neural Status" value="Online" color="text-emerald-500" />
-             <StatMini icon={<Cpu size={16}/>} label="Compute Latency" value="18ms" color="text-blue-500" />
-          </div>
-        </header>
-
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-10 lg:gap-16">
-          
-          {/* --- LEFT: EDITOR AREA --- */}
-          <div className="xl:col-span-7 space-y-8 animate-in fade-in slide-in-from-left-4 duration-700">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <ToolSelector mode={mode} setMode={setMode} />
-              <div className="hidden sm:flex items-center gap-3 pr-4 text-slate-300">
-                <Command size={14} />
-                <span className="text-[10px] font-black uppercase tracking-widest">CMD + ENTER</span>
-              </div>
-            </div>
-
-            <div className="bg-white border border-slate-200 rounded-[40px] shadow-sm overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-slate-200/40">
-              {isLocked ? (
-                /* --- PROFESSIONAL LOCKED UI --- */
-                <div className="relative min-h-[550px] lg:min-h-[650px] flex items-center justify-center p-8 overflow-hidden">
-                  <div className="absolute inset-0 bg-slate-950" />
-                  <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 blur-[120px] rounded-full animate-pulse" />
-                  
-                  <div className="relative z-10 max-w-sm text-center space-y-8">
-                    <div className="inline-flex p-6 rounded-[28px] bg-white/5 border border-white/10 backdrop-blur-2xl shadow-2xl">
-                      <Lock className="text-emerald-400" size={36} />
-                    </div>
-                    <div className="space-y-4">
-                      <h2 className="text-3xl font-black text-white tracking-tight">
-                        Advanced <span className="text-emerald-500">Intelligence.</span>
-                      </h2>
-                      <p className="text-slate-400 font-medium leading-relaxed">
-                        The <span className="text-white capitalize">{mode}</span> engine is reserved for Pro users. Gain access to sub-second schema analysis and priority neural compute.
-                      </p>
-                    </div>
-                    <div className="pt-4 flex flex-col gap-4">
-                      <button 
-                        onClick={() => navigate("/dashboard/pricing")}
-                        className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 h-16 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-xl active:scale-95 flex items-center justify-center gap-3"
-                      >
-                        Unlock Pro Access <ArrowUpRight size={18} />
-                      </button>
-                      <button 
-                        onClick={() => setMode("generate")}
-                        className="text-slate-500 hover:text-white font-bold text-[10px] uppercase tracking-[0.3em] transition-colors"
-                      >
-                        Back to SQL Generator
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                /* --- ACTIVE EDITOR UI --- */
-                <div className="flex flex-col">
-                  <SQLInput
-                    value={input}
-                    onChange={setInput}
-                    mode={mode}
-                    loading={loading}
-                    placeholder={getPlaceholder()}
-                    className="w-full min-h-[400px] lg:min-h-[500px] p-10 text-xl font-medium focus:outline-none"
-                  />
-                  <div className="p-8 bg-slate-50 border-t border-slate-100 flex flex-col gap-6">
-                    {error && (
-                      <div className="bg-red-50 border border-red-100 text-red-700 p-4 rounded-2xl text-xs font-bold flex items-center gap-3 animate-in slide-in-from-top-2">
-                        <AlertCircle size={16} /> {error}
-                      </div>
-                    )}
-                    <button 
-                      onClick={handleSubmit}
-                      disabled={loading || !input.trim()}
-                      className="group w-full h-16 bg-slate-950 hover:bg-slate-900 disabled:bg-slate-200 text-white rounded-[22px] transition-all flex items-center justify-center gap-4 font-black text-xs uppercase tracking-[0.2em] shadow-xl active:scale-[0.98]"
-                    >
-                      {loading ? (
-                        <Loader2 size={20} className="animate-spin text-emerald-400" />
-                      ) : (
-                        <>
-                          <Zap size={18} className="text-emerald-400 fill-emerald-400" />
-                          Execute Neural Command
-                          <ChevronRight size={16} className="opacity-40 group-hover:translate-x-1 transition-transform" />
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+            <p className="max-w-2xl text-sm text-slate-600">
+              Pick a tool, enter your prompt or SQL, and review the result on the right.
+              The free plan supports generation, while Pro unlocks optimize, validate, and explain.
+            </p>
           </div>
 
-          {/* --- RIGHT: OUTPUT TERMINAL --- */}
-          <div className="xl:col-span-5 h-full animate-in fade-in slide-in-from-right-4 duration-700">
-            <div className="xl:sticky xl:top-10">
-              <div className="bg-[#020617] border border-slate-800 rounded-[40px] shadow-2xl flex flex-col h-[440px] sm:h-[520px] lg:h-[800px] overflow-hidden">
-                <div className="px-8 py-6 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
-                  <div className="flex items-center gap-5">
-                    <div className="flex gap-2">
-                      <div className="w-3 h-3 rounded-full bg-slate-800" />
-                      <div className="w-3 h-3 rounded-full bg-slate-800" />
-                    </div>
-                    <div className="h-4 w-px bg-slate-800" />
-                    <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest font-mono italic">query_output.sql</span>
-                  </div>
-                  {result && (
-                    <button onClick={() => { navigator.clipboard.writeText(result); setCopied(true); setTimeout(()=>setCopied(false), 2000); }} className="p-2 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all">
-                      {copied ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} />}
-                    </button>
-                  )}
-                </div>
-
-                <div className="flex-1 overflow-auto p-8 custom-scrollbar">
-                  {result ? (
-                    <SQLOutput result={result} />
-                  ) : (
-                    <div className="h-full flex flex-col items-center justify-center text-center opacity-30 space-y-6">
-                      <div className="w-20 h-20 rounded-[32px] bg-slate-900 border border-slate-800 flex items-center justify-center shadow-inner">
-                        <Terminal size={32} className="text-slate-600" />
-                      </div>
-                      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500">Awaiting Pipeline Instruction</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+          <div className="rounded-2xl bg-slate-50 px-4 py-3 text-xs font-semibold text-slate-600">
+            Shortcut: <span className="font-black text-slate-900">Ctrl/Cmd + Enter</span>
           </div>
         </div>
-      </main>
-    </div>
-  );
-}
+      </section>
 
-function StatMini({ icon, label, value, color }) {
-  return (
-    <div className="bg-white border border-slate-200 px-6 py-4 rounded-3xl flex items-center gap-5 shadow-sm flex-1 lg:flex-none lg:min-w-[200px] group hover:border-slate-300 transition-colors">
-      <div className={`${color} bg-slate-50 p-2.5 rounded-xl group-hover:scale-110 transition-transform`}>{icon}</div>
-      <div>
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1.5">{label}</p>
-        <p className="text-base font-bold text-slate-900 leading-none">{value}</p>
+      <div className="grid gap-8 xl:grid-cols-[1.1fr_0.9fr]">
+        <section className="space-y-6">
+          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+            <ToolSelector mode={mode} setMode={setMode} />
+          </div>
+
+          <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
+            {isLocked ? (
+              <div className="flex min-h-[420px] flex-col items-center justify-center gap-5 px-8 py-12 text-center">
+                <div className="rounded-2xl bg-emerald-50 p-4 text-emerald-700">
+                  <Lock size={28} />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-black text-slate-900">Pro feature</h2>
+                  <p className="max-w-md text-sm text-slate-600">
+                    Upgrade to Pro to use <span className="capitalize">{mode}</span>. The
+                    free plan can still generate SQL from your saved schema.
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate("/dashboard/pricing")}
+                  className="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600"
+                >
+                  View pricing
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-0">
+                <SQLInput
+                  value={input}
+                  onChange={setInput}
+                  mode={mode}
+                  loading={loading}
+                  placeholder={PLACEHOLDERS[mode]}
+                  className="min-h-[360px] w-full p-8 text-base focus:outline-none"
+                />
+
+                <div className="border-t border-slate-200 bg-slate-50 px-8 py-6">
+                  {error ? (
+                    <p className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+                      {error}
+                    </p>
+                  ) : null}
+
+                  <button
+                    onClick={handleSubmit}
+                    disabled={loading || !input.trim()}
+                    className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {loading ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
+                    {loading ? "Working..." : "Run tool"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="rounded-[2rem] border border-slate-200 bg-slate-950 shadow-sm">
+          <div className="border-b border-slate-800 px-6 py-4">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">
+              Output
+            </p>
+          </div>
+
+          <div className="min-h-[520px] p-6">
+            {result ? (
+              <SQLOutput result={result} />
+            ) : (
+              <div className="flex min-h-[460px] items-center justify-center text-center text-sm text-slate-400">
+                Run a tool to see the result here.
+              </div>
+            )}
+          </div>
+        </section>
       </div>
     </div>
   );

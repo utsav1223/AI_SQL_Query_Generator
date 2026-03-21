@@ -1,10 +1,9 @@
-import { useContext } from "react";
 import { Navigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import RouteLoadingScreen from "./ui/RouteLoadingScreen";
 
 export default function ProtectedRoute({ children, roles }) {
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading } = useAuth();
 
   if (loading) {
     return <RouteLoadingScreen label="Restoring secure session..." />;

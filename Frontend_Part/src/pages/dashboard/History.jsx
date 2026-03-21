@@ -1,14 +1,14 @@
-import { useEffect, useState, useContext, useCallback } from "react";
-import { apiRequest } from "../../services/api";
-import { AuthContext } from "../../context/AuthContext";
+import { useCallback, useEffect, useState } from "react";
 import { 
-  Search, Filter, Pin, Trash2, Calendar, ChevronRight,
+  Search, Filter, Pin, Calendar, ChevronRight,
   PinOff, ArrowUpDown, Copy, Check, History as HistoryIcon, ChevronDown,
-  Sparkles, Code2, Trash, Database
+  Code2, Trash, Database
 } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
+import { queryService } from "../../services/queryService";
 
 export default function History() {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
   const [queries, setQueries] = useState([]);
   const [filteredQueries, setFilteredQueries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,7 +19,7 @@ export default function History() {
 
   const fetchHistory = useCallback(async () => {
     try {
-      const data = await apiRequest("/queries", "GET");
+      const data = await queryService.getHistory();
       setQueries(data);
     } catch (err) { console.error(err); } 
     finally { setLoading(false); }
@@ -48,14 +48,14 @@ export default function History() {
   const handleDelete = async (id) => {
     if (!window.confirm("Permanent deletion cannot be undone. Proceed?")) return;
     try {
-      await apiRequest(`/queries/${id}`, "DELETE");
+      await queryService.deleteQuery(id);
       setQueries((prev) => prev.filter((q) => q._id !== id));
     } catch { console.error("Delete failed"); }
   };
 
   const togglePin = async (id) => {
     try {
-      await apiRequest(`/queries/${id}/pin`, "PATCH");
+      await queryService.togglePin(id);
       setQueries((prev) => prev.map(q => 
         q._id === id ? { ...q, pinned: !q.pinned } : q
       ));

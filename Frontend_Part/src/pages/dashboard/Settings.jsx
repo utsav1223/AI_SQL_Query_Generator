@@ -1,15 +1,15 @@
-import { useContext, useState } from "react";
-import { AuthContext } from "../../context/AuthContext";
-import { apiRequest } from "../../services/api";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
-  User, Lock, CreditCard, Trash2, CheckCircle2, 
-  AlertCircle, Loader2, ShieldCheck, ChevronRight, Sparkles,
+  User, CreditCard, Trash2, CheckCircle2, 
+  AlertCircle, Loader2, ChevronRight, Sparkles,
   Key, Mail, Activity, ArrowUpRight
 } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
+import { authService } from "../../services/authService";
 
 export default function Settings() {
-  const { user, login, logout } = useContext(AuthContext);
+  const { user, login, logout } = useAuth();
   const navigate = useNavigate();
 
   const [name, setName] = useState(user?.name || "");
@@ -24,7 +24,7 @@ export default function Settings() {
     try {
       setProfileLoading(true);
       setMessage({ text: "", type: "" });
-      const updatedUser = await apiRequest("/auth/update-profile", "PUT", { name });
+      const updatedUser = await authService.updateProfile({ name });
       await login({ token: localStorage.getItem("token"), user: updatedUser });
       setMessage({ text: "Profile identity synchronized", type: "success" });
       setTimeout(() => setMessage({ text: "", type: "" }), 3000);
@@ -40,7 +40,7 @@ export default function Settings() {
     try {
       setPasswordLoading(true);
       setMessage({ text: "", type: "" });
-      await apiRequest("/auth/change-password", "PUT", { currentPassword, newPassword });
+      await authService.changePassword({ currentPassword, newPassword });
       setCurrentPassword("");
       setNewPassword("");
       setMessage({ text: "Access keys updated successfully", type: "success" });
@@ -58,7 +58,7 @@ export default function Settings() {
     if (!confirm) return;
     try {
       setDeleteLoading(true);
-      await apiRequest("/auth/delete-account", "DELETE");
+      await authService.deleteAccount();
       logout();
       window.location.href = "/";
     } catch {

@@ -5,7 +5,7 @@ services:
     runtime: node
     plan: free
     buildCommand: npm install
-    startCommand: node server.js
+    startCommand: npm start
     rootDir: Backend_Part
     envVars:
       - key: PORT

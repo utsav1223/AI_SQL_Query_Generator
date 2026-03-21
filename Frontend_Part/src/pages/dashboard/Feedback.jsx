@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { MessageSquareQuote, Send, Star, Clock3 } from "lucide-react";
-import { apiRequest } from "../../services/api";
+import { feedbackService } from "../../services/feedbackService";
 
 const FEEDBACK_TOPICS = ["Product UX", "SQL Generation", "Billing", "Performance", "Bug Report"];
 
@@ -19,7 +19,7 @@ export default function Feedback() {
   const loadHistory = async () => {
     setLoadingHistory(true);
     try {
-      const data = await apiRequest("/feedback/mine", "GET");
+      const data = await feedbackService.getMyFeedback();
       setHistory(data || []);
     } catch (err) {
       setError(err.message || "Failed to load feedback history");
@@ -41,7 +41,7 @@ export default function Feedback() {
 
     try {
       setSubmitting(true);
-      await apiRequest("/feedback", "POST", {
+      await feedbackService.submitFeedback({
         rating,
         topic,
         message: message.trim()

@@ -1,65 +1,58 @@
-import { createContext, useCallback, useEffect, useState } from "react";
-import { adminApiRequest, ADMIN_STORAGE_KEYS } from "../services/adminApi";
+import { createContext, useEffect, useState } from "react";
+import { adminService } from "../services/adminService";
+import { STORAGE_KEYS, readJson, removeItems, writeJson } from "../utils/storage";
 
-export const AdminAuthContext = createContext();
+export const AdminAuthContext = createContext(null);
+
+const clearAdminSession = () => {
+  removeItems(STORAGE_KEYS.adminToken, STORAGE_KEYS.admin);
+};
 
 export function AdminAuthProvider({ children }) {
-  const [admin, setAdmin] = useState(null);
+  const [admin, setAdmin] = useState(() => readJson(STORAGE_KEYS.admin));
   const [loading, setLoading] = useState(true);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem(ADMIN_STORAGE_KEYS.token);
-    localStorage.removeItem(ADMIN_STORAGE_KEYS.admin);
-    setAdmin(null);
-  }, []);
-
-  const hydrateAdmin = useCallback(async () => {
-    const token = localStorage.getItem(ADMIN_STORAGE_KEYS.token);
-    if (!token) {
-      setAdmin(null);
-      return null;
-    }
-
-    const me = await adminApiRequest("/admin/me", "GET");
-    localStorage.setItem(ADMIN_STORAGE_KEYS.admin, JSON.stringify(me));
-    setAdmin(me);
-    return me;
-  }, []);
-
   useEffect(() => {
-    const init = async () => {
-      const cachedAdmin = localStorage.getItem(ADMIN_STORAGE_KEYS.admin);
-      if (cachedAdmin) {
-        try {
-          setAdmin(JSON.parse(cachedAdmin));
-        } catch {
-          localStorage.removeItem(ADMIN_STORAGE_KEYS.admin);
-        }
+    const loadAdmin = async () => {
+      const token = localStorage.getItem(STORAGE_KEYS.adminToken);
+
+      if (!token) {
+        setLoading(false);
+        return;
       }
 
       try {
-        await hydrateAdmin();
+        const freshAdmin = await adminService.getCurrentAdmin();
+        writeJson(STORAGE_KEYS.admin, freshAdmin);
+        setAdmin(freshAdmin);
       } catch {
-        logout();
+        clearAdminSession();
+        setAdmin(null);
       } finally {
         setLoading(false);
       }
     };
 
-    init();
-  }, [hydrateAdmin, logout]);
+    loadAdmin();
+  }, []);
 
-  const login = useCallback(async (credentials) => {
-    const data = await adminApiRequest("/admin/login", "POST", credentials);
+  const login = async (credentials) => {
+    const data = await adminService.login(credentials);
+
     if (!data?.token || !data?.admin) {
       throw new Error("Invalid admin login response");
     }
 
-    localStorage.setItem(ADMIN_STORAGE_KEYS.token, data.token);
-    localStorage.setItem(ADMIN_STORAGE_KEYS.admin, JSON.stringify(data.admin));
+    localStorage.setItem(STORAGE_KEYS.adminToken, data.token);
+    writeJson(STORAGE_KEYS.admin, data.admin);
     setAdmin(data.admin);
     return data.admin;
-  }, []);
+  };
+
+  const logout = () => {
+    clearAdminSession();
+    setAdmin(null);
+  };
 
   return (
     <AdminAuthContext.Provider value={{ admin, loading, login, logout }}>

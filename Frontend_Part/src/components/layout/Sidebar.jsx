@@ -1,87 +1,145 @@
-import { NavLink } from "react-router-dom";
 import { useContext } from "react";
-import { AuthContext } from "../../context/AuthContext";
-import { 
-  LayoutGrid, Database, History, BarChart3, 
-  Settings, CreditCard, FileText, Zap, ShieldCheck, X, Cpu,
-  LifeBuoy, HelpCircle, MessageSquareQuote
+import { NavLink } from "react-router-dom";
+import {
+  BarChart3,
+  CreditCard,
+  Database,
+  FileText,
+  HelpCircle,
+  History,
+  LayoutGrid,
+  LifeBuoy,
+  MessageSquareQuote,
+  Sparkles,
+  Settings,
+  ShieldCheck,
+  X
 } from "lucide-react";
+import { ThemeContext } from "../../context/ThemeContext";
+import { useAuth } from "../../hooks/useAuth";
+
+const workspaceLinks = [
+  { to: "/dashboard", icon: LayoutGrid, label: "Overview" },
+  { to: "/dashboard/generate", icon: Sparkles, label: "AI Workspace" },
+  { to: "/dashboard/schema", icon: Database, label: "Schema Context" },
+  { to: "/dashboard/history", icon: History, label: "Query History" }
+];
+
+const accountLinks = [
+  { to: "/dashboard/analytics", icon: BarChart3, label: "Analytics", proOnly: true },
+  { to: "/dashboard/pricing", icon: CreditCard, label: "Billing" },
+  { to: "/dashboard/invoices", icon: FileText, label: "Invoices" },
+  { to: "/dashboard/settings", icon: Settings, label: "Settings" }
+];
+
+const helpLinks = [
+  { to: "/dashboard/support", icon: LifeBuoy, label: "Support" },
+  { to: "/dashboard/faq", icon: HelpCircle, label: "FAQ" },
+  { to: "/dashboard/feedback", icon: MessageSquareQuote, label: "Feedback" }
+];
 
 export default function Sidebar({ onClose }) {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
+  const { isDark } = useContext(ThemeContext);
 
-  const linkClass = ({ isActive }) =>
-    `group flex items-center gap-3 px-4 sm:px-5 py-3 rounded-2xl transition-all duration-500 text-[11px] font-black uppercase tracking-[0.14em] border ${
-      isActive
-        ? "bg-slate-900 text-white border-slate-800 shadow-xl shadow-slate-300 scale-[1.02] z-10"
-        : "text-slate-400 border-transparent hover:bg-slate-50 hover:text-slate-900"
-    }`;
+  const shellClass = isDark
+    ? "bg-[#081218] text-white border-r border-slate-700/60"
+    : "bg-[#112129] text-white border-r border-white/8";
 
   return (
-    <div className="w-[280px] sm:w-[300px] bg-white border-r border-slate-100 h-dvh flex flex-col p-5 sm:p-7 shadow-2xl lg:shadow-none animate-in slide-in-from-left duration-700">
-      
-      {/* Brand Header */}
-      <div className="flex items-center justify-between mb-8 sm:mb-10">
-        <div className="flex items-center gap-4">
-          <div className="bg-slate-950 p-3 rounded-2xl shadow-xl shadow-slate-200">
-            <Cpu size={24} className="text-emerald-400" />
-          </div>
+    <div className={`flex h-dvh flex-col px-5 py-5 shadow-[0_30px_70px_-46px_rgba(17,33,41,0.98)] lg:shadow-none ${shellClass}`}>
+      <div className="flex items-center justify-between gap-3 px-2">
+        <div className="flex items-center gap-3">
+          <span className="flex h-12 w-12 items-center justify-center rounded-[1.35rem] bg-white/10 text-[#8fe1cf]">
+            <Database size={20} />
+          </span>
           <div>
-            <h2 className="text-sm font-black tracking-[0.3em] text-slate-950 uppercase leading-none mb-1">SQL Studio</h2>
-            <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest opacity-80">Neural Engine</span>
+            <p className="display-font text-sm font-extrabold uppercase tracking-[0.24em] text-white">
+              AI SQL Studio
+            </p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/45">
+              Query workspace
+            </p>
           </div>
         </div>
-        <button onClick={onClose} className="lg:hidden p-2 text-slate-400 hover:bg-slate-50 rounded-lg transition-all">
-          <X size={20} />
+
+        <button
+          type="button"
+          onClick={onClose}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 text-white/70 transition-colors hover:bg-white/8 lg:hidden"
+        >
+          <X size={18} />
         </button>
       </div>
 
-      <div className="flex-1 space-y-8 overflow-y-auto custom-scrollbar no-scrollbar pr-1 sm:pr-2">
-        <NavGroup title="Workbench Hub">
-          <SidebarLink to="/dashboard" icon={<LayoutGrid size={18} />} label="System Overview" linkClass={linkClass} />
-          <SidebarLink to="/dashboard/generate" icon={<Zap size={18} />} label="Neural Logic" linkClass={linkClass} />
-          <SidebarLink to="/dashboard/schema" icon={<Database size={18} />} label="Context Library" linkClass={linkClass} />
-          <SidebarLink to="/dashboard/history" icon={<History size={18} />} label="Operation Logs" linkClass={linkClass} />
-        </NavGroup>
-
-        <NavGroup title="Management">
-          {user?.plan === "pro" ? (
-            <SidebarLink to="/dashboard/analytics" icon={<BarChart3 size={18} />} label="Advanced Stats" linkClass={linkClass} />
-          ) : (
-            <div className="flex items-center justify-between px-5 py-3.5 text-slate-300 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200 opacity-60 cursor-not-allowed">
-              <div className="flex items-center gap-3">
-                <BarChart3 size={18} />
-                <span className="uppercase text-[10px] font-black tracking-widest">Analytics</span>
-              </div>
-              <ShieldCheck size={14} className="text-slate-200" />
-            </div>
-          )}
-          <SidebarLink to="/dashboard/pricing" icon={<CreditCard size={18} />} label="Subscription" linkClass={linkClass} />
-          <SidebarLink to="/dashboard/invoices" icon={<FileText size={18} />} label="Billing Records" linkClass={linkClass} />
-          <SidebarLink to="/dashboard/settings" icon={<Settings size={18} />} label="Configuration" linkClass={linkClass} />
-        </NavGroup>
-
-        <NavGroup title="Help Desk">
-          <SidebarLink to="/dashboard/support" icon={<LifeBuoy size={18} />} label="Contact Support" linkClass={linkClass} />
-          <SidebarLink to="/dashboard/faq" icon={<HelpCircle size={18} />} label="FAQ" linkClass={linkClass} />
-          <SidebarLink to="/dashboard/feedback" icon={<MessageSquareQuote size={18} />} label="Feedback" linkClass={linkClass} />
-        </NavGroup>
+      <div className="mt-8 rounded-[1.8rem] border border-white/10 bg-white/6 p-4 backdrop-blur-sm">
+        <div className="flex items-start gap-3">
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#8fe1cf] text-[#112129]">
+            <ShieldCheck size={18} />
+          </span>
+          <div>
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#8fe1cf]">
+              Workspace Plan
+            </p>
+            <p className="mt-2 text-base font-bold text-white">
+              {user?.plan === "pro" ? "Pro Access Enabled" : "Free Workspace"}
+            </p>
+            <p className="mt-2 text-xs font-medium leading-6 text-white/60">
+              {user?.plan === "pro"
+                ? "Advanced tools and billing features are active."
+                : "Upgrade when you want optimize, validate, and explain mode."}
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Modern Profile Footer */}
-      <div className="mt-auto pt-6 border-t border-slate-100">
-        <div className="flex items-center gap-3 sm:gap-4 p-4 rounded-[24px] bg-slate-950 text-white shadow-xl shadow-slate-200 transition-all hover:scale-[1.01]">
-          <div className="w-11 h-11 rounded-2xl bg-emerald-500 flex items-center justify-center text-slate-950 text-sm font-black ring-4 ring-slate-800">
-            {user?.name?.charAt(0).toUpperCase() || "U"}
-          </div>
-          <div className="overflow-hidden">
-            <p className="text-xs font-black truncate tracking-wide">{user?.name || "Administrator"}</p>
-            <div className="flex items-center gap-1.5">
-               <div className={`w-1.5 h-1.5 rounded-full ${user?.plan === 'pro' ? 'bg-emerald-400 shadow-[0_0_6px_#10b981]' : 'bg-slate-400'}`} />
-               <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                {user?.plan === 'pro' ? 'Pro Instance' : 'Standard Node'}
-               </span>
-            </div>
+      <div className="mt-8 flex-1 overflow-y-auto pr-1 custom-scrollbar">
+        <NavSection title="Workspace">
+          {workspaceLinks.map((item) => (
+            <SidebarLink key={item.to} {...item} />
+          ))}
+        </NavSection>
+
+        <NavSection title="Account">
+          {accountLinks.map((item) =>
+            item.proOnly && user?.plan !== "pro" ? (
+              <div
+                key={item.to}
+                className="flex items-center justify-between rounded-[1.2rem] border border-dashed border-white/10 bg-white/4 px-4 py-3 text-white/40"
+              >
+                <div className="flex items-center gap-3">
+                  <item.icon size={17} />
+                  <span className="text-[11px] font-extrabold uppercase tracking-[0.16em]">
+                    {item.label}
+                  </span>
+                </div>
+                <span className="rounded-full border border-white/8 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-[0.14em]">
+                  Pro
+                </span>
+              </div>
+            ) : (
+              <SidebarLink key={item.to} {...item} />
+            )
+          )}
+        </NavSection>
+
+        <NavSection title="Help">
+          {helpLinks.map((item) => (
+            <SidebarLink key={item.to} {...item} />
+          ))}
+        </NavSection>
+      </div>
+
+      <div className="mt-6 rounded-[1.7rem] border border-white/10 bg-white/6 p-4 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-sm font-extrabold text-[#8fe1cf]">
+            {user?.name?.trim()?.charAt(0)?.toUpperCase() || "U"}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold text-white">{user?.name || "Workspace User"}</p>
+            <p className="mt-1 text-[10px] font-extrabold uppercase tracking-[0.16em] text-white/45">
+              {user?.plan === "pro" ? "Professional plan" : "Free plan"}
+            </p>
           </div>
         </div>
       </div>
@@ -89,20 +147,36 @@ export default function Sidebar({ onClose }) {
   );
 }
 
-function NavGroup({ title, children }) {
+function NavSection({ title, children }) {
   return (
-    <div className="animate-in fade-in duration-1000">
-      <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.32em] px-4 sm:px-5 mb-4">{title}</p>
+    <section className="mb-7">
+      <p className="mb-3 px-2 text-[10px] font-extrabold uppercase tracking-[0.22em] text-white/38">
+        {title}
+      </p>
       <nav className="space-y-2">{children}</nav>
-    </div>
+    </section>
   );
 }
 
-function SidebarLink({ to, icon, label, linkClass }) {
+function SidebarLink({ to, icon, label }) {
+  const Icon = icon;
+
   return (
-    <NavLink to={to} end className={linkClass}>
-      <span className="shrink-0 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">{icon}</span>
-      <span className="flex-1 whitespace-nowrap">{label}</span>
+    <NavLink
+      to={to}
+      end={to === "/dashboard"}
+      className={({ isActive }) =>
+        `group flex items-center gap-3 rounded-[1.2rem] px-4 py-3 text-[11px] font-extrabold uppercase tracking-[0.16em] transition-all ${
+          isActive
+            ? "bg-white text-[#112129] shadow-[0_20px_32px_-26px_rgba(255,255,255,0.7)]"
+            : "text-white/68 hover:bg-white/8 hover:text-white"
+        }`
+      }
+    >
+      <span className="transition-transform duration-200 group-hover:translate-x-0.5">
+        <Icon size={17} />
+      </span>
+      <span>{label}</span>
     </NavLink>
   );
 }

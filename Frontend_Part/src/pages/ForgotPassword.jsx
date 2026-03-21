@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Mail } from "lucide-react";
-import { apiRequest } from "../services/api";
+import { authService } from "../services/authService";
 import PublicAuthLayout from "../components/public/PublicAuthLayout";
 import AuthField from "../components/public/AuthField";
 
@@ -30,7 +30,7 @@ export default function ForgotPassword() {
 
     setIsLoading(true);
     try {
-      await apiRequest("/auth/forgot-password", "POST", { email });
+      await authService.forgotPassword(email);
       setMessage("OTP sent to your email. Redirecting...");
       setTimeout(() => {
         navigate("/reset-with-otp", { state: { email } });
@@ -55,8 +55,8 @@ export default function ForgotPassword() {
       ]}
     >
       <div className="space-y-2">
-        <h2 className="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Forgot Password</h2>
-        <p className="text-sm font-medium text-slate-500">
+        <h2 className="display-font text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Forgot Password</h2>
+        <p className="text-sm font-medium leading-7 text-slate-500">
           Enter your account email to receive a verification code.
         </p>
       </div>
@@ -92,7 +92,7 @@ export default function ForgotPassword() {
         <button
           type="submit"
           disabled={isLoading}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-4 text-xs font-black uppercase tracking-[0.2em] text-white transition-all hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-[#112129] px-5 py-4 text-xs font-black uppercase tracking-[0.2em] text-white transition-all hover:-translate-y-0.5 hover:bg-[#0f766e] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isLoading ? "Sending..." : "Send OTP"}
           {!isLoading ? <ArrowRight size={16} /> : null}
@@ -102,7 +102,7 @@ export default function ForgotPassword() {
       <div className="mt-8 border-t border-slate-200 pt-6">
         <Link
           to="/login"
-          className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-500 transition-colors hover:text-emerald-700"
+          className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-500 transition-colors hover:text-[#0f766e]"
         >
           <ArrowLeft size={14} />
           Back to login

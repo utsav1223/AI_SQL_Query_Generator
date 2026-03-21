@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, KeyRound, Lock, RefreshCw } from "lucide-react";
-import { apiRequest } from "../services/api";
+import { authService } from "../services/authService";
 import PublicAuthLayout from "../components/public/PublicAuthLayout";
 import AuthField from "../components/public/AuthField";
 
@@ -46,7 +46,7 @@ export default function ResetWithOTP() {
     setError("");
     setMessage("");
     try {
-      await apiRequest("/auth/forgot-password", "POST", { email: form.email });
+      await authService.forgotPassword(form.email);
       setCanResend(false);
       setTimer(30);
       setMessage("OTP resent successfully.");
@@ -70,7 +70,7 @@ export default function ResetWithOTP() {
 
     setIsLoading(true);
     try {
-      await apiRequest("/auth/verify-otp", "POST", {
+      await authService.verifyOtpAndReset({
         email: form.email,
         otp: form.otp,
         password: form.password
@@ -97,8 +97,8 @@ export default function ResetWithOTP() {
       ]}
     >
       <div className="space-y-2">
-        <h2 className="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Reset with OTP</h2>
-        <p className="text-sm font-medium text-slate-500">
+        <h2 className="display-font text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Reset with OTP</h2>
+        <p className="text-sm font-medium leading-7 text-slate-500">
           Use the code sent to your email and set your new password.
         </p>
       </div>
@@ -120,7 +120,7 @@ export default function ResetWithOTP() {
           <div className="flex items-center justify-between">
             <label
               htmlFor="otp"
-              className="block text-[11px] font-bold uppercase tracking-[0.22em] text-slate-500"
+              className="block text-[11px] font-extrabold uppercase tracking-[0.22em] text-slate-500"
             >
               One-Time Password
             </label>
@@ -129,7 +129,7 @@ export default function ResetWithOTP() {
               onClick={handleResend}
               disabled={!canResend}
               className={`inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] ${
-                canResend ? "text-emerald-700 hover:text-emerald-800" : "text-slate-300"
+                canResend ? "text-[#0f766e] hover:text-[#0a4f4a]" : "text-slate-300"
               }`}
             >
               <RefreshCw size={11} className={!canResend ? "animate-spin" : ""} />
@@ -137,10 +137,10 @@ export default function ResetWithOTP() {
             </button>
           </div>
           <div
-            className={`group flex items-center gap-3 rounded-2xl border bg-white px-4 py-3 transition-all ${
+            className={`group flex items-center gap-3 rounded-[1.35rem] border px-4 py-3.5 transition-all ${
               error.toLowerCase().includes("otp")
-                ? "border-rose-300 ring-4 ring-rose-100/80"
-                : "border-slate-200 hover:border-slate-300 focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-100"
+                ? "border-rose-300 bg-rose-50/70 ring-4 ring-rose-100/80"
+                : "border-slate-900/8 bg-white/85 shadow-[0_14px_30px_-26px_rgba(15,23,42,0.35)] hover:border-slate-900/14 focus-within:border-[#0f766e] focus-within:ring-4 focus-within:ring-[#0f766e]/10"
             }`}
           >
             <KeyRound
@@ -148,7 +148,7 @@ export default function ResetWithOTP() {
               className={
                 error.toLowerCase().includes("otp")
                   ? "text-rose-500"
-                  : "text-slate-400 group-focus-within:text-emerald-600"
+                  : "text-slate-400 group-focus-within:text-[#0f766e]"
               }
             />
             <input
@@ -188,7 +188,7 @@ export default function ResetWithOTP() {
         <button
           type="submit"
           disabled={isLoading}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-4 text-xs font-black uppercase tracking-[0.2em] text-white transition-all hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-[#112129] px-5 py-4 text-xs font-black uppercase tracking-[0.2em] text-white transition-all hover:-translate-y-0.5 hover:bg-[#0f766e] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isLoading ? "Updating..." : "Update Password"}
           {!isLoading ? <ArrowRight size={16} /> : null}
@@ -199,7 +199,7 @@ export default function ResetWithOTP() {
         <button
           type="button"
           onClick={() => navigate("/login")}
-          className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-500 transition-colors hover:text-emerald-700"
+          className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-500 transition-colors hover:text-[#0f766e]"
         >
           <ArrowLeft size={14} />
           Back to login

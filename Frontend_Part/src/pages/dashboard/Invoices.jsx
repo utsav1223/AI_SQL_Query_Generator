@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { apiRequest } from "../../services/api";
 import { CalendarDays, CheckCircle2, FileText, Loader2, Receipt } from "lucide-react";
+import { paymentService } from "../../services/paymentService";
 
 export default function Invoices() {
   const [invoices, setInvoices] = useState([]);
@@ -9,7 +9,7 @@ export default function Invoices() {
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
-        const data = await apiRequest("/payment/invoices", "GET");
+        const data = await paymentService.getInvoices();
         setInvoices(data);
       } catch (err) {
         console.error("Failed to fetch invoices", err);

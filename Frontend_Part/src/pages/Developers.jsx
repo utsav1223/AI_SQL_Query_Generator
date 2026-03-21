@@ -1,56 +1,83 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, Code2, Github, Linkedin, Mail } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Code2, Github, Linkedin, Mail } from "lucide-react";
 import { developers } from "../data/developers";
 
 export default function Developers() {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-40 border-b border-slate-900/6 bg-white/72 backdrop-blur-2xl">
         <div className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between px-5 sm:px-8">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-slate-600 hover:border-slate-300 hover:text-slate-900"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-900/8 bg-white/70 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-700 transition-all hover:border-slate-900/18 hover:text-slate-950"
           >
             <ArrowLeft size={14} />
             Back Home
           </Link>
 
-          <span className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.2em] text-emerald-700">
+          <span className="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#0f766e]">
             <Code2 size={14} />
-            Meet The Developers
+            Team Showcase
           </span>
         </div>
       </header>
 
-      <main className="px-5 py-14 sm:px-8 sm:py-18">
+      <main className="px-5 py-14 sm:px-8">
         <section className="mx-auto w-full max-w-7xl">
-          <div className="max-w-3xl">
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-700">
-              Team
-            </p>
-            <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-5xl">
-              People behind AI SQL Studio.
-            </h1>
-            <p className="mt-4 text-sm font-medium leading-relaxed text-slate-600 sm:text-base">
-              This team combines product engineering, frontend craftsmanship, and AI systems expertise to deliver reliable SQL workflows.
-            </p>
+          <div className="public-card relative overflow-hidden rounded-[2.2rem] px-6 py-8 sm:px-10 sm:py-12">
+            <div className="absolute -right-14 top-0 h-44 w-44 rounded-full bg-[#0f766e]/12 blur-3xl" />
+            <div className="absolute -left-10 bottom-0 h-40 w-40 rounded-full bg-[#c76b2d]/10 blur-3xl" />
+
+            <div className="relative max-w-3xl">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.28em] text-[#0f766e]">
+                People Behind The Product
+              </p>
+              <h1 className="display-font mt-4 text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">
+                Meet the developers shaping AI SQL Studio.
+              </h1>
+              <p className="mt-5 text-sm font-medium leading-8 text-slate-600 sm:text-base">
+                This page highlights the builders behind the product experience,
+                frontend polish, backend architecture, and AI-driven workflow.
+              </p>
+            </div>
           </div>
 
           <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {developers.map((dev) => (
-              <article key={dev.name} className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-sm">
-                <img src={dev.image} alt={dev.name} className="h-80 w-full object-cover object-top sm:h-96" />
-                <div className="p-6">
-                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700">
-                    {dev.role}
-                  </p>
-                  <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900">{dev.name}</h2>
-                  <p className="mt-3 text-sm font-medium leading-relaxed text-slate-600">{dev.bio}</p>
+              <article
+                key={dev.name}
+                className="public-card overflow-hidden rounded-[1.9rem]"
+              >
+                <div className="relative h-80 overflow-hidden bg-slate-200">
+                  <img
+                    src={dev.image}
+                    alt={dev.name}
+                    className="h-full w-full object-cover object-top transition-transform duration-700 hover:scale-105"
+                  />
+                  <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-slate-950/55 to-transparent" />
+                </div>
 
-                  <div className="mt-5 flex items-center gap-2">
+                <div className="p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#0f766e]">
+                        {dev.role}
+                      </p>
+                      <h2 className="display-font mt-3 text-2xl font-extrabold tracking-tight text-slate-950">
+                        {dev.name}
+                      </h2>
+                    </div>
+                    <span className="rounded-full border border-slate-900/8 bg-white/70 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">
+                      Builder
+                    </span>
+                  </div>
+
+                  <p className="mt-4 text-sm font-medium leading-7 text-slate-600">{dev.bio}</p>
+
+                  <div className="mt-6 flex flex-wrap items-center gap-2">
                     <a
                       href={`mailto:${dev.email}`}
-                      className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-900/8 bg-white px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-600 transition-all hover:border-slate-900/16 hover:text-slate-950"
                     >
                       <Mail size={12} />
                       Mail
@@ -59,7 +86,7 @@ export default function Developers() {
                       href={dev.github}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-900/8 bg-white px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-600 transition-all hover:border-slate-900/16 hover:text-slate-950"
                     >
                       <Github size={12} />
                       GitHub
@@ -68,7 +95,7 @@ export default function Developers() {
                       href={dev.linkedin}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-slate-600 hover:border-slate-300 hover:text-slate-900"
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-900/8 bg-white px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-600 transition-all hover:border-slate-900/16 hover:text-slate-950"
                     >
                       <Linkedin size={12} />
                       LinkedIn
@@ -77,6 +104,16 @@ export default function Developers() {
                 </div>
               </article>
             ))}
+          </div>
+
+          <div className="mt-10 flex justify-center">
+            <Link
+              to="/register"
+              className="inline-flex items-center gap-2 rounded-full bg-[#112129] px-6 py-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white transition-all hover:-translate-y-0.5 hover:bg-[#0f766e]"
+            >
+              Create Workspace
+              <ArrowUpRight size={14} />
+            </Link>
           </div>
         </section>
       </main>

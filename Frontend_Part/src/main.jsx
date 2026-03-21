@@ -1,17 +1,13 @@
-import './index.css'
-import React from "react";
+import "./index.css";
 import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
 import App from "./App";
-import { AuthProvider } from "./context/AuthContext";
-import { ThemeProvider } from "./context/ThemeContext";
-import { AdminAuthProvider } from "./context/AdminAuthContext";
+import AppProviders from "./providers/AppProviders";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <ThemeProvider>
-    <AdminAuthProvider>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </AdminAuthProvider>
-  </ThemeProvider>
+  <BrowserRouter>
+    <AppProviders>
+      <App />
+    </AppProviders>
+  </BrowserRouter>
 );

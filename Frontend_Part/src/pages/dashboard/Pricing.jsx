@@ -1,10 +1,9 @@
-import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
 import { ArrowRight, Check, CreditCard, Shield, ShieldCheck, Sparkles, X, Zap } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function Pricing() {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   return (

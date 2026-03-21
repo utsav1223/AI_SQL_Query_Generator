@@ -1,9 +1,9 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail, ArrowRight } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
-import { AuthContext } from "../context/AuthContext";
-import { apiRequest } from "../services/api";
+import { useAuth } from "../hooks/useAuth";
+import { authService } from "../services/authService";
 import PublicAuthLayout from "../components/public/PublicAuthLayout";
 import AuthField from "../components/public/AuthField";
 
@@ -11,7 +11,7 @@ const GOOGLE_AUTH_URL =
   import.meta.env.VITE_GOOGLE_AUTH_URL || "http://localhost:5000/api/auth/google";
 
 export default function Login() {
-  const { login } = useContext(AuthContext);
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ email: "", password: "" });
@@ -50,7 +50,7 @@ export default function Login() {
 
     setIsLoading(true);
     try {
-      const data = await apiRequest("/auth/login", "POST", form);
+      const data = await authService.login(form);
       await login(data);
       navigate("/dashboard", { replace: true });
     } catch (err) {
@@ -75,8 +75,8 @@ export default function Login() {
       ]}
     >
       <div className="space-y-2">
-        <h2 className="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Sign In</h2>
-        <p className="text-sm font-medium text-slate-500">
+        <h2 className="display-font text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Sign In</h2>
+        <p className="text-sm font-medium leading-7 text-slate-500">
           Continue where you left off.
         </p>
       </div>
@@ -125,7 +125,7 @@ export default function Login() {
         <div className="flex justify-end">
           <Link
             to="/forgot-password"
-            className="text-xs font-bold uppercase tracking-[0.15em] text-emerald-700 hover:text-emerald-800"
+            className="text-xs font-bold uppercase tracking-[0.15em] text-[#0f766e] hover:text-[#0a4f4a]"
           >
             Forgot password?
           </Link>
@@ -134,7 +134,7 @@ export default function Login() {
         <button
           type="submit"
           disabled={isLoading}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-4 text-xs font-black uppercase tracking-[0.2em] text-white transition-all hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-[#112129] px-5 py-4 text-xs font-black uppercase tracking-[0.2em] text-white transition-all hover:-translate-y-0.5 hover:bg-[#0f766e] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isLoading ? "Logging in..." : "Login"}
           {!isLoading ? <ArrowRight size={16} /> : null}
@@ -152,7 +152,7 @@ export default function Login() {
         onClick={() => {
           window.location.href = GOOGLE_AUTH_URL;
         }}
-        className="flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-bold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
+        className="flex w-full items-center justify-center gap-3 rounded-full border border-slate-900/8 bg-white px-5 py-3.5 text-sm font-bold text-slate-700 transition-all hover:border-slate-900/16 hover:bg-slate-50"
       >
         <FcGoogle className="h-5 w-5" />
         Continue with Google
@@ -160,7 +160,7 @@ export default function Login() {
 
       <p className="mt-8 text-center text-sm font-semibold text-slate-500">
         New here?{" "}
-        <Link to="/register" className="text-emerald-700 hover:text-emerald-800">
+        <Link to="/register" className="text-[#0f766e] hover:text-[#0a4f4a]">
           Create account
         </Link>
       </p>
