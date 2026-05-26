@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
   BarChart3,
   BrainCircuit,
   CheckCircle2,
   Database,
+  FileText,
+  Layers3,
   Menu,
   MessageSquareMore,
   ShieldCheck,
   Sparkles,
-  Workflow,
   X,
   Zap
 } from "lucide-react";
@@ -23,84 +25,80 @@ const navItems = [
   { label: "Home", sectionId: null },
   { label: "Features", sectionId: "features" },
   { label: "Pricing", sectionId: "pricing" },
+  { label: "Team", sectionId: "team" },
   { label: "Contact", sectionId: "contact" }
 ];
 
 const featureCards = [
   {
-    title: "Natural language to SQL",
-    description: "Turn plain-English requests into clean SQL without making the UI feel technical or overwhelming.",
+    title: "Ask in plain English",
+    description: "Describe the result you need and get readable SQL that respects your tables, joins, and filters.",
     icon: Sparkles
   },
   {
-    title: "Schema-aware context",
-    description: "Store tables and relationships so the generated output matches your real database structure.",
+    title: "Keep schema context",
+    description: "Save database structure once, then reuse it across generations so output is more accurate.",
     icon: Database
   },
   {
-    title: "Review workflow",
-    description: "Validate, optimize, and inspect queries before moving them into demos, reports, or production.",
+    title: "Review before shipping",
+    description: "Use history, validation, and clear query output to move from draft to confident execution.",
     icon: BarChart3
   },
   {
-    title: "SaaS-ready surface",
-    description: "Auth, pricing, billing, and support all live inside one polished product experience.",
+    title: "Built like a SaaS product",
+    description: "Authentication, billing, support, settings, and usage flows live in one polished experience.",
     icon: ShieldCheck
   }
 ];
 
 const workflowSteps = [
-  {
-    title: "Add your schema",
-    description: "Provide table structure and columns so the app understands your project before generating SQL.",
-    icon: Database
-  },
-  {
-    title: "Describe the result",
-    description: "Write what you want in plain language instead of hand-crafting complex queries from scratch.",
-    icon: BrainCircuit
-  },
-  {
-    title: "Review and ship",
-    description: "Check the output, make quick edits, and keep the workflow readable for future updates.",
-    icon: Workflow
-  }
+  { title: "Connect context", description: "Add the tables, columns, and relationships your SQL depends on.", icon: Layers3 },
+  { title: "Write the request", description: "Explain the report, dashboard, or backend query in natural language.", icon: BrainCircuit },
+  { title: "Refine the result", description: "Review the generated SQL, save the query, and continue from history.", icon: FileText }
 ];
 
 const plans = [
   {
     name: "Starter",
     price: "Free",
-    description: "Great for student projects, demos, and learning the platform.",
-    features: ["Query generation", "Saved history", "Basic schema workspace"],
+    description: "For students, prototypes, and personal projects.",
+    features: ["AI query generation", "Schema workspace", "Saved history"],
     action: "Start Free",
     mode: "register"
   },
   {
     name: "Pro",
     price: "INR 499",
-    description: "For users who want optimization tools, billing flow, and a stronger SaaS experience.",
-    features: ["Unlimited generation", "Validation and explain tools", "Invoices and plan management"],
-    action: "Upgrade To Pro",
+    description: "For serious usage with billing, support, and stronger workflow tools.",
+    features: ["Unlimited generations", "Validation and explain tools", "Invoices and plan management"],
+    action: "Go Pro",
     mode: "login",
     highlighted: true
   }
 ];
 
 const stats = [
-  { label: "Setup Time", value: "< 5 mins" },
-  { label: "Interface", value: "Modern SaaS" },
-  { label: "Flow", value: "Schema to SQL" }
-];
-
-const signals = [
-  "Prompt-based generation",
-  "Schema-aware output",
-  "History and billing",
-  "Support-ready dashboard"
+  { label: "Setup", value: "5 min" },
+  { label: "Workspace", value: "Full SaaS" },
+  { label: "Flow", value: "Prompt to SQL" }
 ];
 
 const developersPreview = developers.slice(0, 3);
+
+const revealViewport = { once: false, amount: 0.18 };
+const fadeUp = {
+  hidden: { opacity: 0, y: 28 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] } }
+};
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08 } }
+};
+const cardReveal = {
+  hidden: { opacity: 0, y: 18 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } }
+};
 
 export default function Landing() {
   const location = useLocation();
@@ -145,10 +143,7 @@ export default function Landing() {
         return;
       }
 
-      const element = document.getElementById(sectionId);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
     };
 
     setMobileMenuOpen(false);
@@ -176,36 +171,30 @@ export default function Landing() {
   };
 
   return (
-    <div className="public-page relative overflow-hidden text-slate-950">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute left-[-10%] top-[-12rem] h-[28rem] w-[28rem] rounded-full bg-sky-300/25 blur-3xl" />
-        <div className="absolute right-[-10%] top-20 h-[25rem] w-[25rem] rounded-full bg-cyan-200/30 blur-3xl" />
-        <div className="absolute bottom-[-8rem] left-1/2 h-[22rem] w-[22rem] -translate-x-1/2 rounded-full bg-slate-300/20 blur-3xl" />
-      </div>
-
-      <header className="sticky top-0 z-50 border-b border-white/70 bg-white/75 backdrop-blur-xl">
-        <div className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between px-5 sm:px-8">
+    <div className="public-page bg-[#f6f8fb] text-slate-950">
+      <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
+        <div className="mx-auto flex h-[60px] w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link to="/" className="inline-flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-sky-300 shadow-[0_20px_40px_-24px_rgba(15,23,42,0.9)]">
-              <Database size={18} />
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#10232d] text-teal-300">
+              <Database size={16} />
             </span>
             <div>
-              <p className="display-font text-sm font-extrabold uppercase tracking-[0.24em] text-slate-950">
+              <p className="display-font text-[12px] font-extrabold uppercase tracking-[0.18em] text-slate-950">
                 AI SQL Studio
               </p>
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
-                Modern query workspace
+              <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                Query workspace
               </p>
             </div>
           </Link>
 
-          <nav className="hidden items-center gap-8 lg:flex">
+          <nav className="hidden items-center gap-6 lg:flex">
             {navItems.map((item) => (
               <button
                 key={item.label}
                 type="button"
                 onClick={() => scrollToSection(item.sectionId)}
-                className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-slate-500 transition-colors hover:text-slate-950"
+                className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-500 transition-colors hover:text-slate-950"
               >
                 {item.label}
               </button>
@@ -216,14 +205,14 @@ export default function Landing() {
             <button
               type="button"
               onClick={() => openAuthModal("login")}
-              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950"
+              className="rounded-md border border-slate-200 bg-white px-3.5 py-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50"
             >
               Login
             </button>
             <button
               type="button"
               onClick={() => openAuthModal("register")}
-              className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white transition-all hover:-translate-y-0.5 hover:bg-sky-600"
+              className="inline-flex items-center gap-2 rounded-md bg-[#10232d] px-3.5 py-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white transition-all hover:bg-teal-700"
             >
               Register
               <ArrowRight size={14} />
@@ -233,274 +222,321 @@ export default function Landing() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen((current) => !current)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 lg:hidden"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 lg:hidden"
             aria-label="Toggle navigation menu"
           >
             {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
 
+      </header>
+
+      <AnimatePresence>
         {mobileMenuOpen ? (
-          <div className="border-t border-slate-200/80 bg-white/92 px-5 py-4 backdrop-blur-xl lg:hidden">
-            <div className="mx-auto flex w-full max-w-7xl flex-col gap-3">
-              {navItems.map((item) => (
+          <motion.div
+            className="fixed inset-0 z-[120] lg:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <button
+              type="button"
+              aria-label="Close menu"
+              onClick={() => setMobileMenuOpen(false)}
+              className="absolute inset-0 bg-slate-950/45"
+            />
+            <motion.aside
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+              className="relative flex h-dvh w-[84vw] max-w-[320px] flex-col border-r border-slate-200 bg-white text-slate-950 shadow-2xl"
+            >
+              <div className="flex h-[60px] shrink-0 items-center justify-between border-b border-slate-200 px-4">
+                <div className="inline-flex min-w-0 items-center gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#10232d] text-teal-300">
+                    <Database size={16} />
+                  </span>
+                  <span className="truncate text-[12px] font-extrabold uppercase tracking-[0.14em] text-slate-950">
+                    AI SQL Studio
+                  </span>
+                </div>
                 <button
-                  key={item.label}
                   type="button"
-                  onClick={() => scrollToSection(item.sectionId)}
-                  className="rounded-2xl px-4 py-3 text-sm font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-950"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700"
+                  aria-label="Close menu"
                 >
-                  {item.label}
+                  <X size={16} />
                 </button>
-              ))}
-              <div className="grid gap-3 pt-2 sm:grid-cols-2">
+              </div>
+
+              <nav className="grid gap-1 p-3">
+                {navItems.map((item) => (
+                  <button
+                    key={item.label}
+                    type="button"
+                    onClick={() => scrollToSection(item.sectionId)}
+                    className="rounded-md px-3 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-950"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </nav>
+
+              <div className="mt-auto grid gap-2 border-t border-slate-200 p-4">
                 <button
                   type="button"
                   onClick={() => openAuthModal("login")}
-                  className="rounded-full border border-slate-200 bg-white px-4 py-3 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-700"
+                  className="rounded-md border border-slate-200 bg-white px-3 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-700"
                 >
                   Login
                 </button>
                 <button
                   type="button"
                   onClick={() => openAuthModal("register")}
-                  className="rounded-full bg-slate-950 px-4 py-3 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white"
+                  className="rounded-md bg-[#10232d] px-3 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white"
                 >
                   Register
                 </button>
               </div>
-            </div>
-          </div>
+            </motion.aside>
+          </motion.div>
         ) : null}
-      </header>
+      </AnimatePresence>
 
-      <main className="relative pb-20">
-        <section className="px-5 pb-16 pt-14 sm:px-8 sm:pb-20 sm:pt-20">
-          <div className="mx-auto grid w-full max-w-7xl gap-12 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
-            <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/85 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.22em] text-sky-700 shadow-[0_15px_40px_-30px_rgba(14,165,233,0.45)]">
-                <Zap size={14} />
-                Clean SaaS experience for AI SQL workflows
+      <main>
+        <section className="relative overflow-hidden border-b border-slate-200 bg-slate-950">
+          <img
+            src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=2200&q=85"
+            alt="Modern data center"
+            className="absolute inset-0 h-full w-full object-cover opacity-[0.34]"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,6,23,0.93)_0%,rgba(15,23,42,0.82)_48%,rgba(15,23,42,0.52)_100%)]" />
+
+          <motion.div
+            className="relative mx-auto grid w-full max-w-7xl gap-8 px-4 py-12 sm:px-6 sm:py-14 lg:grid-cols-[1fr_420px] lg:items-center lg:px-8"
+            variants={stagger}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div className="max-w-2xl" variants={fadeUp}>
+              <div className="inline-flex items-center gap-2 rounded-md border border-white/14 bg-white/10 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-teal-200">
+                <Zap size={13} />
+                AI assisted SQL generation
               </div>
 
-              <h1 className="display-font mt-7 text-5xl font-extrabold leading-[0.94] tracking-[-0.045em] text-slate-950 sm:text-6xl lg:text-7xl">
-                Generate better SQL with a UI that finally feels modern and professional.
+              <h1 className="display-font mt-5 text-3xl font-bold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-[56px]">
+                Turn database questions into production-ready SQL.
               </h1>
 
-              <p className="mt-6 max-w-2xl text-base font-medium leading-8 text-slate-600 sm:text-lg">
-                AI SQL Studio combines natural-language query generation, schema context,
-                pricing, and support inside a product experience inspired by real startup
-                websites instead of cluttered student dashboards.
+              <p className="mt-4 max-w-xl text-sm font-medium leading-7 text-slate-200 sm:text-base">
+                A polished workspace for writing prompts, managing schema context, reviewing generated SQL, and moving faster without losing control.
               </p>
 
-              <div className="mt-8 flex flex-wrap items-center gap-4">
+              <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
                 <button
                   type="button"
                   onClick={() => openAuthModal("register")}
-                  className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-4 text-[11px] font-extrabold uppercase tracking-[0.2em] text-white transition-all hover:-translate-y-0.5 hover:bg-sky-600"
+                  className="inline-flex items-center justify-center gap-2 rounded-md bg-teal-400 px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-950 transition-all hover:bg-teal-300"
                 >
                   Get Started
-                  <ArrowRight size={15} />
+                  <ArrowRight size={14} />
                 </button>
                 <button
                   type="button"
                   onClick={() => scrollToSection("features")}
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-6 py-4 text-[11px] font-extrabold uppercase tracking-[0.2em] text-slate-700 transition-all hover:border-slate-300 hover:bg-white"
+                  className="inline-flex items-center justify-center rounded-md border border-white/18 bg-white/10 px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white transition-all hover:bg-white/16"
                 >
-                  Learn More
+                  Explore Features
                 </button>
               </div>
 
-              <div className="mt-10 grid gap-4 sm:grid-cols-3">
+              <div className="mt-8 grid gap-2.5 sm:grid-cols-3">
                 {stats.map((item) => (
-                  <article
-                    key={item.label}
-                    className="rounded-[1.7rem] border border-white/80 bg-white/80 px-5 py-5 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.35)] backdrop-blur-xl"
-                  >
-                    <p className="display-font text-2xl font-extrabold tracking-tight text-slate-950">
-                      {item.value}
-                    </p>
-                    <p className="mt-2 text-[10px] font-extrabold uppercase tracking-[0.22em] text-slate-500">
+                  <div key={item.label} className="rounded-md border border-white/12 bg-white/10 p-3 backdrop-blur">
+                    <p className="display-font text-xl font-bold text-white">{item.value}</p>
+                    <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.14em] text-slate-300">
                       {item.label}
                     </p>
-                  </article>
+                  </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
 
-            <div className="overflow-hidden rounded-[2rem] border border-white/80 bg-white/80 p-5 shadow-[0_40px_120px_-55px_rgba(15,23,42,0.45)] backdrop-blur-xl sm:p-6">
-              <div className="rounded-[1.8rem] bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_28%),linear-gradient(155deg,#020617_0%,#0f172a_56%,#111827_100%)] p-5 text-white sm:p-6">
-                <div className="flex flex-wrap items-center justify-between gap-3">
+            <motion.div className="rounded-lg border border-white/14 bg-white/95 p-3 shadow-2xl" variants={fadeUp}>
+              <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
+                <div className="mb-3 flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-sky-200">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-teal-700">
                       Workspace Preview
                     </p>
-                    <h2 className="display-font mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">
-                      Schema-aware SQL generation
+                    <h2 className="display-font mt-1 text-xl font-bold tracking-tight text-slate-950">
+                      Revenue query
                     </h2>
                   </div>
-                  <span className="rounded-full border border-white/10 bg-white/8 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.18em] text-white/85">
-                    Live
+                  <span className="rounded-md bg-emerald-100 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-emerald-700">
+                    Ready
                   </span>
                 </div>
 
-                <div className="mt-6 rounded-[1.6rem] border border-white/10 bg-white/6 p-4">
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-300">
-                    Prompt
-                  </p>
-                  <p className="mt-3 text-sm font-medium leading-7 text-slate-100">
-                    Show monthly active subscriptions grouped by plan with total revenue.
+                <div className="rounded-md border border-slate-200 bg-white p-3">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-500">Prompt</p>
+                  <p className="mt-2 text-[13px] font-semibold leading-6 text-slate-700">
+                    Show active subscriptions by plan with monthly recurring revenue.
                   </p>
                 </div>
 
-                <div className="mt-4 rounded-[1.6rem] border border-white/10 bg-slate-950/40 p-4">
-                  <div className="mb-3 flex items-center justify-between text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">
+                <div className="mt-3 overflow-hidden rounded-md border border-slate-800 bg-slate-950">
+                  <div className="flex items-center justify-between border-b border-white/10 px-3 py-2.5 text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400">
                     <span>Generated SQL</span>
-                    <span>Optimized</span>
+                    <span>Schema aware</span>
                   </div>
-                  <pre className="mono-font overflow-x-auto text-[12px] leading-6 text-slate-200">
+                  <pre className="mono-font overflow-x-auto p-3 text-[11px] leading-5 text-slate-200">
 {`SELECT plan,
        COUNT(user_id) AS active_users,
        SUM(amount) AS monthly_revenue
 FROM subscriptions
 WHERE status = 'active'
-GROUP BY plan;`}
+GROUP BY plan
+ORDER BY monthly_revenue DESC;`}
                   </pre>
                 </div>
               </div>
-
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                {signals.map((item) => (
-                  <div
-                    key={item}
-                    className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.35)]"
-                  >
-                    <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-950 text-sky-300">
-                      <CheckCircle2 size={16} />
-                    </span>
-                    <span className="text-sm font-semibold text-slate-700">{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </section>
 
-        <section id="features" className="px-5 py-20 sm:px-8">
+        <motion.section
+          id="features"
+          className="px-4 py-12 sm:px-6 lg:px-8"
+          variants={stagger}
+          initial="hidden"
+          whileInView="visible"
+          viewport={revealViewport}
+        >
           <div className="mx-auto w-full max-w-7xl">
-            <div className="mb-12 max-w-3xl">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.28em] text-sky-700">
-                Features
-              </p>
-              <h2 className="display-font mt-4 text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">
-                Better spacing, stronger hierarchy, and cleaner cards across the full journey.
+            <motion.div className="mb-8 max-w-2xl" variants={fadeUp}>
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal-700">Features</p>
+              <h2 className="display-font mt-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+                Everything needed to go from schema to usable SQL.
               </h2>
-            </div>
+            </motion.div>
 
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            <motion.div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4" variants={stagger}>
               {featureCards.map((item) => (
-                <article
-                  key={item.title}
-                  className="rounded-[1.9rem] border border-white/80 bg-white/82 p-7 shadow-[0_26px_70px_-50px_rgba(15,23,42,0.35)] transition-all hover:-translate-y-1"
-                >
-                  <div className="flex h-14 w-14 items-center justify-center rounded-[1.2rem] bg-slate-950 text-sky-300">
-                    <item.icon size={20} />
+                <motion.article key={item.title} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-1 hover:border-teal-200 hover:shadow-md" variants={cardReveal}>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#10232d] text-teal-300">
+                    <item.icon size={16} />
                   </div>
-                  <h3 className="display-font mt-6 text-2xl font-extrabold tracking-tight text-slate-950">
-                    {item.title}
-                  </h3>
-                  <p className="mt-3 text-sm font-medium leading-7 text-slate-600">
-                    {item.description}
-                  </p>
-                </article>
+                  <h3 className="display-font mt-4 text-base font-bold tracking-tight text-slate-950">{item.title}</h3>
+                  <p className="mt-2 text-[13px] font-medium leading-6 text-slate-600">{item.description}</p>
+                </motion.article>
               ))}
-            </div>
+            </motion.div>
           </div>
-        </section>
+        </motion.section>
 
-        <section className="px-5 py-20 sm:px-8">
-          <div className="mx-auto max-w-7xl rounded-[2.2rem] border border-slate-200/70 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.12),transparent_26%),linear-gradient(180deg,rgba(255,255,255,0.92)_0%,rgba(248,250,252,0.9)_100%)] px-6 py-8 shadow-[0_32px_90px_-60px_rgba(15,23,42,0.35)] sm:px-10 sm:py-12">
-            <div className="mb-10 max-w-2xl">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.28em] text-sky-700">
-                Workflow
-              </p>
-              <h2 className="display-font mt-4 text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">
-                Three simple steps from idea to executable SQL.
+        <motion.section
+          className="border-y border-slate-200 bg-white px-4 py-12 sm:px-6 lg:px-8"
+          variants={stagger}
+          initial="hidden"
+          whileInView="visible"
+          viewport={revealViewport}
+        >
+          <div className="mx-auto grid w-full max-w-7xl gap-7 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
+            <motion.div variants={fadeUp}>
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal-700">Workflow</p>
+              <h2 className="display-font mt-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+                A focused path from idea to query.
               </h2>
-            </div>
+              <p className="mt-3 text-sm font-medium leading-7 text-slate-600">
+                The interface keeps the important decisions visible: what schema is being used, what was requested, and what SQL is ready to run.
+              </p>
+            </motion.div>
 
-            <div className="grid gap-5 md:grid-cols-3">
+            <motion.div className="grid gap-4 md:grid-cols-3" variants={stagger}>
               {workflowSteps.map((step, index) => (
-                <article key={step.title} className="rounded-[1.8rem] border border-slate-200 bg-white/90 p-6">
+                <motion.article key={step.title} className="rounded-lg border border-slate-200 bg-slate-50 p-4 transition-all hover:-translate-y-1 hover:border-teal-200 hover:bg-white" variants={cardReveal}>
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-slate-400">
+                    <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400">
                       Step {index + 1}
                     </span>
-                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
-                      <step.icon size={18} />
+                    <span className="flex h-9 w-9 items-center justify-center rounded-md bg-white text-teal-700">
+                      <step.icon size={16} />
                     </span>
                   </div>
-                  <h3 className="display-font mt-6 text-2xl font-extrabold tracking-tight text-slate-950">
-                    {step.title}
-                  </h3>
-                  <p className="mt-3 text-sm font-medium leading-7 text-slate-600">{step.description}</p>
-                </article>
+                  <h3 className="display-font mt-4 text-base font-bold tracking-tight text-slate-950">{step.title}</h3>
+                  <p className="mt-2 text-[13px] font-medium leading-6 text-slate-600">{step.description}</p>
+                </motion.article>
               ))}
-            </div>
+            </motion.div>
           </div>
-        </section>
+        </motion.section>
 
-        <section id="pricing" className="px-5 py-20 sm:px-8">
-          <div className="mx-auto w-full max-w-6xl">
-            <div className="mb-12 text-center">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.28em] text-sky-700">
-                Pricing
-              </p>
-              <h2 className="display-font mt-4 text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">
-                Clear plans with room to scale when the project grows.
+        <motion.section
+          id="pricing"
+          className="px-4 py-12 sm:px-6 lg:px-8"
+          variants={stagger}
+          initial="hidden"
+          whileInView="visible"
+          viewport={revealViewport}
+        >
+          <div className="mx-auto w-full max-w-5xl">
+            <motion.div className="mb-8 text-center" variants={fadeUp}>
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal-700">Pricing</p>
+              <h2 className="display-font mt-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+                Clear plans for learning and scaling.
               </h2>
-            </div>
+              <p className="mx-auto mt-3 max-w-xl text-sm font-medium leading-7 text-slate-600">
+                Start free, then move into the full workflow when you need more generation, validation, and billing tools.
+              </p>
+            </motion.div>
 
-            <div className="grid gap-6 lg:grid-cols-2">
+            <motion.div className="mx-auto grid max-w-4xl gap-5 md:grid-cols-2" variants={stagger}>
               {plans.map((plan) => (
-                <article
+                <motion.article
                   key={plan.name}
-                  className={`rounded-[2rem] border p-8 ${
-                    plan.highlighted
-                      ? "border-slate-900/10 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.18),transparent_24%),linear-gradient(160deg,#020617_0%,#0f172a_60%,#111827_100%)] text-white"
-                      : "border-white/80 bg-white/85 text-slate-950"
+                  variants={cardReveal}
+                  className={`relative flex min-h-[430px] flex-col overflow-hidden rounded-xl border p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg ${
+                    plan.highlighted ? "border-[#10232d] bg-white text-slate-950 ring-1 ring-[#10232d]" : "border-slate-200 bg-white text-slate-950"
                   }`}
                 >
+                  {plan.highlighted ? (
+                    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-500 via-slate-900 to-teal-500" />
+                  ) : null}
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
-                      <p className={`text-[10px] font-extrabold uppercase tracking-[0.22em] ${plan.highlighted ? "text-sky-200" : "text-slate-500"}`}>
+                      <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-teal-700">
                         {plan.name}
                       </p>
-                      <p className="display-font mt-4 text-5xl font-extrabold tracking-tight sm:text-6xl">
-                        {plan.price}
-                      </p>
+                      <div className="mt-2 flex items-end gap-2">
+                        <p className="display-font text-3xl font-bold tracking-tight sm:text-4xl">{plan.price}</p>
+                        {plan.price !== "Free" ? (
+                          <span className="pb-1 text-xs font-semibold text-slate-500">/ month</span>
+                        ) : null}
+                      </div>
                     </div>
                     {plan.highlighted ? (
-                      <span className="rounded-full border border-white/10 bg-white/8 px-4 py-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-white/85">
-                        Most Popular
+                      <span className="rounded-md border border-teal-200 bg-teal-50 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-teal-800">
+                        Best value
                       </span>
                     ) : null}
                   </div>
 
-                  <p className={`mt-4 text-sm font-medium leading-7 ${plan.highlighted ? "text-slate-300" : "text-slate-600"}`}>
+                  <p className="mt-3 text-[13px] font-medium leading-6 text-slate-600">
                     {plan.description}
                   </p>
 
-                  <div className="mt-8 space-y-3">
+                  <div className="my-6 h-px bg-slate-200" />
+
+                  <div className="space-y-3">
                     {plan.features.map((item) => (
-                      <div
-                        key={item}
-                        className={`flex items-center gap-3 rounded-2xl border px-4 py-3 ${
-                          plan.highlighted ? "border-white/10 bg-white/6 text-slate-100" : "border-slate-200 bg-slate-50 text-slate-700"
-                        }`}
-                      >
-                        <CheckCircle2 size={17} className={plan.highlighted ? "text-sky-200" : "text-sky-700"} />
-                        <span className="text-sm font-semibold">{item}</span>
+                      <div key={item} className="flex items-center gap-3">
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-teal-50 text-teal-700">
+                          <CheckCircle2 size={14} />
+                        </span>
+                        <span className="text-[13px] font-semibold text-slate-700">{item}</span>
                       </div>
                     ))}
                   </div>
@@ -508,100 +544,80 @@ GROUP BY plan;`}
                   <button
                     type="button"
                     onClick={() => openAuthModal(plan.mode)}
-                    className={`mt-8 inline-flex w-full items-center justify-center rounded-full px-5 py-4 text-[11px] font-extrabold uppercase tracking-[0.2em] transition-all ${
-                      plan.highlighted
-                        ? "bg-white text-slate-950 hover:-translate-y-0.5 hover:bg-sky-50"
-                        : "border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                    className={`mt-auto inline-flex w-full items-center justify-center rounded-md px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.12em] transition-all ${
+                      plan.highlighted ? "bg-[#10232d] text-white hover:bg-teal-700" : "border border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50"
                     }`}
                   >
                     {plan.action}
                   </button>
-                </article>
+                </motion.article>
               ))}
-            </div>
+            </motion.div>
           </div>
-        </section>
+        </motion.section>
 
-        <section id="about" className="px-5 py-20 sm:px-8">
+        <motion.section
+          id="team"
+          className="border-y border-slate-200 bg-white px-4 py-12 sm:px-6 lg:px-8"
+          variants={stagger}
+          initial="hidden"
+          whileInView="visible"
+          viewport={revealViewport}
+        >
           <div className="mx-auto w-full max-w-7xl">
-            <div className="mb-12 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <motion.div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between" variants={fadeUp}>
               <div className="max-w-3xl">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.28em] text-sky-700">
-                  About Us
-                </p>
-                <h2 className="display-font mt-4 text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">
-                  The team building the product behind the landing page.
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal-700">Team</p>
+                <h2 className="display-font mt-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+                  Built by the team behind the product.
                 </h2>
-                <p className="mt-4 text-base font-medium leading-8 text-slate-600">
-                  These are the developers shaping the frontend, backend, and AI workflow
-                  inside AI SQL Studio.
-                </p>
               </div>
-
               <Link
                 to="/developers"
-                className="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-600 transition-colors hover:text-slate-950"
+                className="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-600 transition-colors hover:text-slate-950"
               >
-                Full Team Page
+                Full Team
                 <ArrowRight size={14} />
               </Link>
-            </div>
+            </motion.div>
 
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <motion.div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3" variants={stagger}>
               {developersPreview.map((dev) => (
-                <article
-                  key={dev.name}
-                  className="overflow-hidden rounded-[1.9rem] border border-white/80 bg-white/84 shadow-[0_26px_70px_-50px_rgba(15,23,42,0.35)]"
-                >
+                <motion.article key={dev.name} className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50 transition-all hover:-translate-y-1 hover:border-teal-200 hover:shadow-md" variants={cardReveal}>
+                  <img src={dev.image} alt={dev.name} loading="lazy" className="aspect-[16/10] w-full bg-slate-100 object-cover object-center" />
                   <div className="p-4">
-                    <div className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-100">
-                      <img
-                        src={dev.image}
-                        alt={dev.name}
-                        loading="lazy"
-                        className="aspect-[4/5] w-full bg-slate-100 object-contain object-center"
-                      />
-                    </div>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-teal-700">{dev.role}</p>
+                    <h3 className="display-font mt-2 text-base font-bold tracking-tight text-slate-950">{dev.name}</h3>
+                    <p className="mt-2 text-[13px] font-medium leading-6 text-slate-600">{dev.shortBio}</p>
                   </div>
-
-                  <div className="px-6 pb-6">
-                    <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-sky-700">
-                      {dev.role}
-                    </p>
-                    <h3 className="display-font mt-3 text-2xl font-extrabold tracking-tight text-slate-950">
-                      {dev.name}
-                    </h3>
-                    <p className="mt-3 text-sm font-medium leading-7 text-slate-600">
-                      {dev.shortBio}
-                    </p>
-                  </div>
-                </article>
+                </motion.article>
               ))}
-            </div>
+            </motion.div>
           </div>
-        </section>
+        </motion.section>
 
-        <section id="contact" className="px-5 py-20 sm:px-8">
-          <div className="mx-auto grid w-full max-w-6xl gap-6 rounded-[2.2rem] border border-white/80 bg-white/84 p-6 shadow-[0_32px_90px_-60px_rgba(15,23,42,0.4)] backdrop-blur-xl sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center">
+        <motion.section
+          id="contact"
+          className="px-4 py-12 sm:px-6 lg:px-8"
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={revealViewport}
+        >
+          <motion.div className="mx-auto grid w-full max-w-6xl gap-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm lg:grid-cols-[1fr_auto] lg:items-center" variants={fadeUp}>
             <div className="max-w-2xl">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-sky-700">
-                Contact
-              </p>
-              <h2 className="display-font mt-4 text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">
-                Need a sharper first impression for demos, reviews, or internships?
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal-700">Contact</p>
+              <h2 className="display-font mt-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+                Ready to present a sharper SQL product?
               </h2>
-              <p className="mt-4 text-base font-medium leading-8 text-slate-600">
-                Start with the polished auth flow, show the pricing surface, and present the whole product like a real startup build.
-              </p>
-
-              <div className="mt-6 flex flex-wrap items-center gap-3 text-sm font-semibold text-slate-600">
-                <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2">
-                  <MessageSquareMore size={15} className="text-sky-700" />
-                  Student-friendly code
+              <div className="mt-4 flex flex-wrap items-center gap-2.5 text-[13px] font-semibold text-slate-600">
+                <span className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5">
+                  <MessageSquareMore size={14} className="text-teal-700" />
+                  Support-ready dashboard
                 </span>
-                <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2">
-                  <ShieldCheck size={15} className="text-sky-700" />
-                  Clean auth experience
+                <span className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5">
+                  <ShieldCheck size={14} className="text-teal-700" />
+                  Secure auth flow
                 </span>
               </div>
             </div>
@@ -610,47 +626,36 @@ GROUP BY plan;`}
               <button
                 type="button"
                 onClick={() => openAuthModal("register")}
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-6 py-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white transition-all hover:-translate-y-0.5 hover:bg-sky-600"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-[#10232d] px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white hover:bg-teal-700"
               >
                 Get Started
                 <ArrowRight size={14} />
               </button>
               <Link
                 to="/developers"
-                className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50"
+                className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-700 hover:bg-slate-50"
               >
                 Meet The Team
               </Link>
             </div>
-          </div>
-        </section>
+          </motion.div>
+        </motion.section>
       </main>
 
-      <footer className="border-t border-white/70 bg-white/72 px-5 py-8 backdrop-blur-xl sm:px-8">
+      <footer className="border-t border-slate-200 bg-white px-4 py-5 sm:px-6 lg:px-8">
         <div className="mx-auto flex w-full max-w-7xl flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-          <div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-slate-500">
-              AI SQL Studio
-            </p>
-            <p className="mt-1 text-sm font-semibold text-slate-600">
-              Modern SaaS UI for schema-aware SQL generation.
-            </p>
-          </div>
-
+          <p className="text-[13px] font-semibold text-slate-500">Copyright 2026 AI SQL Studio</p>
           <div className="flex flex-wrap items-center gap-4">
             {navItems.map((item) => (
               <button
                 key={item.label}
                 type="button"
                 onClick={() => scrollToSection(item.sectionId)}
-                className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500 transition-colors hover:text-slate-950"
+                className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-slate-500 hover:text-slate-950"
               >
                 {item.label}
               </button>
             ))}
-            <span className="text-sm font-semibold text-slate-400">
-              Copyright 2026 AI SQL Studio
-            </span>
           </div>
         </div>
       </footer>

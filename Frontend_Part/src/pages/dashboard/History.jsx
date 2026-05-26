@@ -1,8 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
-import { 
-  Search, Filter, Pin, Calendar, ChevronRight,
-  PinOff, ArrowUpDown, Copy, Check, History as HistoryIcon, ChevronDown,
-  Code2, Trash, Database
+import {
+  ArrowUpDown,
+  Calendar,
+  Check,
+  Code2,
+  Copy,
+  Database,
+  Filter,
+  History as HistoryIcon,
+  Pin,
+  PinOff,
+  Search,
+  Trash
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { queryService } from "../../services/queryService";
@@ -21,17 +30,21 @@ export default function History() {
     try {
       const data = await queryService.getHistory();
       setQueries(data);
-    } catch (err) { console.error(err); } 
-    finally { setLoading(false); }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   const applyFilters = useCallback(() => {
     let data = [...queries];
     if (modeFilter !== "all") data = data.filter((q) => q.mode === modeFilter);
     if (search.trim()) {
-      data = data.filter((q) =>
-        q.prompt?.toLowerCase().includes(search.toLowerCase()) ||
-        q.generatedSQL?.toLowerCase().includes(search.toLowerCase())
+      data = data.filter(
+        (q) =>
+          q.prompt?.toLowerCase().includes(search.toLowerCase()) ||
+          q.generatedSQL?.toLowerCase().includes(search.toLowerCase())
       );
     }
     data.sort((a, b) => {
@@ -42,32 +55,41 @@ export default function History() {
     setFilteredQueries(data);
   }, [modeFilter, queries, search, sortOrder]);
 
-  useEffect(() => { fetchHistory(); }, [fetchHistory]);
-  useEffect(() => { applyFilters(); }, [applyFilters]);
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
+
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Permanent deletion cannot be undone. Proceed?")) return;
     try {
       await queryService.deleteQuery(id);
       setQueries((prev) => prev.filter((q) => q._id !== id));
-    } catch { console.error("Delete failed"); }
+    } catch {
+      console.error("Delete failed");
+    }
   };
 
   const togglePin = async (id) => {
     try {
       await queryService.togglePin(id);
-      setQueries((prev) => prev.map(q => 
-        q._id === id ? { ...q, pinned: !q.pinned } : q
-      ));
-    } catch { console.error("Pinning failed"); }
+      setQueries((prev) => prev.map((q) => (q._id === id ? { ...q, pinned: !q.pinned } : q)));
+    } catch {
+      console.error("Pinning failed");
+    }
   };
 
   const handleCopy = async (id, text) => {
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(text || "");
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 2000);
-    } catch { console.error("Failed to copy text"); }
+    } catch {
+      console.error("Failed to copy text");
+    }
   };
 
   if (loading) {
@@ -75,212 +97,167 @@ export default function History() {
   }
 
   return (
-    <div className="dashboard-page space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-700">
-      
-      {/* --- HEADER --- */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-10">
-        <div className="space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 w-fit">
-            <Database size={14} className="text-emerald-600" />
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Enterprise Logs</span>
-          </div>
-          <h1 className="dashboard-heading text-4xl md:text-5xl font-black tracking-tighter text-slate-900 leading-none">
-            Intelligence <span className="text-emerald-500">Vault</span>
-          </h1>
-          <p className="text-slate-500 font-medium text-lg max-w-2xl">
-            Audit, retrieve, and manage your high-performance SQL generation history.
-          </p>
+    <div className="dashboard-page space-y-6">
+      <header className="border-b border-slate-100 pb-6 dark:border-slate-800">
+        <div className="mb-3 inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 dark:border-slate-700 dark:bg-slate-900">
+          <Database size={14} className="text-emerald-600" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">History</span>
         </div>
+        <h1 className="dashboard-heading text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 md:text-4xl">
+          SQL History
+        </h1>
+        <p className="mt-3 max-w-3xl text-sm font-medium leading-7 text-slate-500 dark:text-slate-400">
+          Search, copy, pin, and manage generated SQL from a readable workspace history.
+        </p>
       </header>
 
-      {/* --- CONTROLS --- */}
-      <div className="sticky top-4 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-600 p-2 md:p-3 rounded-[28px] shadow-2xl shadow-slate-200/40 dark:shadow-black/40 flex flex-col lg:flex-row items-center gap-4 transition-all focus-within:border-emerald-500/30">
-        <div className="relative flex-1 w-full flex items-center">
-          <Search className="absolute left-5 text-slate-400 dark:text-slate-300" size={20} />
-          <input
-            type="text"
-            placeholder="Search prompts or SQL architecture..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-14 pr-6 py-3.5 text-sm text-slate-900 dark:text-slate-100 bg-transparent border-none focus:ring-0 placeholder:text-slate-400 dark:placeholder:text-slate-400 font-medium"
-          />
-        </div>
-        
-        <div className="flex items-center gap-3 w-full lg:w-auto px-2 lg:px-0">
-          <SelectWrapper icon={<Filter size={14} />} label="Context">
-            <select
-              value={modeFilter}
-              onChange={(e) => setModeFilter(e.target.value)}
-              className="w-full appearance-none bg-transparent pr-6 text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-slate-100 border-none focus:ring-0 p-0 cursor-pointer"
-            >
-              <option value="all">Global</option>
-              <option value="generate">Generate</option>
-              <option value="optimize">Optimize</option>
-              <option value="validate">Validate</option>
-              <option value="explain">Explain</option>
-            </select>
-          </SelectWrapper>
-
-          <SelectWrapper icon={<ArrowUpDown size={14} />} label="Chronology">
-            <select
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value)}
-              className="w-full appearance-none bg-transparent pr-6 text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-slate-100 border-none focus:ring-0 p-0 cursor-pointer"
-            >
-              <option value="newest">Newest</option>
-              <option value="oldest">Legacy</option>
-            </select>
-          </SelectWrapper>
-        </div>
-      </div>
-
-      {/* --- CONTENT --- */}
-      {filteredQueries.length === 0 ? (
-        <div className="py-32 text-center bg-slate-50 rounded-[48px] border-2 border-dashed border-slate-200">
-          <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center mx-auto shadow-sm mb-6">
-            <HistoryIcon className="text-slate-200" size={32} />
+      <section className="sticky top-[76px] z-20 rounded-lg border border-slate-200 bg-white/95 p-3 shadow-sm backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/95">
+        <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto] lg:items-center">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+            <input
+              type="text"
+              placeholder="Search prompts or SQL..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-10 w-full rounded-md border border-slate-200 bg-white pl-9 pr-3 text-sm font-medium text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            />
           </div>
-          <p className="text-xs font-black text-slate-400 uppercase tracking-[0.3em]">No logs retrieved</p>
+
+          <SelectControl icon={<Filter size={14} />} value={modeFilter} onChange={setModeFilter}>
+            <option value="all">All Modes</option>
+            <option value="generate">Generate</option>
+            <option value="optimize">Optimize</option>
+            <option value="validate">Validate</option>
+            <option value="explain">Explain</option>
+          </SelectControl>
+
+          <SelectControl icon={<ArrowUpDown size={14} />} value={sortOrder} onChange={setSortOrder}>
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+          </SelectControl>
         </div>
+      </section>
+
+      {filteredQueries.length === 0 ? (
+        <section className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-5 py-16 text-center dark:border-slate-700 dark:bg-slate-900">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-white text-slate-300 dark:bg-slate-950">
+            <HistoryIcon size={24} />
+          </div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">No history found</p>
+        </section>
       ) : (
-        <div className="grid grid-cols-1 gap-8">
+        <section className="space-y-4">
           {filteredQueries.map((q) => (
-            <div
+            <article
               key={q._id}
-              className={`group bg-white border transition-all duration-500 rounded-[40px] overflow-hidden hover:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)]
-                ${q.pinned ? "border-amber-200 shadow-xl shadow-amber-500/5 bg-amber-50/20" : "border-slate-100 shadow-sm"}`}
+              className={`overflow-hidden rounded-lg border bg-white shadow-sm dark:bg-slate-900 ${
+                q.pinned ? "border-amber-200 dark:border-amber-500/40" : "border-slate-200 dark:border-slate-700"
+              }`}
             >
-              <div className="p-6 md:p-10">
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row justify-between items-start gap-6 mb-10">
-                  <div className="flex flex-wrap items-center gap-4">
-                    <div className="flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-slate-900 text-white shadow-lg">
-                      <Code2 size={12} className="text-emerald-400" />
-                      <span className="text-[10px] font-black uppercase tracking-widest">{q.mode}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-slate-400 bg-white border border-slate-200 px-3 py-1.5 rounded-xl">
-                      <Calendar size={13} />
-                      <span className="text-[10px] font-bold uppercase tracking-widest">
-                        {new Date(q.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+              <div className="flex flex-col gap-4 border-b border-slate-100 p-4 dark:border-slate-800 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <div className="mb-3 flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-2 rounded-md bg-slate-900 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
+                      <Code2 size={12} className="text-teal-300" />
+                      {q.mode}
+                    </span>
+                    <span className="inline-flex items-center gap-2 rounded-md border border-slate-200 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:border-slate-700">
+                      <Calendar size={12} />
+                      {new Date(q.createdAt).toLocaleDateString()}
+                    </span>
+                    {q.pinned ? (
+                      <span className="inline-flex items-center gap-2 rounded-md bg-amber-100 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-amber-700">
+                        <Pin size={11} fill="currentColor" />
+                        Pinned
                       </span>
-                    </div>
-                    {q.pinned && (
-                      <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-500 text-white rounded-xl shadow-lg shadow-amber-500/20">
-                        <Pin size={10} fill="currentColor" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Priority Artifact</span>
-                      </div>
-                    )}
+                    ) : null}
                   </div>
-
-                  <div className="flex items-center gap-3 self-end sm:self-auto opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-300">
-                    {user?.plan === "pro" && (
-                      <button
-                        onClick={() => togglePin(q._id)}
-                        className={`p-3 rounded-2xl transition-all shadow-sm ${q.pinned ? "bg-amber-100 text-amber-600 border border-amber-200" : "bg-white text-slate-400 border border-slate-100 hover:text-amber-500"}`}
-                      >
-                        {q.pinned ? <PinOff size={18} /> : <Pin size={18} />}
-                      </button>
-                    )}
-                    <button
-                      onClick={() => handleDelete(q._id)}
-                      className="p-3 bg-white text-slate-400 border border-slate-100 hover:bg-rose-50 hover:text-rose-600 rounded-2xl transition-all shadow-sm hover:border-rose-100"
-                    >
-                      <Trash size={18} />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Question */}
-                <div className="flex items-start gap-5 mb-10">
-                  <div className="w-10 h-10 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 shrink-0">
-                    <ChevronRight size={20} strokeWidth={3} />
-                  </div>
-                  <h3 className="text-xl md:text-2xl font-black text-slate-800 leading-snug tracking-tighter">
+                  <h2 className="break-words text-base font-bold leading-7 text-slate-900 dark:text-slate-100">
                     {q.prompt}
-                  </h3>
+                  </h2>
                 </div>
 
-                {/* Code UI */}
-                <div className="relative group/code">
-                  {/* Terminal Header */}
-                  <div className="absolute top-0 left-0 right-0 h-10 bg-slate-800/50 backdrop-blur-md rounded-t-[28px] flex items-center px-6 gap-2 border-b border-white/5 z-20">
-                    <div className="flex gap-1.5">
-                      <div className="w-2.5 h-2.5 rounded-full bg-slate-600" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-slate-600" />
-                    </div>
-                  </div>
-                  
-                  <div className="absolute top-12 right-6 z-20">
-                    <button
-                      onClick={() => handleCopy(q._id, q.generatedSQL)}
-                      className={`flex items-center gap-2.5 px-5 py-2.5 rounded-2xl shadow-2xl transition-all font-black text-[10px] uppercase tracking-widest active:scale-95 border
-                        ${copiedId === q._id 
-                          ? 'bg-emerald-500 text-white border-emerald-400' 
-                          : 'bg-white/10 text-white border-white/10 backdrop-blur-md hover:bg-white/20'}`}
-                    >
-                      {copiedId === q._id ? <Check size={14} /> : <Copy size={14} />}
-                      <span>{copiedId === q._id ? 'Copied' : 'Sync Code'}</span>
-                    </button>
-                  </div>
-
-                  <pre className="bg-[#020617] pt-16 pb-8 px-8 md:px-10 rounded-[32px] text-sm md:text-base text-emerald-100/90 font-mono overflow-x-auto leading-relaxed border border-slate-800 shadow-2xl">
-                    <code className="block w-full">{q.generatedSQL}</code>
-                  </pre>
+                <div className="flex shrink-0 items-center gap-2">
+                  {user?.plan === "pro" ? (
+                    <IconButton onClick={() => togglePin(q._id)} label={q.pinned ? "Unpin" : "Pin"}>
+                      {q.pinned ? <PinOff size={16} /> : <Pin size={16} />}
+                    </IconButton>
+                  ) : null}
+                  <IconButton onClick={() => handleDelete(q._id)} label="Delete" danger>
+                    <Trash size={16} />
+                  </IconButton>
                 </div>
               </div>
-            </div>
+
+              <div className="relative bg-slate-950">
+                <button
+                  type="button"
+                  onClick={() => handleCopy(q._id, q.generatedSQL)}
+                  className="absolute right-3 top-3 z-10 inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white backdrop-blur hover:bg-white/20"
+                >
+                  {copiedId === q._id ? <Check size={13} /> : <Copy size={13} />}
+                  {copiedId === q._id ? "Copied" : "Copy"}
+                </button>
+                <pre className="mono-font max-h-[360px] overflow-auto p-4 pt-14 text-[12px] leading-6 text-emerald-100">
+                  <code>{q.generatedSQL}</code>
+                </pre>
+              </div>
+            </article>
           ))}
-        </div>
+        </section>
       )}
-      
-      <div className="pt-20 pb-10 text-center">
-        <div className="h-px w-24 bg-slate-200 mx-auto mb-6" />
-        <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em]">
-          End of Synchronized logs
-        </p>
-      </div>
     </div>
   );
 }
 
-/* --- SUB-COMPONENTS --- */
-
-function SelectWrapper({ icon, label, children }) {
+function SelectControl({ icon, value, onChange, children }) {
   return (
-    <div className="flex flex-col gap-1 px-4 py-2 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-600 rounded-2xl w-full sm:w-auto shadow-sm">
-      <div className="flex items-center gap-2 text-[8px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-widest">
-        {icon}
-        {label}
-      </div>
-      <div className="relative">
+    <label className="flex h-10 items-center gap-2 rounded-md border border-slate-200 bg-white px-3 dark:border-slate-700 dark:bg-slate-950">
+      <span className="text-slate-400">{icon}</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="bg-transparent text-[11px] font-bold uppercase tracking-[0.12em] text-slate-700 outline-none dark:text-slate-200"
+      >
         {children}
-        <ChevronDown
-          size={14}
-          className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-300"
-        />
-      </div>
-    </div>
+      </select>
+    </label>
+  );
+}
+
+function IconButton({ onClick, label, danger = false, children }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className={`inline-flex h-9 w-9 items-center justify-center rounded-md border transition-all ${
+        danger
+          ? "border-rose-200 text-rose-600 hover:bg-rose-50"
+          : "border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+      }`}
+    >
+      {children}
+    </button>
   );
 }
 
 function HistorySkeleton() {
   return (
-    <div className="dashboard-page space-y-8 animate-pulse">
-      <div className="space-y-3 border-b border-slate-100 pb-10">
-        <div className="h-5 w-28 rounded-full bg-slate-200" />
-        <div className="h-10 w-72 rounded-2xl bg-slate-200" />
-        <div className="h-5 w-96 max-w-full rounded-xl bg-slate-200" />
+    <div className="dashboard-page space-y-4 animate-pulse">
+      <div className="rounded-lg border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
+        <div className="mb-3 h-4 w-28 rounded bg-slate-200 dark:bg-slate-700" />
+        <div className="h-8 w-72 max-w-full rounded bg-slate-200 dark:bg-slate-700" />
       </div>
-      <div className="h-20 rounded-[28px] bg-slate-100" />
-      <div className="space-y-6">
-        {[1, 2, 3].map((id) => (
-          <div key={id} className="rounded-[40px] border border-slate-100 bg-white p-8">
-            <div className="mb-6 h-6 w-52 rounded-xl bg-slate-100" />
-            <div className="mb-6 h-8 w-3/4 rounded-xl bg-slate-100" />
-            <div className="h-44 rounded-[28px] bg-slate-100" />
-          </div>
-        ))}
-      </div>
+      {[1, 2, 3].map((id) => (
+        <div key={id} className="rounded-lg border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
+          <div className="mb-3 h-5 w-52 rounded bg-slate-200 dark:bg-slate-700" />
+          <div className="mb-4 h-6 w-3/4 rounded bg-slate-200 dark:bg-slate-700" />
+          <div className="h-40 rounded bg-slate-200 dark:bg-slate-700" />
+        </div>
+      ))}
     </div>
   );
 }

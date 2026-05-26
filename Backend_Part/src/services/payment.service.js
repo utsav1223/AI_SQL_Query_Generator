@@ -5,6 +5,7 @@ const User = require("../models/User");
 const Payment = require("../models/Payment");
 const Invoice = require("../models/Invoice");
 const AppError = require("../utils/AppError");
+const { getPublicUser } = require("../utils/auth");
 const {
   sendEmail,
   buildSubscriptionActivatedEmail,
@@ -14,7 +15,8 @@ const {
   SUBSCRIPTION_AMOUNT_INR,
   SUBSCRIPTION_AMOUNT_PAISE,
   getNextRenewalDate,
-  activateProPlan
+  activateProPlan,
+  downgradeUserToFree
 } = require("./subscription.service");
 
 let razorpayClient = null;
@@ -255,10 +257,29 @@ const getInvoicesForUser = async (userId) => {
   return Invoice.find({ userId }).sort({ createdAt: -1 });
 };
 
+const downgradePlanForUser = async (userId) => {
+  const user = await getCurrentUser(userId);
+
+  if (user.plan !== "pro") {
+    return {
+      alreadyFree: true,
+      user: getPublicUser(user)
+    };
+  }
+
+  await downgradeUserToFree(user);
+
+  return {
+    alreadyFree: false,
+    user: getPublicUser(user)
+  };
+};
+
 module.exports = {
   createOrder,
   createPaymentLink,
   verifyOrderPayment,
   verifyHostedPaymentLink,
-  getInvoicesForUser
+  getInvoicesForUser,
+  downgradePlanForUser
 };

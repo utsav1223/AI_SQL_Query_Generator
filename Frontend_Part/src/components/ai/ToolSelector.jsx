@@ -9,7 +9,7 @@ const tools = [
 
 export default function ToolSelector({ mode, setMode }) {
   return (
-    <div className="surface-card-soft rounded-2xl p-1.5">
+    <div className="surface-card-soft rounded-lg p-1.5">
       <div className="grid grid-cols-2 gap-1.5 lg:flex">
         {tools.map((tool) => {
           const isActive = mode === tool.id;
@@ -20,10 +20,10 @@ export default function ToolSelector({ mode, setMode }) {
               key={tool.id}
               type="button"
               onClick={() => setMode(tool.id)}
-              className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-[11px] font-extrabold uppercase tracking-[0.16em] transition-colors ${
+              className={`flex items-center justify-center gap-2 rounded-md border px-3 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] transition-colors ${
                 isActive
-                  ? "bg-[var(--surface)] text-[var(--accent)]"
-                  : "text-slate-500 hover:bg-[var(--surface)] hover:text-[var(--text-main)] dark:text-slate-400"
+                  ? "border-teal-200 bg-white text-teal-800 shadow-sm dark:border-teal-400/20 dark:bg-slate-950 dark:text-teal-200"
+                  : "border-transparent text-slate-600 hover:border-slate-200 hover:bg-white hover:text-slate-950 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:bg-slate-950 dark:hover:text-slate-100"
               }`}
             >
               <Icon size={14} />

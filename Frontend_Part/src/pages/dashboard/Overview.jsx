@@ -1,13 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  ArrowRight,
-  Clock3,
-  Database,
-  FileText,
-  ShieldCheck,
-  Sparkles
-} from "lucide-react";
+import { ArrowRight, Clock3, Database, FileText, ShieldCheck, Sparkles } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { queryService } from "../../services/queryService";
 
@@ -16,6 +9,7 @@ export default function Overview() {
   const { user } = useAuth();
   const [overview, setOverview] = useState(null);
   const [error, setError] = useState("");
+  const [visibleRecentCount, setVisibleRecentCount] = useState(3);
 
   useEffect(() => {
     const loadOverview = async () => {
@@ -33,8 +27,8 @@ export default function Overview() {
   if (!overview) {
     return (
       <div className="dashboard-page">
-        <section className="dashboard-card rounded-[2rem] p-8">
-          <p className="text-sm text-slate-500">{error || "Loading overview..."}</p>
+        <section className="dashboard-card rounded-lg p-5">
+          <p className="text-sm text-slate-500 dark:text-slate-400">{error || "Loading overview..."}</p>
         </section>
       </div>
     );
@@ -45,186 +39,144 @@ export default function Overview() {
   const creditLimit = overview.freeCreditsLimit ?? overview.dailyLimit ?? 5;
   const remainingCredits = overview.remainingCredits ?? overview.remainingToday ?? 0;
   const recentQueries = overview.recentQueries || [];
+  const visibleRecentQueries = recentQueries.slice(0, visibleRecentCount);
+  const hasMoreRecentQueries = visibleRecentCount < recentQueries.length;
   const modeStats = overview.modeStats || [];
   const mostUsedTool =
     modeStats.length > 0
-      ? modeStats.reduce((currentMax, item) => (item.count > currentMax.count ? item : currentMax))
-          ._id
+      ? modeStats.reduce((currentMax, item) => (item.count > currentMax.count ? item : currentMax))._id
       : "generate";
 
   return (
-    <div className="dashboard-page space-y-8">
-      <section className="dashboard-card relative overflow-hidden rounded-[2rem] p-8">
-        <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-[#0f766e]/8 blur-3xl" />
-        <div className="absolute -left-6 bottom-0 h-36 w-36 rounded-full bg-[#c76b2d]/8 blur-3xl" />
-
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+    <div className="dashboard-page space-y-6">
+      <section className="dashboard-card rounded-lg p-5 sm:p-6">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#0f766e]/12 bg-[#0f766e]/6 px-4 py-2 text-[#0f766e]">
-              <Sparkles size={14} />
-              <span className="text-[10px] font-extrabold uppercase tracking-[0.18em]">
-                Workspace Overview
-              </span>
+            <div className="inline-flex items-center gap-2 rounded-md border border-[var(--accent-soft-strong)] bg-[var(--accent-soft)] px-3 py-1.5 text-[var(--accent)]">
+              <Sparkles size={13} />
+              <span className="text-[10px] font-bold uppercase tracking-[0.12em]">Workspace Overview</span>
             </div>
 
-            <h1 className="dashboard-heading mt-5 text-3xl font-extrabold tracking-tight text-slate-950 md:text-4xl">
+            <h1 className="dashboard-heading mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
               Welcome back, {user?.name?.split(" ")[0] || "Developer"}
             </h1>
-            <p className="mt-4 max-w-2xl text-sm font-medium leading-7 text-slate-600">
-              This screen gives you the clean summary: current plan, recent activity,
-              usage health, and the fastest next steps inside your SQL workspace.
+            <p className="mt-3 max-w-2xl text-sm font-medium leading-7 text-slate-600 dark:text-slate-400">
+              Review current plan, usage health, recent activity, and the fastest next action inside your SQL workspace.
             </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[1.6rem] border border-slate-900/8 bg-white/80 px-5 py-4">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-500">
-                Current Plan
-              </p>
-              <p className="mt-2 text-lg font-bold capitalize text-slate-950">
-                {user?.plan || overview.plan}
-              </p>
-            </div>
-            <div className="rounded-[1.6rem] border border-slate-900/8 bg-white/80 px-5 py-4">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-500">
-                Suggested Next Step
-              </p>
-              <p className="mt-2 text-lg font-bold text-slate-950">
-                {isFreePlan ? "Try AI Workspace" : "Open Analytics"}
-              </p>
-            </div>
+            <MiniPanel label="Current Plan" value={user?.plan || overview.plan} />
+            <MiniPanel label="Next Step" value={isFreePlan ? "Try AI Workspace" : "Open Analytics"} />
           </div>
         </div>
       </section>
 
       {isFreePlan && remainingCredits === 0 ? (
-        <section className="dashboard-card rounded-[2rem] border-amber-200 bg-amber-50 p-6">
+        <section className="rounded-lg border border-amber-200 bg-amber-50 p-5 dark:border-amber-500/30 dark:bg-amber-500/10">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h2 className="text-lg font-extrabold text-slate-950">Free credits are used up</h2>
-              <p className="mt-2 text-sm font-medium leading-7 text-slate-700">
+              <h2 className="text-base font-bold text-slate-950 dark:text-slate-100">Free credits are used up</h2>
+              <p className="mt-2 text-sm font-medium leading-7 text-slate-700 dark:text-slate-300">
                 Upgrade when you want continuous SQL generation without free-plan limits.
               </p>
             </div>
             <button
               type="button"
               onClick={() => navigate("/dashboard/pricing")}
-              className="inline-flex items-center gap-2 rounded-full bg-[#112129] px-5 py-3 text-[11px] font-extrabold uppercase tracking-[0.16em] text-white transition-all hover:-translate-y-0.5 hover:bg-[#0f766e]"
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-[#10232d] px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white hover:bg-teal-700"
             >
               Upgrade Plan
-              <ArrowRight size={15} />
+              <ArrowRight size={14} />
             </button>
           </div>
         </section>
       ) : null}
 
-      <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          title="Total Queries"
-          value={overview.totalQueries}
-          helper="All saved AI requests"
-          icon={<Database size={18} />}
-        />
-        <StatCard
-          title="Created Today"
-          value={overview.todayQueries}
-          helper="Requests from the current day"
-          icon={<Clock3 size={18} />}
-        />
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <StatCard title="Total Queries" value={overview.totalQueries} helper="All saved AI requests" icon={<Database size={17} />} />
+        <StatCard title="Created Today" value={overview.todayQueries} helper="Requests from the current day" icon={<Clock3 size={17} />} />
         <StatCard
           title={isFreePlan ? "Remaining Credits" : "Most Used Tool"}
           value={isFreePlan ? remainingCredits : mostUsedTool}
-          helper={
-            isFreePlan ? `${usedCredits} of ${creditLimit} used` : "Based on your recent activity"
-          }
-          icon={<ShieldCheck size={18} />}
+          helper={isFreePlan ? `${usedCredits} of ${creditLimit} used` : "Based on recent activity"}
+          icon={<ShieldCheck size={17} />}
         />
         <StatCard
-          title={isFreePlan ? "Daily Credit Limit" : "Tracked Tools"}
+          title={isFreePlan ? "Credit Limit" : "Tracked Tools"}
           value={isFreePlan ? creditLimit : modeStats.length}
-          helper={isFreePlan ? "Free plan daily allowance" : "Generate, optimize, validate, explain"}
-          icon={<FileText size={18} />}
+          helper={isFreePlan ? "Free plan allowance" : "Generate, optimize, validate, explain"}
+          icon={<FileText size={17} />}
         />
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <article className="dashboard-card rounded-[2rem] p-8">
-          <div className="mb-6 flex items-center justify-between gap-4">
+      <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+        <article className="dashboard-card rounded-lg p-5 sm:p-6">
+          <div className="mb-5 flex items-center justify-between gap-4">
             <div>
-              <h2 className="dashboard-heading text-2xl font-extrabold tracking-tight text-slate-950">
+              <h2 className="dashboard-heading text-xl font-bold tracking-tight text-slate-950 dark:text-slate-100">
                 Recent Activity
               </h2>
-              <p className="mt-2 text-sm font-medium leading-7 text-slate-500">
-                Your latest prompts and generated outputs appear here for quick review.
+              <p className="mt-1 text-sm font-medium leading-7 text-slate-500 dark:text-slate-400">
+                Latest prompts and generated outputs for quick review.
               </p>
             </div>
 
             <button
               type="button"
               onClick={() => navigate("/dashboard/history")}
-              className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#0f766e] transition-colors hover:text-[#0a4f4a]"
+              className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--accent)] hover:text-[var(--accent-hover)]"
             >
               View History
             </button>
           </div>
 
           {recentQueries.length === 0 ? (
-            <div className="rounded-[1.6rem] border border-slate-900/8 bg-slate-50/80 px-5 py-5 text-sm font-medium leading-7 text-slate-500">
+            <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-sm font-medium leading-7 text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
               No recent queries yet. Open the AI Workspace to start generating SQL.
             </div>
           ) : (
             <div className="space-y-3">
-              {recentQueries.map((query) => (
-                <div
-                  key={query._id}
-                  className="rounded-[1.6rem] border border-slate-900/8 bg-white/80 px-5 py-4 transition-all hover:-translate-y-0.5 hover:border-[#0f766e]/20"
-                >
-                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              {visibleRecentQueries.map((query) => (
+                <div key={query._id} className="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-950">
+                  <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <div>
-                      <p className="text-sm font-bold leading-7 text-slate-900">{query.prompt}</p>
-                      <p className="mt-1 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#0f766e]">
-                        {query.mode}
-                      </p>
+                      <p className="text-sm font-semibold leading-6 text-slate-900 dark:text-slate-100">{query.prompt}</p>
+                      <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]">{query.mode}</p>
                     </div>
-                    <p className="text-xs font-medium text-slate-500">
+                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                       {new Date(query.createdAt).toLocaleString()}
                     </p>
                   </div>
                 </div>
               ))}
+              {hasMoreRecentQueries ? (
+                <button
+                  type="button"
+                  onClick={() => setVisibleRecentCount((count) => count + 3)}
+                  className="button-secondary inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em]"
+                >
+                  Load More
+                  <ArrowRight size={14} />
+                </button>
+              ) : null}
             </div>
           )}
         </article>
 
-        <article className="dashboard-card rounded-[2rem] p-8">
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-[#0f766e]">
-            Quick Actions
-          </p>
-          <h2 className="dashboard-heading mt-3 text-2xl font-extrabold tracking-tight text-slate-950">
+        <article className="dashboard-card rounded-lg p-5 sm:p-6">
+          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]">Quick Actions</p>
+          <h2 className="dashboard-heading mt-2 text-xl font-bold tracking-tight text-slate-950 dark:text-slate-100">
             Move faster from here
           </h2>
 
-          <div className="mt-6 space-y-3">
+          <div className="mt-5 space-y-3">
+            <ActionCard title="Open AI Workspace" description="Generate or refine SQL from one focused screen." onClick={() => navigate("/dashboard/generate")} />
+            <ActionCard title="Update Schema Context" description="Keep schema aligned with real tables and columns." onClick={() => navigate("/dashboard/schema")} />
             <ActionCard
-              title="Open AI Workspace"
-              description="Generate or refine SQL from one focused screen."
-              onClick={() => navigate("/dashboard/generate")}
-            />
-            <ActionCard
-              title="Update Schema Context"
-              description="Keep your saved schema aligned with real tables and columns."
-              onClick={() => navigate("/dashboard/schema")}
-            />
-            <ActionCard
-              title={isFreePlan ? "Compare Pro Features" : "Review Billing Records"}
-              description={
-                isFreePlan
-                  ? "See what unlocks when you move beyond the free plan."
-                  : "Open invoices and review subscription history."
-              }
-              onClick={() =>
-                navigate(isFreePlan ? "/dashboard/pricing" : "/dashboard/invoices")
-              }
+              title={isFreePlan ? "Compare Pro Features" : "Review Invoices"}
+              description={isFreePlan ? "See what unlocks beyond the free plan." : "Review subscription and invoice history."}
+              onClick={() => navigate(isFreePlan ? "/dashboard/pricing" : "/dashboard/invoices")}
             />
           </div>
         </article>
@@ -233,19 +185,26 @@ export default function Overview() {
   );
 }
 
+function MiniPanel({ label, value }) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 dark:border-slate-700 dark:bg-slate-950">
+      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">{label}</p>
+      <p className="mt-1 text-sm font-bold capitalize text-slate-950 dark:text-slate-100">{value}</p>
+    </div>
+  );
+}
+
 function StatCard({ title, value, helper, icon }) {
   return (
-    <article className="dashboard-card rounded-[1.8rem] p-6">
-      <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-[1.15rem] bg-[#112129] text-[#8fe1cf]">
+    <article className="dashboard-card rounded-lg p-5">
+      <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-md bg-[#10232d] text-teal-300">
         {icon}
       </div>
-      <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-slate-500">
-        {title}
-      </p>
-      <h3 className="dashboard-heading mt-3 text-3xl font-extrabold tracking-tight text-slate-950">
+      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">{title}</p>
+      <h3 className="dashboard-heading mt-2 text-2xl font-bold tracking-tight text-slate-950 dark:text-slate-100">
         {value ?? 0}
       </h3>
-      <p className="mt-2 text-sm font-medium leading-7 text-slate-500">{helper}</p>
+      <p className="mt-2 text-[13px] font-medium leading-6 text-slate-500 dark:text-slate-400">{helper}</p>
     </article>
   );
 }
@@ -255,13 +214,13 @@ function ActionCard({ title, description, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-start justify-between gap-4 rounded-[1.5rem] border border-slate-900/8 bg-white/75 px-5 py-4 text-left transition-all hover:-translate-y-0.5 hover:border-[#0f766e]/20"
+      className="flex w-full items-start justify-between gap-4 rounded-lg border border-slate-200 bg-white px-4 py-3 text-left transition-all hover:border-teal-200 hover:bg-teal-50 dark:border-slate-700 dark:bg-slate-950 dark:hover:bg-slate-900"
     >
       <div>
-        <p className="text-sm font-bold text-slate-950">{title}</p>
-        <p className="mt-1 text-sm font-medium leading-7 text-slate-500">{description}</p>
+        <p className="text-sm font-bold text-slate-950 dark:text-slate-100">{title}</p>
+        <p className="mt-1 text-[13px] font-medium leading-6 text-slate-500 dark:text-slate-400">{description}</p>
       </div>
-      <ArrowRight size={16} className="mt-1 shrink-0 text-[#0f766e]" />
+      <ArrowRight size={15} className="mt-1 shrink-0 text-[var(--accent)]" />
     </button>
   );
 }

@@ -1,17 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { ArrowRight, CheckCircle2, Loader2, Receipt, ShieldCheck, Zap } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { authService } from "../services/authService";
 import { paymentService } from "../services/paymentService";
-import { 
-  CheckCircle2, 
-  ArrowRight, 
-  Loader2, 
-  Zap,
-  ShieldCheck,
-  PartyPopper,
-  Receipt
-} from "lucide-react";
 
 export default function BillingSuccess() {
   const { user, login } = useAuth();
@@ -22,7 +14,10 @@ export default function BillingSuccess() {
   const verificationStarted = useRef(false);
 
   useEffect(() => {
-    if (verificationStarted.current) return;
+    if (verificationStarted.current) {
+      return;
+    }
+
     verificationStarted.current = true;
 
     const verifyPaymentFromCallback = async () => {
@@ -33,15 +28,13 @@ export default function BillingSuccess() {
       const razorpay_payment_link_id = params.get("razorpay_payment_link_id");
       const razorpay_payment_link_reference_id = params.get("razorpay_payment_link_reference_id");
       const razorpay_payment_link_status = params.get("razorpay_payment_link_status");
-      const hasOrderCallback = Boolean(
-        razorpay_order_id && razorpay_payment_id && razorpay_signature
-      );
+      const hasOrderCallback = Boolean(razorpay_order_id && razorpay_payment_id && razorpay_signature);
       const hasPaymentLinkCallback = Boolean(
         razorpay_payment_link_id &&
-        razorpay_payment_link_reference_id &&
-        razorpay_payment_link_status &&
-        razorpay_payment_id &&
-        razorpay_signature
+          razorpay_payment_link_reference_id &&
+          razorpay_payment_link_status &&
+          razorpay_payment_id &&
+          razorpay_signature
       );
 
       if (!hasOrderCallback && !hasPaymentLinkCallback) {
@@ -56,7 +49,7 @@ export default function BillingSuccess() {
             razorpay_payment_id,
             razorpay_signature
           });
-        } else if (hasPaymentLinkCallback) {
+        } else {
           await paymentService.verifyPaymentLink({
             razorpay_payment_link_id,
             razorpay_payment_link_reference_id,
@@ -73,8 +66,7 @@ export default function BillingSuccess() {
         console.error("Callback verification failed:", err);
         navigate("/billing", { replace: true });
       } finally {
-        // Adding a slight delay for smoother transition
-        setTimeout(() => setLoading(false), 1500);
+        setTimeout(() => setLoading(false), 800);
       }
     };
 
@@ -83,15 +75,19 @@ export default function BillingSuccess() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white p-6">
-        <div className="relative flex items-center justify-center mb-8">
-          <Loader2 className="animate-spin text-emerald-500 relative z-10" size={48} strokeWidth={1.5} />
-          <div className="absolute inset-0 blur-3xl bg-emerald-500/20 animate-pulse rounded-full" />
-        </div>
-        <div className="text-center space-y-2">
-          <p className="text-slate-900 font-black uppercase tracking-[0.3em] text-[11px]">Finalizing Transaction</p>
-          <p className="text-slate-400 text-xs font-medium">Provisioning your Pro Intelligence environment...</p>
-        </div>
+      <div className="public-page flex min-h-dvh items-center justify-center px-4 py-8">
+        <section className="public-card w-full max-w-md rounded-lg p-6 text-center">
+          <Loader2 className="mx-auto animate-spin text-[#0f766e]" size={32} />
+          <p className="mt-5 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">
+            Razorpay Verification
+          </p>
+          <h1 className="display-font mt-2 text-2xl font-bold tracking-tight text-slate-950">
+            Verifying your secure payment
+          </h1>
+          <p className="mt-3 text-sm font-medium leading-7 text-slate-600">
+            We are verifying the payment and refreshing your account access.
+          </p>
+        </section>
       </div>
     );
   }
@@ -100,93 +96,92 @@ export default function BillingSuccess() {
     return null;
   }
 
-  return (
-    <div className="min-h-screen bg-[#FDFDFD] font-sans antialiased text-slate-900 flex flex-col selection:bg-emerald-100">
-      
-      {/* --- MINIMAL NAV --- */}
-      <nav className="h-20 flex items-center justify-between px-6 lg:px-20 border-b border-slate-100 bg-white/50 backdrop-blur-md sticky top-0 z-50">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-slate-950 rounded-xl flex items-center justify-center shadow-lg shadow-slate-200">
-            <Zap size={20} className="text-emerald-400 fill-emerald-400" />
-          </div>
-          <span className="font-black text-xl tracking-tighter text-slate-900">SQL Studio <span className="text-emerald-500">.</span></span>
-        </div>
-        <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-full border border-emerald-100">
-          <ShieldCheck size={14} className="text-emerald-600" />
-          <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Encrypted</span>
-        </div>
-      </nav>
+  const renewalDate = new Date(new Date().setMonth(new Date().getMonth() + 1)).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  });
 
-      <main className="flex-1 flex items-center justify-center p-6 md:p-12">
-        <div className="max-w-[480px] w-full text-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
-          
-          {/* SUCCESS ANIMATION AREA */}
-          <div className="mb-10 flex justify-center">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-emerald-400 rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
-              <div className="relative bg-white border-8 border-emerald-50 w-28 h-28 rounded-full flex items-center justify-center shadow-xl shadow-emerald-100 transition-transform hover:scale-105">
-                <CheckCircle2 size={56} className="text-emerald-500" strokeWidth={1.5} />
+  return (
+    <div className="public-page min-h-dvh px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+      <div className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-5xl flex-col">
+        <header className="mb-6 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#112129] text-[#8fe1cf]">
+              <Zap size={16} />
+            </span>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">AI SQL Studio</p>
+              <p className="display-font text-lg font-bold tracking-tight text-slate-950">Razorpay Verified</p>
+            </div>
+          </div>
+
+          <div className="hidden items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-emerald-700 sm:flex">
+            <ShieldCheck size={14} />
+            <span className="text-[10px] font-bold uppercase tracking-[0.12em]">Secure</span>
+          </div>
+        </header>
+
+        <main className="grid flex-1 items-center gap-6 lg:grid-cols-[0.92fr_1.08fr]">
+          <section className="public-card rounded-lg p-6 sm:p-8">
+            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+              <CheckCircle2 size={34} />
+            </div>
+            <p className="mt-6 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700">
+              Razorpay Payment Verified
+            </p>
+            <h1 className="display-font mt-2 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+              Welcome to Pro.
+            </h1>
+            <p className="mt-4 max-w-xl text-sm font-medium leading-7 text-slate-600">
+              Your account has been upgraded successfully. Advanced SQL tools, analytics, and billing records are now available.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => navigate("/dashboard")}
+              className="mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[#112129] px-4 text-[11px] font-bold uppercase tracking-[0.12em] text-white transition-all hover:bg-[#0f766e] sm:w-auto"
+            >
+              Launch Dashboard
+              <ArrowRight size={15} />
+            </button>
+          </section>
+
+          <section className="public-card rounded-lg p-5 sm:p-6">
+            <div className="flex items-center gap-3 border-b border-slate-200 pb-4">
+              <span className="flex h-10 w-10 items-center justify-center rounded-md bg-slate-100 text-slate-600">
+                <Receipt size={17} />
+              </span>
+              <div>
+                <h2 className="text-lg font-bold text-slate-950">Payment Receipt</h2>
+                <p className="text-sm font-medium text-slate-500">Plan access and verification details</p>
               </div>
             </div>
-          </div>
 
-          {/* MESSAGE */}
-          <div className="space-y-4 mb-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-black uppercase tracking-widest">
-              <PartyPopper size={12} /> Subscription Activated
+            <div className="mt-5 space-y-3">
+              <SummaryRow label="Account" value={user?.email || "Workspace member"} breakWords />
+              <SummaryRow label="Plan" value="Professional" />
+              <SummaryRow label="Valid Through" value={renewalDate} />
+              <SummaryRow label="Status" value="Pro access active" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-tight text-slate-950">
-              Welcome to <span className="text-emerald-500">Pro.</span>
-            </h1>
-            <p className="text-slate-500 text-base md:text-lg font-medium leading-relaxed max-w-[360px] mx-auto">
-              Your account has been upgraded. Start leveraging enterprise-grade AI for your SQL workflows.
-            </p>
-          </div>
 
-          {/* RECEIPT CARD (GLASSMORPHISM) */}
-          <div className="bg-white border border-slate-200 rounded-[32px] p-8 shadow-2xl shadow-slate-200/50 mb-10 text-left relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:rotate-12 transition-transform">
-               <Receipt size={120} />
+            <div className="mt-5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
+              <p className="text-sm font-semibold leading-7 text-emerald-800">
+                Payment verified by Razorpay Secure. You can review invoices from the dashboard billing section.
+              </p>
             </div>
-            
-            <div className="space-y-6 relative z-10">
-               <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Account ID</p>
-                  <p className="text-xs font-bold text-slate-900 truncate ml-8 tracking-tight">{user?.email}</p>
-               </div>
-               
-               <div className="space-y-3">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Next Scheduled Sync</p>
-                  <div className="flex justify-between items-end">
-                    <p className="text-xl font-black tracking-tight text-slate-900">
-                       {new Date(new Date().setMonth(new Date().getMonth() + 1)).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-                    </p>
-                    <div className="bg-slate-50 px-3 py-1 rounded-lg border border-slate-100">
-                       <span className="text-[10px] font-bold text-slate-500">Auto-renewal Active</span>
-                    </div>
-                  </div>
-               </div>
-            </div>
-          </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  );
+}
 
-          {/* ACTION BUTTON */}
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="group w-full bg-slate-950 text-white py-5 rounded-[22px] font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-4 hover:bg-black transition-all shadow-2xl shadow-slate-900/20 active:scale-95"
-          >
-            Launch Dashboard
-            <ArrowRight size={18} className="text-emerald-400 group-hover:translate-x-1.5 transition-transform" />
-          </button>
-
-          {/* FOOTER NOTE */}
-          <div className="mt-12 flex flex-col items-center gap-4">
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.15em] flex items-center gap-2">
-               <CheckCircle2 size={12} className="text-emerald-500/50" /> 
-               Payment verified by Razorpay Secure
-            </p>
-          </div>
-        </div>
-      </main>
+function SummaryRow({ label, value, breakWords = false }) {
+  return (
+    <div className="flex items-start justify-between gap-4 rounded-lg border border-slate-200 bg-white/70 px-4 py-3">
+      <span className="text-sm font-semibold text-slate-500">{label}</span>
+      <span className={`text-right text-sm font-bold text-slate-950 ${breakWords ? "break-all" : ""}`}>{value}</span>
     </div>
   );
 }

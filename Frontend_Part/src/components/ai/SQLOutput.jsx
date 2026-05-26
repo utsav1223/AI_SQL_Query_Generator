@@ -15,20 +15,20 @@ export default function SQLOutput({ result, mode = "generate" }) {
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent-soft)] text-[var(--accent)]">
             {isExplainMode ? <BookOpen size={14} /> : <Terminal size={14} />}
           </span>
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
             {isExplainMode ? "Explanation" : "Output"}
           </p>
         </div>
 
         {isValidateMode ? (
-          <span className="badge-accent rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em]">
+          <span className="badge-accent rounded-md px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em]">
             <CheckCircle2 size={12} />
             Valid Syntax
           </span>
         ) : null}
       </div>
 
-      <div className="code-shell overflow-hidden rounded-2xl">
+      <div className="code-shell overflow-hidden rounded-lg">
         <div className="code-toolbar flex items-center gap-2 px-4 py-3">
           <span className="h-2.5 w-2.5 rounded-full bg-slate-500/40" />
           <span className="h-2.5 w-2.5 rounded-full bg-slate-500/40" />

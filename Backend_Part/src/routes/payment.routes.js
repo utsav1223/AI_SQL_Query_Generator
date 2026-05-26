@@ -5,12 +5,14 @@ const {
   createPaymentLink,
   verifyPayment,
   verifyPaymentLink,
-  getInvoices
+  getInvoices,
+  downgradePlan
 } = require("../controllers/payment.controller");
 
 router.post("/create-order", auth, createOrder);
 router.post("/create-payment-link", auth, createPaymentLink);
 router.post("/verify", auth, verifyPayment);
 router.post("/verify-payment-link", auth, verifyPaymentLink);
+router.post("/downgrade", auth, downgradePlan);
 router.get("/invoices", auth, getInvoices);
 module.exports = router;

@@ -63,12 +63,12 @@ export default function AdminLogin() {
     : "border-slate-900/8 bg-white text-slate-900 placeholder:text-slate-400 focus-within:border-[#0f766e] focus-within:ring-[#0f766e]/10";
 
   return (
-    <div className={`min-h-screen px-4 py-4 sm:px-6 sm:py-6 ${pageClass}`}>
+    <div className={`admin-shell min-h-screen px-4 py-4 sm:px-6 sm:py-6 ${pageClass}`}>
       <div className="mx-auto mb-4 flex w-full max-w-6xl justify-end">
         <button
           type="button"
           onClick={toggleTheme}
-          className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] ${
+          className={`inline-flex items-center gap-2 rounded-md border px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] ${
             isDark
               ? "border-slate-700 bg-slate-900 text-slate-200 hover:border-slate-600"
               : "border-slate-900/8 bg-white/70 text-slate-700 hover:border-slate-900/16"
@@ -80,29 +80,27 @@ export default function AdminLogin() {
       </div>
 
       <div className="mx-auto grid w-full max-w-6xl gap-4 lg:grid-cols-[1.08fr_0.92fr]">
-        <section className="relative overflow-hidden rounded-[2.2rem] bg-[#112129] p-8 text-white shadow-[0_40px_90px_-48px_rgba(17,33,41,0.98)] sm:p-10">
-          <div className="absolute -left-12 top-0 h-44 w-44 rounded-full bg-[#8fe1cf]/18 blur-3xl" />
-          <div className="absolute -right-14 bottom-0 h-52 w-52 rounded-full bg-[#c76b2d]/18 blur-3xl" />
+        <section className="relative overflow-hidden rounded-lg bg-[#112129] p-6 text-white shadow-[0_40px_90px_-48px_rgba(17,33,41,0.98)] sm:p-8">
           <div className="public-grid absolute inset-0 opacity-15" />
 
           <div className="relative z-10">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#8fe1cf]/26 bg-[#8fe1cf]/10 px-4 py-2 text-[#8fe1cf]">
+            <div className="inline-flex items-center gap-2 rounded-md border border-[#8fe1cf]/26 bg-[#8fe1cf]/10 px-3 py-1.5 text-[#8fe1cf]">
               <ShieldUser size={14} />
-              <span className="text-[10px] font-extrabold uppercase tracking-[0.2em]">
+              <span className="text-[10px] font-bold uppercase tracking-[0.12em]">
                 Admin Console
               </span>
             </div>
 
-            <h1 className="display-font mt-7 max-w-xl text-4xl font-extrabold leading-tight tracking-[-0.03em] sm:text-5xl">
+            <h1 className="display-font mt-5 max-w-xl text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
               Secure access for platform control and user oversight.
             </h1>
 
-            <p className="mt-5 max-w-xl text-sm font-medium leading-8 text-slate-300 sm:text-base">
+            <p className="mt-4 max-w-xl text-sm font-medium leading-7 text-slate-300">
               Review signups, monitor subscriptions, handle feedback, and manage risk signals
               from a cleaner, more professional admin surface.
             </p>
 
-            <div className="mt-10 grid gap-4 sm:grid-cols-3">
+            <div className="mt-8 grid gap-3 sm:grid-cols-3">
               {[
                 { title: "Users", value: "Manage plans" },
                 { title: "Security", value: "Track signals" },
@@ -110,9 +108,9 @@ export default function AdminLogin() {
               ].map((item) => (
                 <article
                   key={item.title}
-                  className="rounded-[1.5rem] border border-white/10 bg-white/7 p-4 backdrop-blur-sm"
+                  className="rounded-lg border border-white/10 bg-white/7 p-3 backdrop-blur-sm"
                 >
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#8fe1cf]">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#8fe1cf]">
                     {item.title}
                   </p>
                   <p className="mt-2 text-sm font-semibold text-slate-100">{item.value}</p>
@@ -122,22 +120,22 @@ export default function AdminLogin() {
           </div>
         </section>
 
-        <section className={`rounded-[2.2rem] border p-6 shadow-[0_28px_80px_-44px_rgba(15,23,42,0.5)] sm:p-8 ${cardClass}`}>
-          <div className="mb-8">
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.22em] text-[#0f766e] dark:text-[#8fe1cf]">
+        <section className={`rounded-lg border p-5 shadow-[0_28px_80px_-44px_rgba(15,23,42,0.5)] sm:p-7 ${cardClass}`}>
+          <div className="mb-6">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#0f766e] dark:text-[#8fe1cf]">
               Restricted Access
             </p>
-            <h2 className="display-font mt-3 text-3xl font-extrabold tracking-tight">
+            <h2 className="display-font mt-2 text-2xl font-bold tracking-tight">
               Admin Login
             </h2>
-            <p className={`mt-3 text-sm font-medium leading-7 ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+            <p className={`mt-2 text-sm font-medium leading-7 ${isDark ? "text-slate-300" : "text-slate-600"}`}>
               Enter your admin credentials to continue into the platform control center.
             </p>
           </div>
 
           {error ? (
             <div
-              className={`mb-5 rounded-[1.4rem] border px-4 py-3 text-sm font-semibold ${
+              className={`mb-5 rounded-md border px-3 py-2.5 text-[13px] font-semibold ${
                 isDark
                   ? "border-rose-400/30 bg-rose-500/10 text-rose-300"
                   : "border-rose-200 bg-rose-50 text-rose-700"
@@ -147,7 +145,7 @@ export default function AdminLogin() {
             </div>
           ) : null}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <FieldShell
               label="User ID"
               icon={<UserSquare2 size={18} className={isDark ? "text-slate-400" : "text-slate-400"} />}
@@ -192,7 +190,7 @@ export default function AdminLogin() {
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#112129] px-5 py-4 text-[11px] font-extrabold uppercase tracking-[0.2em] text-white transition-all hover:-translate-y-0.5 hover:bg-[#0f766e] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-[#112129] px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white transition-all hover:bg-[#0f766e] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? "Signing in..." : "Access Admin Dashboard"}
               {!loading ? <ArrowRight size={14} /> : null}
@@ -214,12 +212,10 @@ export default function AdminLogin() {
 function FieldShell({ label, icon, className, children }) {
   return (
     <div className="space-y-2.5">
-      <label
-        className="block text-[11px] font-extrabold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400"
-      >
+      <label className="block text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
         {label}
       </label>
-      <div className={`flex items-center gap-3 rounded-[1.35rem] border px-4 py-3.5 ring-4 ring-transparent transition-all focus-within:ring-opacity-100 ${className}`}>
+      <div className={`flex items-center gap-2.5 rounded-md border px-3 py-2.5 ring-4 ring-transparent transition-all focus-within:ring-opacity-100 ${className}`}>
         {icon}
         {children}
       </div>

@@ -1,80 +1,99 @@
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { ArrowLeft, ArrowUpRight, Code2, Github, Linkedin, Mail } from "lucide-react";
 import { developers } from "../data/developers";
+
+const revealViewport = { once: false, amount: 0.18 };
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } }
+};
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08 } }
+};
 
 export default function Developers() {
   return (
     <div className="public-page">
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/82 backdrop-blur-xl">
-        <div className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between px-5 sm:px-8">
+        <div className="mx-auto flex h-[60px] w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-700 transition-all hover:border-slate-300 hover:text-slate-950"
+            className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white/90 px-3 py-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-700 transition-all hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800"
           >
             <ArrowLeft size={14} />
             Back Home
           </Link>
 
-          <span className="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#0f766e]">
+          <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[#0f766e]">
             <Code2 size={14} />
             Team Showcase
           </span>
         </div>
       </header>
 
-      <main className="px-5 py-14 sm:px-8">
+      <main className="px-4 py-12 sm:px-6 lg:px-8">
         <section className="mx-auto w-full max-w-7xl">
-          <div className="public-card relative overflow-hidden rounded-[2.2rem] px-6 py-8 sm:px-10 sm:py-12">
-            <div className="absolute -right-14 top-0 h-44 w-44 rounded-full bg-[#0f766e]/12 blur-3xl" />
-            <div className="absolute -left-10 bottom-0 h-40 w-40 rounded-full bg-[#c76b2d]/10 blur-3xl" />
-
+          <motion.div
+            className="public-card relative overflow-hidden rounded-lg px-5 py-7 sm:px-8 sm:py-9"
+            variants={fadeUp}
+            initial="hidden"
+            animate="visible"
+          >
             <div className="relative max-w-3xl">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.28em] text-[#0f766e]">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#0f766e]">
                 People Behind The Product
               </p>
-              <h1 className="display-font mt-4 text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">
+              <h1 className="display-font mt-3 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
                 Meet the developers shaping AI SQL Studio.
               </h1>
-              <p className="mt-5 text-sm font-medium leading-8 text-slate-600 sm:text-base">
+              <p className="mt-4 max-w-2xl text-sm font-medium leading-7 text-slate-600">
                 This page highlights the builders behind the product experience,
                 frontend polish, backend architecture, and AI-driven workflow.
               </p>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <motion.div
+            className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={revealViewport}
+          >
             {developers.map((dev) => (
-              <article key={dev.name} className="public-card overflow-hidden rounded-[1.9rem]">
-                <div className="bg-slate-100 p-4">
+              <motion.article key={dev.name} variants={fadeUp} className="public-card overflow-hidden rounded-lg transition-all hover:-translate-y-1 hover:border-teal-200 hover:shadow-lg">
+                <div className="bg-slate-100 p-3">
                   <img
                     src={dev.image}
                     alt={dev.name}
                     loading="lazy"
-                    className="h-80 w-full rounded-[1.5rem] bg-slate-100 object-contain object-center"
+                    className="h-72 w-full rounded-md bg-slate-100 object-contain object-center"
                   />
                 </div>
 
-                <div className="p-6">
+                <div className="p-5">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#0f766e]">
+                      <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-[#0f766e]">
                         {dev.role}
                       </p>
-                      <h2 className="display-font mt-3 text-2xl font-extrabold tracking-tight text-slate-950">
+                      <h2 className="display-font mt-2 text-xl font-bold tracking-tight text-slate-950">
                         {dev.name}
                       </h2>
                     </div>
-                    <span className="rounded-full border border-slate-200 bg-white/90 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">
+                    <span className="rounded-md border border-slate-200 bg-white/90 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-slate-500">
                       Builder
                     </span>
                   </div>
 
-                  <p className="mt-4 text-sm font-medium leading-7 text-slate-600">{dev.bio}</p>
+                  <p className="mt-3 text-[13px] font-medium leading-6 text-slate-600">{dev.bio}</p>
 
-                  <div className="mt-6 flex flex-wrap items-center gap-2">
+                  <div className="mt-5 flex flex-wrap items-center gap-2">
                     <a
                       href={`mailto:${dev.email}`}
-                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-600 transition-all hover:border-slate-300 hover:text-slate-950"
+                      className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-700 transition-all hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800"
                     >
                       <Mail size={12} />
                       Mail
@@ -83,7 +102,7 @@ export default function Developers() {
                       href={dev.github}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-600 transition-all hover:border-slate-300 hover:text-slate-950"
+                      className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-700 transition-all hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800"
                     >
                       <Github size={12} />
                       GitHub
@@ -92,24 +111,25 @@ export default function Developers() {
                       href={dev.linkedin}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-600 transition-all hover:border-slate-300 hover:text-slate-950"
+                      className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-700 transition-all hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800"
                     >
                       <Linkedin size={12} />
                       LinkedIn
                     </a>
                   </div>
                 </div>
-              </article>
+              </motion.article>
             ))}
-          </div>
+          </motion.div>
 
           <div className="mt-10 flex justify-center">
             <Link
               to="/register"
-              className="inline-flex items-center gap-2 rounded-full bg-[#112129] px-6 py-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-white transition-all hover:-translate-y-0.5 hover:bg-[#0f766e]"
+              style={{ color: "#ffffff" }}
+              className="inline-flex items-center justify-center gap-2 rounded-md border border-[#112129] bg-[#112129] px-5 py-3 text-[11px] font-extrabold uppercase tracking-[0.12em] !text-white shadow-sm transition-all hover:border-[#0f766e] hover:bg-[#0f766e] hover:!text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-100"
             >
-              Create Workspace
-              <ArrowUpRight size={14} />
+              <span className="text-white">Create Workspace</span>
+              <ArrowUpRight size={14} className="text-white" />
             </Link>
           </div>
         </section>

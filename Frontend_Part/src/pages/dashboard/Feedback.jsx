@@ -60,31 +60,31 @@ export default function Feedback() {
   };
 
   return (
-    <div className="dashboard-page max-w-[1100px] space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
-      <header className="border-b border-slate-100 pb-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 mb-4">
+    <div className="dashboard-page max-w-[1100px] space-y-6">
+      <header className="border-b border-slate-100 pb-6 dark:border-slate-800">
+        <div className="mb-3 inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 dark:border-slate-700 dark:bg-slate-900">
           <MessageSquareQuote size={14} className="text-emerald-600" />
-          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Feedback</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">Feedback</span>
         </div>
-        <h1 className="dashboard-heading text-4xl md:text-5xl font-black tracking-tighter text-slate-900 leading-none">
-          Product <span className="text-emerald-500">Feedback</span>
+        <h1 className="dashboard-heading text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 md:text-4xl">
+          Product Feedback
         </h1>
-        <p className="text-slate-500 font-medium text-lg mt-4 max-w-3xl">
+        <p className="mt-3 max-w-3xl text-sm font-medium leading-7 text-slate-500 dark:text-slate-400">
           Share what is working and what should improve in your SQL workflow experience.
         </p>
       </header>
 
       <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-        <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-[32px] p-6 md:p-8 shadow-sm space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-6">
           <div className="space-y-2">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Satisfaction</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Satisfaction</p>
             <div className="flex items-center gap-2">
               {[1, 2, 3, 4, 5].map((value) => (
                 <button
                   key={value}
                   type="button"
                   onClick={() => setRating(value)}
-                  className={`p-2 rounded-xl border transition-all ${
+                  className={`rounded-md border p-2 transition-all ${
                     value <= rating
                       ? "bg-amber-50 border-amber-200 text-amber-500"
                       : "bg-white border-slate-200 text-slate-300 hover:text-amber-400"
@@ -97,11 +97,11 @@ export default function Feedback() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Topic</label>
+            <label className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Topic</label>
             <select
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              className="w-full h-12 px-4 rounded-2xl border border-slate-200 bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-100"
+              className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-950"
             >
               {FEEDBACK_TOPICS.map((item) => (
                 <option key={item} value={item}>
@@ -112,13 +112,13 @@ export default function Feedback() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Message</label>
+            <label className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Message</label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Please share details. Minimum 10 characters."
               rows={6}
-              className="w-full p-4 rounded-2xl border border-slate-200 bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-100 resize-y"
+              className="w-full resize-y rounded-md border border-slate-200 bg-white p-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-950"
             />
           </div>
 
@@ -130,7 +130,7 @@ export default function Feedback() {
             <button
               type="submit"
               disabled={!canSubmit}
-              className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-2xl bg-slate-950 text-white text-xs font-black uppercase tracking-[0.2em] disabled:bg-slate-200 disabled:text-slate-500 transition-all"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-[#10232d] px-5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white transition-all hover:bg-teal-700 disabled:bg-slate-200 disabled:text-slate-500"
             >
               <Send size={14} />
               {submitting ? "Sending..." : "Submit"}
@@ -138,20 +138,20 @@ export default function Feedback() {
           </div>
 
           {notice && (
-            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+            <div className="rounded-md border border-emerald-100 bg-emerald-50 px-3 py-2.5 text-[13px] font-semibold text-emerald-700">
               {notice}
             </div>
           )}
           {error && (
-            <div className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+            <div className="rounded-md border border-rose-100 bg-rose-50 px-3 py-2.5 text-[13px] font-semibold text-rose-700">
               {error}
             </div>
           )}
         </form>
 
-        <section className="bg-white border border-slate-200 rounded-[32px] p-6 md:p-8 shadow-sm">
+        <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-sm font-black uppercase tracking-[0.2em] text-slate-500">Your Feedback History</h2>
+            <h2 className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500">Your Feedback History</h2>
             <Clock3 size={16} className="text-slate-300" />
           </div>
 
@@ -162,15 +162,15 @@ export default function Feedback() {
               <p className="text-sm font-semibold text-slate-500">No feedback submitted yet.</p>
             ) : (
               history.map((item) => (
-                <article key={item._id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <article key={item._id} className="rounded-md border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-black text-slate-800">{item.topic}</p>
+                      <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{item.topic}</p>
                       <p className="text-xs font-semibold text-slate-400 mt-1">
                         {new Date(item.createdAt).toLocaleString()}
                       </p>
                     </div>
-                    <div className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-amber-700">
+                    <div className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-amber-700">
                       <Star size={11} fill="currentColor" />
                       {item.rating}/5
                     </div>

@@ -6,11 +6,11 @@ export default function SQLInput({ value, onChange, mode, loading, placeholder }
 
   return (
     <div className="w-full">
-      <div className="surface-card-soft rounded-t-2xl border-b-0 px-5 py-3">
+      <div className="surface-card-soft rounded-t-lg border-b-0 px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Terminal size={14} className="text-slate-500 dark:text-slate-400" />
-            <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+            <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
               {editorTitle}
             </span>
           </div>
@@ -18,7 +18,7 @@ export default function SQLInput({ value, onChange, mode, loading, placeholder }
           <div className="flex items-center gap-3">
             <div className="hidden items-center gap-1 rounded-md bg-[var(--surface)] px-2 py-1 sm:flex">
               <Command size={10} className="text-slate-400" />
-              <span className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-slate-400">
+              <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">
                 Enter
               </span>
             </div>
@@ -36,7 +36,7 @@ export default function SQLInput({ value, onChange, mode, loading, placeholder }
             ? "Example: Find users who purchased more than 500 in the last 30 days."
             : "SELECT * FROM analytics.events WHERE event_type = 'conversion';")
         }
-        className={`input-control custom-scrollbar mono-font min-h-[260px] w-full resize-none rounded-b-2xl border-t-0 px-5 py-5 text-sm leading-7 sm:min-h-[320px] sm:px-6 sm:py-6 ${
+        className={`input-control custom-scrollbar mono-font min-h-[240px] w-full resize-none rounded-b-lg border-t-0 px-4 py-4 text-[13px] leading-7 sm:min-h-[300px] ${
           loading ? "cursor-wait opacity-60" : ""
         }`}
       />

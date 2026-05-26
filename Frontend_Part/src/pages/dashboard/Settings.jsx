@@ -87,27 +87,27 @@ export default function Settings() {
 
   return (
     <div className="dashboard-page space-y-6">
-      <section className="dashboard-card rounded-3xl p-6 sm:p-8">
-        <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[var(--accent)]">
+      <section className="dashboard-card rounded-lg p-5 sm:p-6">
+        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]">
           Settings
         </p>
-        <h1 className="dashboard-heading mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">
+        <h1 className="dashboard-heading mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
           Manage your account
         </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500 dark:text-slate-400">
+        <p className="mt-3 max-w-2xl text-sm font-medium leading-7 text-slate-600 dark:text-slate-400">
           Update your profile, change your password, and manage billing or account deletion from one simple page.
         </p>
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-        <section className="dashboard-card rounded-3xl p-6">
+      <div className="grid gap-4 xl:grid-cols-[1fr_1fr]">
+        <section className="dashboard-card rounded-lg p-5 sm:p-6">
           <div className="mb-5 flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]">
+            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-[var(--accent-soft)] text-[var(--accent)]">
               <User size={18} />
             </span>
             <div>
-              <h2 className="text-lg font-extrabold">Profile</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Basic account information</p>
+              <h2 className="text-lg font-bold text-slate-950 dark:text-slate-100">Profile</h2>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Basic account information</p>
             </div>
           </div>
 
@@ -117,7 +117,7 @@ export default function Settings() {
                 type="text"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                className="input-control rounded-xl px-4 py-3 text-sm font-semibold"
+                className="input-control rounded-md px-4 py-3 text-sm font-semibold"
               />
             </Field>
 
@@ -128,7 +128,7 @@ export default function Settings() {
                   type="email"
                   value={user?.email || ""}
                   disabled
-                  className="input-control rounded-xl py-3 pl-11 pr-4 text-sm font-semibold opacity-80"
+                  className="input-control rounded-md py-3 pl-11 pr-4 text-sm font-semibold opacity-80"
                 />
               </div>
             </Field>
@@ -137,7 +137,7 @@ export default function Settings() {
               type="button"
               onClick={handleProfileUpdate}
               disabled={profileLoading}
-              className="button-primary inline-flex items-center gap-2 rounded-xl px-5 py-3 text-[11px] font-extrabold uppercase tracking-[0.16em] disabled:cursor-not-allowed disabled:opacity-60"
+              className="button-primary inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {profileLoading ? <Loader2 size={16} className="animate-spin" /> : null}
               {profileLoading ? "Saving..." : "Save Profile"}
@@ -145,14 +145,14 @@ export default function Settings() {
           </div>
         </section>
 
-        <section className="dashboard-card rounded-3xl p-6">
+        <section className="dashboard-card rounded-lg p-5 sm:p-6">
           <div className="mb-5 flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]">
+            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-[var(--accent-soft)] text-[var(--accent)]">
               <Shield size={18} />
             </span>
             <div>
-              <h2 className="text-lg font-extrabold">Security</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Change your password</p>
+              <h2 className="text-lg font-bold text-slate-950 dark:text-slate-100">Security</h2>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Change your password</p>
             </div>
           </div>
 
@@ -163,7 +163,7 @@ export default function Settings() {
                 value={currentPassword}
                 onChange={(event) => setCurrentPassword(event.target.value)}
                 placeholder="Enter current password"
-                className="input-control rounded-xl px-4 py-3 text-sm font-semibold"
+                className="input-control rounded-md px-4 py-3 text-sm font-semibold"
               />
             </Field>
 
@@ -173,7 +173,7 @@ export default function Settings() {
                 value={newPassword}
                 onChange={(event) => setNewPassword(event.target.value)}
                 placeholder="Enter new password"
-                className="input-control rounded-xl px-4 py-3 text-sm font-semibold"
+                className="input-control rounded-md px-4 py-3 text-sm font-semibold"
               />
             </Field>
 
@@ -181,7 +181,7 @@ export default function Settings() {
               type="button"
               onClick={handlePasswordChange}
               disabled={passwordLoading || !currentPassword || !newPassword}
-              className="button-secondary inline-flex items-center gap-2 rounded-xl px-5 py-3 text-[11px] font-extrabold uppercase tracking-[0.16em] disabled:cursor-not-allowed disabled:opacity-60"
+              className="button-secondary inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {passwordLoading ? <Loader2 size={16} className="animate-spin" /> : null}
               {passwordLoading ? "Updating..." : "Change Password"}
@@ -190,26 +190,26 @@ export default function Settings() {
         </section>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-        <section className="dashboard-card rounded-3xl p-6">
+      <div className="grid gap-4 xl:grid-cols-[1fr_1fr]">
+        <section className="dashboard-card rounded-lg p-5 sm:p-6">
           <div className="mb-5 flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-soft)] text-[var(--accent)]">
+            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-[var(--accent-soft)] text-[var(--accent)]">
               <CreditCard size={18} />
             </span>
             <div>
-              <h2 className="text-lg font-extrabold">Billing</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Current subscription status</p>
+              <h2 className="text-lg font-bold text-slate-950 dark:text-slate-100">Billing</h2>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Current subscription status</p>
             </div>
           </div>
 
-          <div className="surface-card-soft rounded-2xl p-5">
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+          <div className="surface-card-soft rounded-lg p-4 sm:p-5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
               Current Plan
             </p>
-            <p className="mt-2 text-2xl font-extrabold">
+            <p className="mt-2 text-2xl font-bold text-slate-950 dark:text-slate-100">
               {user?.plan === "pro" ? "Professional" : "Free"}
             </p>
-            <p className="mt-3 text-sm leading-7 text-slate-500 dark:text-slate-400">
+            <p className="mt-3 text-sm font-medium leading-7 text-slate-500 dark:text-slate-400">
               {user?.plan === "pro"
                 ? "Your account has access to advanced tools and billing history."
                 : "Upgrade to unlock analytics and advanced SQL tools."}
@@ -219,7 +219,7 @@ export default function Settings() {
               <button
                 type="button"
                 onClick={() => navigate("/dashboard/invoices")}
-                className="button-secondary mt-5 rounded-xl px-5 py-3 text-[11px] font-extrabold uppercase tracking-[0.16em]"
+                className="button-secondary mt-5 rounded-md px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em]"
               >
                 View Invoices
               </button>
@@ -227,7 +227,7 @@ export default function Settings() {
               <button
                 type="button"
                 onClick={() => navigate("/dashboard/pricing")}
-                className="button-primary mt-5 rounded-xl px-5 py-3 text-[11px] font-extrabold uppercase tracking-[0.16em]"
+                className="button-primary mt-5 rounded-md px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em]"
               >
                 Upgrade Plan
               </button>
@@ -235,26 +235,26 @@ export default function Settings() {
           </div>
         </section>
 
-        <section className="dashboard-card rounded-3xl border-rose-200 p-6 dark:border-rose-900/40">
+        <section className="dashboard-card rounded-lg border-rose-200 p-5 dark:border-rose-900/40 sm:p-6">
           <div className="mb-5 flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--danger-soft)] text-[var(--danger)]">
+            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-[var(--danger-soft)] text-[var(--danger)]">
               <Trash2 size={18} />
             </span>
             <div>
-              <h2 className="text-lg font-extrabold">Delete Account</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">This action cannot be undone</p>
+              <h2 className="text-lg font-bold text-slate-950 dark:text-slate-100">Delete Account</h2>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">This action cannot be undone</p>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5 dark:border-rose-900/40 dark:bg-rose-950/20">
-            <p className="text-sm leading-7 text-rose-700 dark:text-rose-300">
+          <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 dark:border-rose-900/40 dark:bg-rose-950/20 sm:p-5">
+            <p className="text-sm font-medium leading-7 text-rose-700 dark:text-rose-300">
               Deleting your account permanently removes profile data, saved schema, and query history.
             </p>
             <button
               type="button"
               onClick={handleDeleteAccount}
               disabled={deleteLoading}
-              className="button-danger mt-5 inline-flex items-center gap-2 rounded-xl px-5 py-3 text-[11px] font-extrabold uppercase tracking-[0.16em] disabled:cursor-not-allowed disabled:opacity-60"
+              className="button-danger mt-5 inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {deleteLoading ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
               {deleteLoading ? "Deleting..." : "Delete Account"}
@@ -265,7 +265,7 @@ export default function Settings() {
 
       {message.text ? (
         <div className="fixed bottom-6 left-1/2 z-[100] w-full max-w-md -translate-x-1/2 px-4">
-          <div className="surface-inverse flex items-center gap-3 rounded-2xl px-5 py-4 shadow-xl">
+          <div className="surface-inverse flex items-center gap-3 rounded-lg px-5 py-4 shadow-xl">
             {message.type === "success" ? (
               <CheckCircle2 size={18} className="text-emerald-400" />
             ) : (
@@ -282,7 +282,7 @@ export default function Settings() {
 function Field({ label, children }) {
   return (
     <div className="space-y-2">
-      <label className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+      <label className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
         {label}
       </label>
       {children}

@@ -17,26 +17,23 @@ function PasswordField({
 }) {
   return (
     <div className="space-y-2">
-      <label
-        htmlFor={id}
-        className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-slate-500"
-      >
+      <label htmlFor={id} className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
         {label}
       </label>
 
       <div
-        className={`group flex items-center gap-3 rounded-2xl border px-4 py-3 transition-all ${
+        className={`group flex items-center gap-2.5 rounded-md border px-3 py-2.5 transition-all ${
           error
             ? "border-rose-300 bg-rose-50/90"
-            : "border-slate-200 bg-white hover:border-slate-300 focus-within:border-sky-500 focus-within:ring-4 focus-within:ring-sky-100"
+            : "border-slate-200 bg-white hover:border-slate-300 focus-within:border-teal-600 focus-within:ring-4 focus-within:ring-teal-100"
         }`}
       >
         <Lock
-          size={18}
+          size={16}
           className={
             error
               ? "text-rose-500"
-              : "text-slate-400 transition-colors group-focus-within:text-sky-600"
+              : "text-slate-400 transition-colors group-focus-within:text-teal-700"
           }
         />
         <input
@@ -46,12 +43,12 @@ function PasswordField({
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className="w-full bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 outline-none"
+          className="w-full bg-transparent text-[13px] font-semibold text-slate-900 placeholder:text-slate-400 outline-none"
         />
         <button
           type="button"
           onClick={onToggle}
-          className="text-slate-400 transition-colors hover:text-sky-600"
+          className="text-slate-400 transition-colors hover:text-teal-700"
           aria-label={visible ? "Hide password" : "Show password"}
         >
           {visible ? <Eye size={18} /> : <EyeOff size={18} />}
@@ -168,28 +165,28 @@ export default function ResetPasswordModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="max-w-lg">
-      <div className="border-b border-slate-200 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.12),transparent_34%),linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-6 py-5">
-        <div className="inline-flex items-center gap-2 rounded-full border border-sky-100 bg-sky-50 px-3 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-sky-700">
-          <Sparkles size={13} />
+      <div className="border-b border-slate-200 bg-white px-5 py-5">
+        <div className="inline-flex items-center gap-2 rounded-md border border-teal-100 bg-teal-50 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-teal-700">
+          <Sparkles size={12} />
           OTP Reset
         </div>
-        <h2 className="display-font mt-4 text-2xl font-extrabold tracking-tight text-slate-950">
+        <h2 className="display-font mt-4 text-xl font-bold tracking-tight text-slate-950">
           Reset with OTP
         </h2>
-        <p className="mt-2 text-sm font-medium leading-6 text-slate-500">
+        <p className="mt-2 text-[13px] font-medium leading-6 text-slate-500">
           Use the code sent to your email and set a new password.
         </p>
       </div>
 
-      <div className="px-6 py-5">
+      <div className="px-5 py-5">
         {notice ? (
-          <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+          <div className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-[13px] font-semibold text-emerald-700">
             {notice}
           </div>
         ) : null}
 
         {errors.server ? (
-          <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+          <div className="mb-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2.5 text-[13px] font-semibold text-rose-700">
             {errors.server}
           </div>
         ) : null}
@@ -198,17 +195,17 @@ export default function ResetPasswordModal({
           <div className="space-y-2">
             <label
               htmlFor="reset-email"
-              className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-slate-500"
+              className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500"
             >
               Email
             </label>
-            <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-              <Mail size={18} className="text-slate-400" />
+            <div className="flex items-center gap-2.5 rounded-md border border-slate-200 bg-slate-50 px-3 py-2.5">
+              <Mail size={16} className="text-slate-400" />
               <input
                 id="reset-email"
                 value={form.email}
                 readOnly
-                className="w-full bg-transparent text-sm font-semibold text-slate-900 outline-none"
+                className="w-full bg-transparent text-[13px] font-semibold text-slate-900 outline-none"
               />
             </div>
           </div>
@@ -217,7 +214,7 @@ export default function ResetPasswordModal({
             <div className="flex items-center justify-between gap-4">
               <label
                 htmlFor="otp"
-                className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-slate-500"
+                className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500"
               >
                 OTP Code
               </label>
@@ -225,10 +222,10 @@ export default function ResetPasswordModal({
                 type="button"
                 onClick={handleResend}
                 disabled={resendTimer > 0 || isSubmitting}
-                className={`text-[10px] font-black uppercase tracking-[0.14em] ${
+                className={`text-[10px] font-bold uppercase tracking-[0.12em] ${
                   resendTimer > 0 || isSubmitting
                     ? "text-slate-300"
-                    : "text-sky-600 transition-colors hover:text-sky-700"
+                    : "text-teal-700 transition-colors hover:text-teal-800"
                 }`}
               >
                 {resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend OTP"}
@@ -236,18 +233,18 @@ export default function ResetPasswordModal({
             </div>
 
             <div
-              className={`group flex items-center gap-3 rounded-2xl border px-4 py-3 transition-all ${
+              className={`group flex items-center gap-2.5 rounded-md border px-3 py-2.5 transition-all ${
                 errors.otp
                   ? "border-rose-300 bg-rose-50/90"
-                  : "border-slate-200 bg-white hover:border-slate-300 focus-within:border-sky-500 focus-within:ring-4 focus-within:ring-sky-100"
+                  : "border-slate-200 bg-white hover:border-slate-300 focus-within:border-teal-600 focus-within:ring-4 focus-within:ring-teal-100"
               }`}
             >
               <KeyRound
-                size={18}
+                size={16}
                 className={
                   errors.otp
                     ? "text-rose-500"
-                    : "text-slate-400 transition-colors group-focus-within:text-sky-600"
+                    : "text-slate-400 transition-colors group-focus-within:text-teal-700"
                 }
               />
               <input
@@ -258,13 +255,13 @@ export default function ResetPasswordModal({
                 maxLength={6}
                 autoFocus
                 placeholder="Enter 6-digit OTP"
-                className="w-full bg-transparent text-sm font-semibold tracking-[0.2em] text-slate-900 placeholder:tracking-normal placeholder:text-slate-400 outline-none"
+                className="w-full bg-transparent text-[13px] font-semibold tracking-[0.18em] text-slate-900 placeholder:tracking-normal placeholder:text-slate-400 outline-none"
               />
             </div>
             {errors.otp ? <p className="text-xs font-semibold text-rose-600">{errors.otp}</p> : null}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-3.5 sm:grid-cols-2">
             <PasswordField
               id="password"
               label="New Password"
@@ -291,7 +288,7 @@ export default function ResetPasswordModal({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] text-white transition-all hover:-translate-y-0.5 hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-[#10232d] px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white transition-all hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting ? "Updating..." : "Update Password"}
             {!isSubmitting ? <ArrowRight size={15} /> : null}
@@ -302,7 +299,7 @@ export default function ResetPasswordModal({
           <button
             type="button"
             onClick={() => onSwitchMode("forgot", { email: form.email })}
-            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-500 transition-colors hover:text-sky-700"
+            className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500 transition-colors hover:text-teal-700"
           >
             <ArrowLeft size={14} />
             Back To Recovery

@@ -76,8 +76,8 @@ export default function Analytics() {
   if (!user || user.plan !== "pro") {
     return (
       <div className="dashboard-page">
-        <section className="dashboard-card rounded-3xl px-6 py-10 text-center sm:px-10">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--accent-soft)] text-[var(--accent)]">
+        <section className="dashboard-card rounded-lg px-5 py-10 text-center sm:px-8">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg bg-[var(--accent-soft)] text-[var(--accent)]">
             <Lock size={28} />
           </div>
           <h1 className="dashboard-heading mt-6 text-3xl font-extrabold tracking-tight">
@@ -89,7 +89,7 @@ export default function Analytics() {
           <button
             type="button"
             onClick={() => navigate("/dashboard/pricing")}
-            className="button-primary mt-6 inline-flex items-center gap-2 rounded-xl px-5 py-3 text-[11px] font-extrabold uppercase tracking-[0.16em]"
+            className="button-primary mt-6 inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em]"
           >
             Upgrade To Pro
             <ArrowRight size={14} />
@@ -101,11 +101,11 @@ export default function Analytics() {
 
   return (
     <div className="dashboard-page space-y-6">
-      <section className="dashboard-card rounded-3xl p-6 sm:p-8">
-        <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[var(--accent)]">
+      <section className="dashboard-card rounded-lg p-5 sm:p-6">
+        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]">
           Analytics
         </p>
-        <h1 className="dashboard-heading mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">
+        <h1 className="dashboard-heading mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
           Clear usage insights for your SQL workspace
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500 dark:text-slate-400">
@@ -121,7 +121,7 @@ export default function Analytics() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <article className="dashboard-card rounded-3xl p-6">
+        <article className="dashboard-card rounded-lg p-5 sm:p-6">
           <div className="mb-5 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-extrabold">Activity trend</h2>
@@ -177,7 +177,7 @@ export default function Analytics() {
           </div>
         </article>
 
-        <article className="dashboard-card rounded-3xl p-6">
+        <article className="dashboard-card rounded-lg p-5 sm:p-6">
           <div className="mb-5">
             <h2 className="text-lg font-extrabold">Tool usage</h2>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
@@ -249,11 +249,11 @@ export default function Analytics() {
 
 function StatCard({ title, value, helper, accent = false }) {
   return (
-    <article className="dashboard-card rounded-3xl p-6">
-      <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+    <article className="dashboard-card rounded-lg p-5">
+      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
         {title}
       </p>
-      <p className={`dashboard-heading mt-3 text-3xl font-extrabold tracking-tight ${accent ? "text-[var(--accent)]" : ""}`}>
+      <p className={`dashboard-heading mt-3 text-3xl font-bold tracking-tight ${accent ? "text-[var(--accent)]" : "text-slate-950 dark:text-slate-100"}`}>
         {value}
       </p>
       <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{helper}</p>
@@ -263,14 +263,14 @@ function StatCard({ title, value, helper, accent = false }) {
 
 function InsightCard({ title, value, icon = null }) {
   return (
-    <article className="dashboard-card rounded-3xl p-6">
+    <article className="dashboard-card rounded-lg p-5">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
           {title}
         </p>
         {icon ? <span className="text-[var(--accent)]">{icon}</span> : null}
       </div>
-      <p className="dashboard-heading mt-4 text-2xl font-extrabold tracking-tight">{value}</p>
+      <p className="dashboard-heading mt-4 text-2xl font-bold tracking-tight text-slate-950 dark:text-slate-100">{value}</p>
     </article>
   );
 }
@@ -278,19 +278,19 @@ function InsightCard({ title, value, icon = null }) {
 function AnalyticsSkeleton() {
   return (
     <div className="dashboard-page space-y-6 animate-pulse">
-      <div className="dashboard-card rounded-3xl p-8">
+      <div className="dashboard-card rounded-lg p-6">
         <div className="h-3 w-24 rounded bg-slate-200 dark:bg-slate-700" />
         <div className="mt-4 h-10 w-72 rounded bg-slate-200 dark:bg-slate-700" />
         <div className="mt-3 h-4 w-80 rounded bg-slate-200 dark:bg-slate-700" />
       </div>
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         {[1, 2, 3, 4].map((id) => (
-          <div key={id} className="dashboard-card h-36 rounded-3xl" />
+          <div key={id} className="dashboard-card h-36 rounded-lg" />
         ))}
       </div>
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <div className="dashboard-card h-[380px] rounded-3xl" />
-        <div className="dashboard-card h-[380px] rounded-3xl" />
+        <div className="dashboard-card h-[380px] rounded-lg" />
+        <div className="dashboard-card h-[380px] rounded-lg" />
       </div>
     </div>
   );

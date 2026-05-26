@@ -68,37 +68,37 @@ export default function Navbar({ onMenuClick }) {
 
   return (
     <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[var(--app-bg)]/90 backdrop-blur-xl">
-      <div className="mx-auto flex w-full max-w-[1500px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-3">
           <button
             type="button"
             onClick={onMenuClick}
-            className="button-secondary inline-flex h-11 w-11 items-center justify-center rounded-xl lg:hidden"
+            className="button-secondary inline-flex h-9 w-9 items-center justify-center rounded-md lg:hidden"
           >
             <Menu size={18} />
           </button>
 
           <div className="min-w-0">
-            <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[var(--accent)]">
+            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]">
               Workspace
             </p>
-            <h1 className="dashboard-heading truncate text-2xl font-extrabold tracking-tight">
+            <h1 className="dashboard-heading truncate text-xl font-bold tracking-tight text-slate-950 dark:text-slate-100">
               {pageMeta.title}
             </h1>
-            <p className="hidden text-sm text-slate-500 dark:text-slate-400 md:block">
+            <p className="hidden text-[13px] text-slate-500 dark:text-slate-400 md:block">
               {pageMeta.description}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="surface-card hidden items-center gap-3 rounded-xl px-3 py-2 sm:flex">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--accent-soft)] text-sm font-extrabold text-[var(--accent)]">
+          <div className="surface-card hidden items-center gap-3 rounded-lg px-3 py-2 text-slate-950 dark:text-slate-100 sm:flex">
+            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--accent-soft)] text-sm font-bold text-[var(--accent)]">
               {userInitial}
             </span>
             <div className="leading-tight">
-              <p className="text-sm font-bold">{user?.name || "Workspace User"}</p>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
+              <p className="text-[13px] font-bold">{user?.name || "Workspace User"}</p>
+              <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
                 {user?.plan === "pro" ? "Pro plan" : "Free plan"}
               </p>
             </div>
@@ -107,7 +107,7 @@ export default function Navbar({ onMenuClick }) {
           <button
             type="button"
             onClick={toggleTheme}
-            className="button-secondary inline-flex items-center gap-2 rounded-xl px-4 py-3 text-[10px] font-extrabold uppercase tracking-[0.16em]"
+            className="button-secondary inline-flex items-center gap-2 rounded-md px-3 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em]"
             title={isDark ? "Switch to light mode" : "Switch to dark mode"}
             aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
           >
@@ -121,7 +121,7 @@ export default function Navbar({ onMenuClick }) {
               logout();
               navigate("/login");
             }}
-            className="button-primary inline-flex items-center gap-2 rounded-xl px-4 py-3 text-[10px] font-extrabold uppercase tracking-[0.16em]"
+            className="button-primary inline-flex items-center gap-2 rounded-md px-3 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em]"
           >
             <LogOut size={14} />
             <span className="hidden sm:inline">Logout</span>

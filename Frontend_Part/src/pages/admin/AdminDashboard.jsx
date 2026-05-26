@@ -321,7 +321,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className={`min-h-screen overflow-x-hidden ${isDark ? "bg-slate-950 text-slate-100" : "bg-slate-100 text-slate-900"}`}>
+    <div className={`admin-shell min-h-screen overflow-x-hidden ${isDark ? "bg-slate-950 text-slate-100" : "bg-slate-100 text-slate-900"}`}>
       <header className={`sticky top-0 z-30 border-b backdrop-blur-xl ${isDark ? "border-slate-700 bg-slate-900/90" : "border-slate-200 bg-white/90"}`}>
         <div className="mx-auto flex w-full max-w-7xl flex-wrap items-start justify-between gap-3 px-4 py-4 sm:items-center sm:px-6">
           <div className="min-w-0">

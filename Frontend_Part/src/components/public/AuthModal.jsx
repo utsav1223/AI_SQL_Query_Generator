@@ -41,23 +41,20 @@ function Field({
 }) {
   return (
     <div className="space-y-2.5">
-      <label
-        htmlFor={name}
-        className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-slate-500"
-      >
+      <label htmlFor={name} className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
         {label}
       </label>
 
       <div
-        className={`group flex items-center gap-3 rounded-2xl border px-4 py-3.5 transition-all ${
+        className={`group flex items-center gap-2.5 rounded-md border px-3 py-2.5 transition-all ${
           error
             ? "border-rose-300 bg-rose-50/90"
-            : "border-slate-200 bg-white shadow-[0_18px_45px_-34px_rgba(15,23,42,0.35)] hover:border-slate-300 focus-within:border-sky-500 focus-within:ring-4 focus-within:ring-sky-100"
+            : "border-slate-200 bg-white shadow-sm hover:border-slate-300 focus-within:border-teal-600 focus-within:ring-4 focus-within:ring-teal-100"
         }`}
       >
         <Icon
-          size={18}
-          className={error ? "text-rose-500" : "text-slate-400 transition-colors group-focus-within:text-sky-600"}
+          size={16}
+          className={error ? "text-rose-500" : "text-slate-400 transition-colors group-focus-within:text-teal-700"}
         />
         <input
           id={name}
@@ -69,7 +66,7 @@ function Field({
           autoComplete={autoComplete}
           autoFocus={autoFocus}
           aria-invalid={Boolean(error)}
-          className="w-full bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 outline-none"
+          className="w-full bg-transparent text-[13px] font-semibold text-slate-900 placeholder:text-slate-400 outline-none"
         />
         {rightSlot}
       </div>
@@ -192,49 +189,74 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
   const title = mode === "register" ? "Create your account" : "Welcome back";
   const description =
     mode === "register"
-      ? "Start with a clean and compact onboarding flow."
-      : "Log in to continue to your workspace.";
+      ? "Create a secure account and start generating schema-aware SQL."
+      : "Log in to continue generating, saving, and reviewing SQL.";
 
   return (
-    <Modal isOpen={Boolean(mode)} onClose={onClose} className="max-w-lg">
-      <div className="border-b border-slate-200 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.12),transparent_34%),linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-6 py-5 sm:px-7">
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <div className="inline-flex items-center gap-2 rounded-full border border-sky-100 bg-sky-50 px-3 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-sky-700">
-            <Sparkles size={13} />
-            AI SQL Studio
+    <Modal isOpen={Boolean(mode)} onClose={onClose} className="max-w-4xl rounded-lg">
+      <div className="grid bg-white md:grid-cols-[0.86fr_1.14fr]">
+        <aside className="hidden bg-[#10232d] p-6 text-white md:flex md:flex-col md:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-md border border-white/12 bg-white/10 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-teal-200">
+              <Sparkles size={12} />
+              AI SQL Studio
+            </div>
+            <h2 className="display-font mt-5 text-2xl font-bold leading-tight tracking-tight">
+              Secure access for a serious SQL workspace.
+            </h2>
+            <p className="mt-3 text-[13px] font-medium leading-6 text-slate-200">
+              Sign in to manage schema context, generate cleaner SQL, and keep every query history available when you need it.
+            </p>
           </div>
-          <div className="inline-flex rounded-full border border-slate-200 bg-slate-100 p-1">
-            {[
-              ["login", "Login"],
-              ["register", "Register"]
-            ].map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => changeMode(value)}
-                className={`rounded-full px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.18em] transition-all ${
-                  mode === value
-                    ? "bg-white text-slate-950 shadow-[0_10px_30px_-18px_rgba(15,23,42,0.4)]"
-                    : "text-slate-500 hover:text-slate-900"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+
+          <div className="mt-6 rounded-md border border-white/12 bg-white/8 p-3">
+            <div className="mb-2.5 flex items-center justify-between text-[9px] font-bold uppercase tracking-[0.12em] text-slate-300">
+              <span>Workspace</span>
+              <span>Protected</span>
+            </div>
+            <pre className="mono-font overflow-x-auto text-[10px] leading-5 text-slate-100">
+{`SELECT users.name, plans.title
+FROM users
+JOIN plans ON plans.id = users.plan_id
+WHERE users.status = 'active';`}
+            </pre>
           </div>
-        </div>
+        </aside>
 
-        <div className="space-y-2">
-          <h2 className="display-font text-2xl font-extrabold tracking-tight text-slate-950 sm:text-3xl">
-            {title}
-          </h2>
-          <p className="text-sm font-medium leading-6 text-slate-500">{description}</p>
-        </div>
-      </div>
+        <div className="px-5 py-5 sm:px-7 sm:py-6">
+          <div className="mb-5 flex flex-col gap-3 pr-10 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-md border border-teal-100 bg-teal-50 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-teal-700 md:hidden">
+                <Sparkles size={12} />
+                AI SQL Studio
+              </div>
+              <h2 className="display-font text-xl font-bold tracking-tight text-slate-950 sm:text-2xl">
+                {title}
+              </h2>
+              <p className="mt-1.5 text-[13px] font-medium leading-6 text-slate-500">{description}</p>
+            </div>
 
-      <div className="bg-[linear-gradient(180deg,rgba(248,250,252,0.96)_0%,rgba(255,255,255,0.98)_100%)] px-6 py-5 sm:px-7 sm:py-6">
+            <div className="inline-flex w-fit rounded-md border border-slate-200 bg-slate-100 p-1">
+              {[
+                ["login", "Login"],
+                ["register", "Register"]
+              ].map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => changeMode(value)}
+                  className={`rounded px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] transition-all ${
+                    mode === value ? "bg-white text-slate-950 shadow-sm" : "text-slate-500 hover:text-slate-900"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
         {message && mode === "login" ? (
-          <div className="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+          <div className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-[13px] font-semibold text-emerald-700">
             {message}
           </div>
         ) : null}
@@ -243,19 +265,19 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
           {mode === "login" ? (
             <motion.div key="login" variants={panelMotion} initial="hidden" animate="visible" exit="exit">
               <div className="space-y-2">
-                <h3 className="display-font text-2xl font-extrabold tracking-tight text-slate-950">Sign in</h3>
-                <p className="text-sm font-medium leading-7 text-slate-500">
+                <h3 className="display-font text-xl font-bold tracking-tight text-slate-950">Sign in</h3>
+                <p className="text-[13px] font-medium leading-6 text-slate-500">
                   Continue to your SQL dashboard.
                 </p>
               </div>
 
               {loginErrors.server ? (
-                <div className="mt-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+                <div className="mt-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2.5 text-[13px] font-semibold text-rose-700">
                   {loginErrors.server}
                 </div>
               ) : null}
 
-              <form onSubmit={submitLogin} className="mt-5 space-y-4">
+              <form onSubmit={submitLogin} className="mt-4 space-y-3.5">
                 <Field
                   label="Email"
                   name="email"
@@ -282,7 +304,7 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
                     <button
                       type="button"
                       onClick={() => setShowLoginPassword((current) => !current)}
-                      className="text-slate-400 transition-colors hover:text-sky-600"
+                      className="text-slate-400 transition-colors hover:text-teal-700"
                       aria-label={showLoginPassword ? "Hide password" : "Show password"}
                     >
                       {showLoginPassword ? <Eye size={18} /> : <EyeOff size={18} />}
@@ -291,11 +313,11 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
                 />
 
                 <div className="flex items-center justify-between gap-4">
-                  <p className="text-xs font-semibold text-slate-500">Small, fast, and focused.</p>
+                  <p className="text-[12px] font-semibold text-slate-500">Small, fast, and focused.</p>
                   <button
                     type="button"
                     onClick={() => changeMode("forgot", { email: loginForm.email.trim() })}
-                    className="text-xs font-bold uppercase tracking-[0.16em] text-sky-600 transition-colors hover:text-sky-700"
+                    className="text-[11px] font-bold uppercase tracking-[0.1em] text-teal-700 transition-colors hover:text-teal-800"
                   >
                     Forgot Password
                   </button>
@@ -304,14 +326,14 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] text-white transition-all hover:-translate-y-0.5 hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-[#10232d] px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white transition-all hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting ? "Logging in..." : "Login"}
                   {!isSubmitting ? <ArrowRight size={15} /> : null}
                 </button>
               </form>
 
-              <div className="my-5 flex items-center gap-3">
+              <div className="my-4 flex items-center gap-3">
                 <div className="h-px flex-1 bg-slate-200" />
                 <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">or</span>
                 <div className="h-px flex-1 bg-slate-200" />
@@ -322,18 +344,18 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
                   onClick={() => {
                     window.location.href = GOOGLE_AUTH_URL;
                   }}
-                  className="inline-flex w-full items-center justify-center gap-3 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50"
+                  className="inline-flex w-full items-center justify-center gap-3 rounded-md border border-slate-200 bg-white px-4 py-2.5 text-[13px] font-bold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50"
                 >
                   <FcGoogle className="h-5 w-5" />
                   Continue with Google
                 </button>
 
-              <p className="mt-5 text-center text-sm font-semibold text-slate-500">
+              <p className="mt-4 text-center text-[13px] font-semibold text-slate-500">
                 Don&apos;t have an account?{" "}
                 <button
                   type="button"
                   onClick={() => changeMode("register")}
-                  className="font-bold text-sky-600 transition-colors hover:text-sky-700"
+                  className="font-bold text-teal-700 transition-colors hover:text-teal-800"
                 >
                   Register
                 </button>
@@ -342,19 +364,19 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
           ) : (
             <motion.div key="register" variants={panelMotion} initial="hidden" animate="visible" exit="exit">
               <div className="space-y-2">
-                <h3 className="display-font text-2xl font-extrabold tracking-tight text-slate-950">Register</h3>
-                <p className="text-sm font-medium leading-7 text-slate-500">
-                  Clean onboarding without another page.
+                <h3 className="display-font text-xl font-bold tracking-tight text-slate-950">Create account</h3>
+                <p className="text-[13px] font-medium leading-6 text-slate-500">
+                  Set up your secure workspace in less than a minute.
                 </p>
               </div>
 
               {registerErrors.server ? (
-                <div className="mt-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+                <div className="mt-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2.5 text-[13px] font-semibold text-rose-700">
                   {registerErrors.server}
                 </div>
               ) : null}
 
-              <form onSubmit={submitRegister} className="mt-5 space-y-4">
+              <form onSubmit={submitRegister} className="mt-4 space-y-3.5">
                 <Field
                   label="Name"
                   name="name"
@@ -378,7 +400,7 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
                   autoComplete="email"
                 />
 
-                <div className="grid gap-5 sm:grid-cols-2">
+                <div className="grid gap-3.5 sm:grid-cols-2">
                   <Field
                     label="Password"
                     name="password"
@@ -393,7 +415,7 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
                       <button
                         type="button"
                         onClick={() => setShowRegisterPassword((current) => !current)}
-                        className="text-slate-400 transition-colors hover:text-sky-600"
+                        className="text-slate-400 transition-colors hover:text-teal-700"
                         aria-label={showRegisterPassword ? "Hide password" : "Show password"}
                       >
                         {showRegisterPassword ? <Eye size={18} /> : <EyeOff size={18} />}
@@ -414,7 +436,7 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword((current) => !current)}
-                        className="text-slate-400 transition-colors hover:text-sky-600"
+                        className="text-slate-400 transition-colors hover:text-teal-700"
                         aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                       >
                         {showConfirmPassword ? <Eye size={18} /> : <EyeOff size={18} />}
@@ -426,19 +448,19 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-slate-950 px-5 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] text-white transition-all hover:-translate-y-0.5 hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-[#10232d] px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white transition-all hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting ? "Creating..." : "Register"}
                   {!isSubmitting ? <ArrowRight size={15} /> : null}
                 </button>
               </form>
 
-              <p className="mt-5 text-center text-sm font-semibold text-slate-500">
+              <p className="mt-4 text-center text-[13px] font-semibold text-slate-500">
                 Already have an account?{" "}
                 <button
                   type="button"
                   onClick={() => changeMode("login")}
-                  className="font-bold text-sky-600 transition-colors hover:text-sky-700"
+                  className="font-bold text-teal-700 transition-colors hover:text-teal-800"
                 >
                   Login
                 </button>
@@ -446,6 +468,7 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
             </motion.div>
           )}
         </AnimatePresence>
+        </div>
       </div>
     </Modal>
   );

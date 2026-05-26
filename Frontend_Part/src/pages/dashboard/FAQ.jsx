@@ -41,16 +41,16 @@ export default function FAQ() {
   const [openId, setOpenId] = useState(faqs[0]?.id ?? null);
 
   return (
-    <div className="dashboard-page max-w-[1100px] space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
-      <header className="border-b border-slate-100 pb-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 mb-4">
+    <div className="dashboard-page max-w-[1100px] space-y-6">
+      <header className="border-b border-slate-100 pb-6 dark:border-slate-800">
+        <div className="mb-3 inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 dark:border-slate-700 dark:bg-slate-900">
           <HelpCircle size={14} className="text-emerald-600" />
-          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">FAQ</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">FAQ</span>
         </div>
-        <h1 className="dashboard-heading text-4xl md:text-5xl font-black tracking-tighter text-slate-900 leading-none">
-          Frequently Asked <span className="text-emerald-500">Questions</span>
+        <h1 className="dashboard-heading text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 md:text-4xl">
+          Frequently Asked Questions
         </h1>
-        <p className="text-slate-500 font-medium text-lg mt-4 max-w-3xl">
+        <p className="mt-3 max-w-3xl text-sm font-medium leading-7 text-slate-500 dark:text-slate-400">
           Quick answers for billing, usage limits, invoices, and support flow.
         </p>
       </header>
@@ -59,20 +59,20 @@ export default function FAQ() {
         {faqs.map((item) => {
           const isOpen = openId === item.id;
           return (
-            <div key={item.id} className="bg-white border border-slate-200 rounded-[24px] shadow-sm overflow-hidden">
+            <div key={item.id} className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
               <button
                 onClick={() => setOpenId(isOpen ? null : item.id)}
-                className="w-full px-6 py-5 flex items-center justify-between text-left"
+                className="flex w-full items-center justify-between px-5 py-4 text-left"
               >
-                <span className="text-base md:text-lg font-black tracking-tight text-slate-900">{item.question}</span>
+                <span className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100 md:text-base">{item.question}</span>
                 <ChevronDown
                   size={18}
                   className={`text-slate-400 transition-transform ${isOpen ? "rotate-180 text-emerald-600" : ""}`}
                 />
               </button>
               {isOpen && (
-                <div className="px-6 pb-6">
-                  <p className="text-slate-600 leading-relaxed">{item.answer}</p>
+                <div className="px-5 pb-5">
+                  <p className="text-sm leading-7 text-slate-600 dark:text-slate-400">{item.answer}</p>
                 </div>
               )}
             </div>

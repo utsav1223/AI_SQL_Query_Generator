@@ -75,19 +75,19 @@ export default function Login() {
       ]}
     >
       <div className="space-y-2">
-        <h2 className="display-font text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Sign In</h2>
-        <p className="text-sm font-medium leading-7 text-slate-500">
+        <h2 className="display-font text-2xl font-bold tracking-tight text-slate-900">Sign In</h2>
+        <p className="text-[13px] font-medium leading-6 text-slate-500">
           Continue where you left off.
         </p>
       </div>
 
       {errors.server ? (
-        <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+        <div className="mt-5 rounded-md border border-rose-200 bg-rose-50 px-3 py-2.5 text-[13px] font-semibold text-rose-700">
           {errors.server}
         </div>
       ) : null}
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+      <form onSubmit={handleSubmit} className="mt-5 space-y-4">
         <AuthField
           label="Email Address"
           name="email"
@@ -134,7 +134,7 @@ export default function Login() {
         <button
           type="submit"
           disabled={isLoading}
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-[#112129] px-5 py-4 text-xs font-black uppercase tracking-[0.2em] text-white transition-all hover:-translate-y-0.5 hover:bg-[#0f766e] disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-md bg-[#112129] px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white transition-all hover:bg-[#0f766e] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isLoading ? "Logging in..." : "Login"}
           {!isLoading ? <ArrowRight size={16} /> : null}
@@ -152,13 +152,13 @@ export default function Login() {
         onClick={() => {
           window.location.href = GOOGLE_AUTH_URL;
         }}
-        className="flex w-full items-center justify-center gap-3 rounded-full border border-slate-900/8 bg-white px-5 py-3.5 text-sm font-bold text-slate-700 transition-all hover:border-slate-900/16 hover:bg-slate-50"
+        className="flex w-full items-center justify-center gap-3 rounded-md border border-slate-200 bg-white px-4 py-2.5 text-[13px] font-bold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50"
       >
         <FcGoogle className="h-5 w-5" />
         Continue with Google
       </button>
 
-      <p className="mt-8 text-center text-sm font-semibold text-slate-500">
+      <p className="mt-6 text-center text-[13px] font-semibold text-slate-500">
         New here?{" "}
         <Link to="/register" className="text-[#0f766e] hover:text-[#0a4f4a]">
           Create account

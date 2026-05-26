@@ -1,5 +1,7 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap");
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --app-bg: #f8fafc;
@@ -77,11 +79,16 @@ body,
 
 html {
   scroll-behavior: smooth;
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
 }
 
 body {
   margin: 0;
-  font-family: "Inter", "Segoe UI", sans-serif;
+  font-family: "Segoe UI Variable", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
   background: var(--app-bg);
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
@@ -112,7 +119,7 @@ img {
 
 .display-font,
 .dashboard-heading {
-  font-family: "Manrope", "Inter", sans-serif;
+  font-family: "Segoe UI Variable", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
 }
 
 .mono-font {
@@ -204,6 +211,41 @@ img {
   box-shadow: 0 10px 24px -18px rgba(15, 118, 110, 0.45);
 }
 
+.button-primary,
+.button-primary *,
+button[class~="bg-[#112129]"],
+button[class~="bg-[#112129]"] *,
+a[class~="bg-[#112129]"],
+a[class~="bg-[#112129]"] *,
+button[class~="bg-[#10232d]"],
+button[class~="bg-[#10232d]"] *,
+a[class~="bg-[#10232d]"],
+a[class~="bg-[#10232d]"] *,
+button[class~="bg-slate-900"],
+button[class~="bg-slate-900"] *,
+a[class~="bg-slate-900"],
+a[class~="bg-slate-900"] * {
+  color: #ffffff !important;
+}
+
+.button-primary:hover,
+.button-primary:hover *,
+button[class*="hover:bg-[#0f766e]"]:hover,
+button[class*="hover:bg-[#0f766e]"]:hover *,
+a[class*="hover:bg-[#0f766e]"]:hover,
+a[class*="hover:bg-[#0f766e]"]:hover *,
+button[class*="hover:bg-teal-700"]:hover,
+button[class*="hover:bg-teal-700"]:hover *,
+a[class*="hover:bg-teal-700"]:hover,
+a[class*="hover:bg-teal-700"]:hover * {
+  color: #ffffff !important;
+}
+
+.button-secondary,
+.button-secondary * {
+  color: var(--text-main) !important;
+}
+
 .button-primary:hover {
   background: var(--accent-hover);
   transform: translateY(-1px);
@@ -236,6 +278,10 @@ img {
 .button-danger:hover {
   background: var(--danger);
   color: #ffffff;
+}
+
+.button-danger:hover * {
+  color: #ffffff !important;
 }
 
 .input-control {
@@ -290,8 +336,201 @@ img {
   padding-block: clamp(1rem, 2vw, 2rem);
 }
 
+.dashboard-shell .dashboard-card,
+.dashboard-shell .surface-card,
+.dashboard-shell .surface-card-soft {
+  border-radius: 0.75rem;
+}
+
+.dashboard-shell [class*="rounded-[2rem]"],
+.dashboard-shell [class*="rounded-[2.2rem]"],
+.dashboard-shell [class*="rounded-[1.9rem]"],
+.dashboard-shell [class*="rounded-[1.8rem]"],
+.dashboard-shell [class*="rounded-[1.6rem]"],
+.dashboard-shell [class*="rounded-[1.5rem]"],
+.dashboard-shell [class*="rounded-[1.4rem]"],
+.dashboard-shell [class*="rounded-[1.35rem]"],
+.dashboard-shell [class*="rounded-[1.25rem]"] {
+  border-radius: 0.75rem !important;
+}
+
+.dashboard-shell button,
+.dashboard-shell a,
+.public-page button,
+.public-page a {
+  text-decoration: none;
+}
+
+.dashboard-shell button:not(:disabled),
+.dashboard-shell a {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.dashboard-shell button[class~="bg-white"],
+.dashboard-shell a[class~="bg-white"] {
+  color: var(--text-main) !important;
+}
+
+.dashboard-shell button[class*="border"][class*="text-slate"],
+.dashboard-shell a[class*="border"][class*="text-slate"] {
+  color: var(--text-main) !important;
+}
+
+html:not(.dark) .dashboard-shell {
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-soft: #64748b;
+}
+
+html:not(.dark) .dashboard-shell .dashboard-heading,
+html:not(.dark) .dashboard-shell [class*="text-slate-950"],
+html:not(.dark) .dashboard-shell [class*="text-slate-900"],
+html:not(.dark) .dashboard-shell [class*="text-slate-800"] {
+  color: #0f172a !important;
+}
+
+html:not(.dark) .dashboard-shell [class*="text-slate-700"],
+html:not(.dark) .dashboard-shell [class*="text-slate-600"] {
+  color: #334155 !important;
+}
+
+html:not(.dark) .dashboard-shell [class*="text-slate-500"],
+html:not(.dark) .dashboard-shell [class*="text-slate-400"] {
+  color: #64748b !important;
+}
+
+html:not(.dark) .dashboard-shell .dashboard-card,
+html:not(.dark) .dashboard-shell .surface-card,
+html:not(.dark) .dashboard-shell .surface-card-soft {
+  color: #0f172a;
+}
+
+html:not(.dark) .dashboard-shell .code-shell,
+html:not(.dark) .dashboard-shell .code-shell *,
+html:not(.dark) .dashboard-shell .surface-inverse,
+html:not(.dark) .dashboard-shell .surface-inverse *,
+html:not(.dark) .dashboard-shell [class~="bg-slate-950"],
+html:not(.dark) .dashboard-shell [class~="bg-slate-950"] *,
+html:not(.dark) .dashboard-shell [class~="bg-slate-900"],
+html:not(.dark) .dashboard-shell [class~="bg-slate-900"] *,
+html:not(.dark) .dashboard-shell [class~="bg-[#10232d]"],
+html:not(.dark) .dashboard-shell [class~="bg-[#10232d]"] *,
+html:not(.dark) .dashboard-shell [class~="bg-[#112129]"],
+html:not(.dark) .dashboard-shell [class~="bg-[#112129]"] * {
+  color: #ffffff !important;
+}
+
+html:not(.dark) .dashboard-shell [class~="bg-slate-950"] [class*="text-teal"],
+html:not(.dark) .dashboard-shell [class~="bg-slate-900"] [class*="text-teal"],
+html:not(.dark) .dashboard-shell [class~="bg-[#10232d]"] [class*="text-teal"],
+html:not(.dark) .dashboard-shell [class~="bg-[#112129]"] [class*="text-teal"] {
+  color: #5eead4 !important;
+}
+
+html:not(.dark) .dashboard-shell button:disabled,
+html:not(.dark) .dashboard-shell button:disabled *,
+html:not(.dark) .dashboard-shell a[aria-disabled="true"],
+html:not(.dark) .dashboard-shell a[aria-disabled="true"] * {
+  color: #334155 !important;
+}
+
+html:not(.dark) .dashboard-shell .button-primary:disabled,
+html:not(.dark) .dashboard-shell .button-primary:disabled *,
+html:not(.dark) .public-page .button-primary:disabled,
+html:not(.dark) .public-page .button-primary:disabled * {
+  color: #334155 !important;
+}
+
+html:not(.dark) .dashboard-shell .button-primary:disabled,
+html:not(.dark) .public-page .button-primary:disabled {
+  background: #e2e8f0 !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+html:not(.dark) .dashboard-shell button[class*="disabled:bg-slate"]:disabled,
+html:not(.dark) .dashboard-shell button[class~="bg-[#10232d]"]:disabled,
+html:not(.dark) .dashboard-shell button[class~="bg-[#112129]"]:disabled,
+html:not(.dark) .dashboard-shell button[class~="bg-slate-900"]:disabled {
+  background-color: #e2e8f0 !important;
+  border-color: #cbd5e1 !important;
+  opacity: 1;
+}
+
+html:not(.dark) .dashboard-shell button[class*="hover:bg-slate"]:hover,
+html:not(.dark) .dashboard-shell button[class*="hover:bg-slate"]:hover *,
+html:not(.dark) .dashboard-shell a[class*="hover:bg-slate"]:hover,
+html:not(.dark) .dashboard-shell a[class*="hover:bg-slate"]:hover * {
+  color: #0f172a !important;
+}
+
 .dashboard-muted {
   color: var(--text-muted);
+}
+
+.admin-shell {
+  color: var(--text-main);
+}
+
+.admin-shell button:not(:disabled),
+.admin-shell a {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.admin-shell button[class~="bg-slate-900"],
+.admin-shell button[class~="bg-slate-900"] *,
+.admin-shell button[class~="bg-[#112129]"],
+.admin-shell button[class~="bg-[#112129]"] *,
+.admin-shell button[class~="bg-[#10232d]"],
+.admin-shell button[class~="bg-[#10232d]"] * {
+  color: #ffffff !important;
+}
+
+.admin-shell button[class*="hover:bg-emerald"]:hover,
+.admin-shell button[class*="hover:bg-emerald"]:hover *,
+.admin-shell button[class*="hover:bg-rose"]:hover,
+.admin-shell button[class*="hover:bg-rose"]:hover *,
+.admin-shell button[class*="hover:bg-[#0f766e]"]:hover,
+.admin-shell button[class*="hover:bg-[#0f766e]"]:hover * {
+  color: #ffffff !important;
+}
+
+.admin-shell [class*="rounded-3xl"],
+.admin-shell [class*="rounded-2xl"],
+.admin-shell [class*="rounded-xl"] {
+  border-radius: 0.75rem !important;
+}
+
+html:not(.dark) .admin-shell [class*="text-slate-900"],
+html:not(.dark) .admin-shell [class*="text-slate-800"] {
+  color: #0f172a !important;
+}
+
+html:not(.dark) .admin-shell [class*="text-slate-700"],
+html:not(.dark) .admin-shell [class*="text-slate-600"] {
+  color: #334155 !important;
+}
+
+html:not(.dark) .admin-shell [class*="text-slate-500"],
+html:not(.dark) .admin-shell [class*="text-slate-400"] {
+  color: #64748b !important;
+}
+
+html:not(.dark) .admin-shell button:disabled,
+html:not(.dark) .admin-shell button:disabled * {
+  color: #64748b !important;
 }
 
 .custom-scrollbar {

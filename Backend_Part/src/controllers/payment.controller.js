@@ -63,3 +63,14 @@ exports.getInvoices = asyncHandler(async (req, res) => {
     data: invoices
   });
 });
+
+exports.downgradePlan = asyncHandler(async (req, res) => {
+  const result = await paymentService.downgradePlanForUser(req.user.userId);
+
+  return sendResponse(res, {
+    message: result.alreadyFree
+      ? "Account is already on the free plan."
+      : "Plan downgraded to free.",
+    data: result
+  });
+});

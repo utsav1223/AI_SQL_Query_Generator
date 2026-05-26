@@ -17,175 +17,210 @@ export default function Invoices() {
         setLoading(false);
       }
     };
+
     fetchInvoices();
   }, []);
 
-  if (loading) return <InvoiceSkeleton />;
+  if (loading) {
+    return <InvoiceSkeleton />;
+  }
 
   return (
-    <div className="dashboard-page animate-in fade-in duration-700">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12 pb-8 border-b border-slate-100">
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Billing Engine</span>
-          </div>
-          <h1 className="dashboard-heading text-3xl md:text-5xl font-black text-slate-900 tracking-tighter">
-            Invoice <span className="text-slate-400">Vault</span>
-          </h1>
-          <p className="text-slate-500 font-medium text-lg">Manage your subscriptions and transaction records.</p>
-        </div>
-
-        <div className="flex items-center gap-4 bg-emerald-50/50 border border-emerald-100 px-5 py-3 rounded-[20px] self-start md:self-auto">
-          <CheckCircle2 size={18} className="text-emerald-600" />
+    <div className="dashboard-page space-y-6">
+      <section className="dashboard-card rounded-lg p-5 sm:p-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest leading-none mb-1">Status</p>
-            <p className="text-sm font-bold text-emerald-700 leading-none">Subscription Active</p>
+            <div className="inline-flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
+              <Receipt size={13} />
+              <span className="text-[10px] font-bold uppercase tracking-[0.12em]">Billing Records</span>
+            </div>
+            <h1 className="dashboard-heading mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
+              Invoices
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm font-medium leading-7 text-slate-600 dark:text-slate-400">
+              Review subscription payments, dates, amounts, and payment status in one clean ledger.
+            </p>
+          </div>
+
+          <div className="inline-flex w-fit items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-500/30 dark:bg-emerald-500/10">
+            <CheckCircle2 size={17} className="text-emerald-600 dark:text-emerald-300" />
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-300">
+                Status
+              </p>
+              <p className="text-sm font-bold text-slate-950 dark:text-slate-100">Subscription Active</p>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="min-h-[380px]">
-        {invoices.length > 0 ? (
-          <>
-            <div className="md:hidden space-y-4">
-              {invoices.map((inv) => (
-                <div
-                  key={inv._id}
-                  className="bg-white border border-slate-200 rounded-[28px] p-6 shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
-                >
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="flex items-center gap-4">
-                      <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                        <Receipt size={20} className="text-slate-400" />
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-0.5">Reference</p>
-                        <p className="text-base font-bold text-slate-800">{inv.invoiceNumber}</p>
-                      </div>
-                    </div>
-                    <span className="text-[9px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-600 border border-emerald-100 px-3 py-1.5 rounded-xl">
-                      Paid
-                    </span>
-                  </div>
+      {invoices.length > 0 ? (
+        <>
+          <section className="grid gap-3 md:hidden">
+            {invoices.map((invoice) => (
+              <InvoiceCard key={invoice._id} invoice={invoice} />
+            ))}
+          </section>
 
-                  <div className="flex justify-between items-center bg-slate-50/50 -mx-6 -mb-6 p-6 rounded-b-[28px] border-t border-slate-100">
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Billing Date</p>
-                      <div className="flex items-center gap-2 text-slate-700 font-bold text-sm">
-                        <CalendarDays size={14} className="opacity-40" />
-                        {new Date(inv.createdAt).toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric"
-                        })}
-                      </div>
-                    </div>
-                    <p className="text-2xl font-black text-slate-900 tracking-tight">INR {inv.amount}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="hidden md:block bg-white border border-slate-200 rounded-[32px] shadow-sm overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[740px]">
-                <thead>
-                  <tr className="bg-slate-50/50 border-b border-slate-200">
-                    <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Invoice ID</th>
-                    <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Billing Date</th>
-                    <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Amount</th>
-                    <th className="px-10 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Status</th>
+          <section className="dashboard-card hidden overflow-hidden rounded-lg md:block">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[720px] text-left">
+                <thead className="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">
+                  <tr>
+                    <TableHead>Invoice ID</TableHead>
+                    <TableHead>Billing Date</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead align="right">Status</TableHead>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {invoices.map((inv) => (
-                    <tr key={inv._id} className="group hover:bg-slate-50/40 transition-all cursor-default">
-                      <td className="px-10 py-7">
-                        <div className="flex items-center gap-4">
-                          <div className="p-2 bg-slate-50 rounded-lg group-hover:bg-white group-hover:shadow-sm transition-all border border-transparent group-hover:border-slate-100">
-                            <FileText size={16} className="text-slate-400 group-hover:text-emerald-500" />
-                          </div>
-                          <span className="font-bold text-slate-700 tracking-tight">{inv.invoiceNumber}</span>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                  {invoices.map((invoice) => (
+                    <tr key={invoice._id} className="transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/70">
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-9 w-9 items-center justify-center rounded-md bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                            <FileText size={15} />
+                          </span>
+                          <span className="text-sm font-bold text-slate-950 dark:text-slate-100">
+                            {invoice.invoiceNumber}
+                          </span>
                         </div>
                       </td>
-                      <td className="px-10 py-7">
-                        <div className="flex items-center gap-2.5 text-slate-500 font-bold text-sm">
-                          <CalendarDays size={14} className="opacity-30" />
-                          {new Date(inv.createdAt).toLocaleDateString("en-GB", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric"
-                          })}
-                        </div>
+                      <td className="px-5 py-4">
+                        <DateText value={invoice.createdAt} />
                       </td>
-                      <td className="px-10 py-7">
-                        <span className="font-black text-slate-900 tracking-tight">INR {inv.amount}</span>
+                      <td className="px-5 py-4 text-sm font-bold text-slate-950 dark:text-slate-100">
+                        INR {invoice.amount}
                       </td>
-                      <td className="px-10 py-7 text-right">
-                        <span className="inline-flex items-center gap-2 text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 border border-emerald-100 px-4 py-1.5 rounded-full">
-                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                          Paid
-                        </span>
+                      <td className="px-5 py-4 text-right">
+                        <PaidBadge />
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </>
-        ) : (
-          <EmptyState />
-        )}
+          </section>
+        </>
+      ) : (
+        <EmptyState />
+      )}
+
+      <section className="grid gap-3 sm:grid-cols-3">
+        <TrustBadge label="PCI-DSS Compliant" />
+        <TrustBadge label="256-bit SSL Encryption" />
+        <TrustBadge label="Secure Checkout" />
+      </section>
+    </div>
+  );
+}
+
+function InvoiceCard({ invoice }) {
+  return (
+    <article className="dashboard-card rounded-lg p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+            <Receipt size={17} />
+          </span>
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+              Reference
+            </p>
+            <p className="truncate text-sm font-bold text-slate-950 dark:text-slate-100">{invoice.invoiceNumber}</p>
+          </div>
+        </div>
+        <PaidBadge />
       </div>
 
-      <footer className="mt-16 pt-8 border-t border-slate-100">
-        <div className="flex flex-wrap justify-center gap-6">
-          <TrustBadge label="PCI-DSS Compliant" />
-          <TrustBadge label="256-bit SSL Encryption" />
-          <TrustBadge label="Secure Checkout" />
+      <div className="mt-4 grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900 sm:grid-cols-2">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+            Billing Date
+          </p>
+          <DateText value={invoice.createdAt} />
         </div>
-      </footer>
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+            Amount
+          </p>
+          <p className="mt-2 text-lg font-bold text-slate-950 dark:text-slate-100">INR {invoice.amount}</p>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function TableHead({ children, align = "left" }) {
+  const alignment = align === "right" ? "text-right" : "text-left";
+
+  return (
+    <th className={`px-5 py-3 ${alignment} text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400`}>
+      {children}
+    </th>
+  );
+}
+
+function DateText({ value }) {
+  return (
+    <div className="mt-1 flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-300">
+      <CalendarDays size={14} className="text-slate-400" />
+      {new Date(value).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      })}
     </div>
+  );
+}
+
+function PaidBadge() {
+  return (
+    <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
+      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+      Paid
+    </span>
   );
 }
 
 function TrustBadge({ label }) {
   return (
-    <div className="flex items-center gap-2">
-      <CheckCircle2 size={12} className="text-slate-300" />
-      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{label}</span>
+    <div className="dashboard-card flex items-center gap-2 rounded-lg px-4 py-3">
+      <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-300" />
+      <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-600 dark:text-slate-300">
+        {label}
+      </span>
     </div>
   );
 }
 
 function EmptyState() {
   return (
-    <div className="py-32 text-center bg-white border border-slate-200 rounded-[48px] shadow-sm animate-in zoom-in-95 duration-700">
-      <div className="inline-flex items-center justify-center w-20 h-20 rounded-[32px] bg-slate-50 border border-slate-100 mb-6">
-        <Receipt className="text-slate-200" size={36} />
+    <section className="dashboard-card rounded-lg px-5 py-12 text-center">
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
+        <Receipt size={26} />
       </div>
-      <h3 className="text-slate-900 font-black text-2xl tracking-tight">No records found</h3>
-      <p className="text-slate-500 font-medium mt-2 max-w-sm mx-auto px-6 leading-relaxed">
-        Your billing cycle has not started yet. Your first invoice will appear here after upgrade.
+      <h3 className="mt-5 text-xl font-bold tracking-tight text-slate-950 dark:text-slate-100">No invoices yet</h3>
+      <p className="mx-auto mt-2 max-w-md text-sm font-medium leading-7 text-slate-500 dark:text-slate-400">
+        Your first invoice will appear here after a successful plan upgrade.
       </p>
-    </div>
+    </section>
   );
 }
 
 function InvoiceSkeleton() {
   return (
-    <div className="dashboard-page animate-pulse">
-      <div className="h-12 w-64 bg-slate-100 rounded-xl mb-12" />
-      <div className="hidden md:block bg-white border border-slate-100 rounded-[32px] overflow-hidden">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="h-20 border-b border-slate-50 bg-slate-50/30" />
-        ))}
-      </div>
-      <div className="md:hidden space-y-4">
-        {[1, 2].map((i) => (
-          <div key={i} className="h-48 bg-slate-50 rounded-[28px]" />
-        ))}
-      </div>
+    <div className="dashboard-page space-y-6 animate-pulse">
+      <section className="dashboard-card rounded-lg p-6">
+        <div className="h-4 w-28 rounded bg-slate-200 dark:bg-slate-700" />
+        <div className="mt-4 h-9 w-56 rounded bg-slate-200 dark:bg-slate-700" />
+        <div className="mt-3 h-4 w-80 max-w-full rounded bg-slate-200 dark:bg-slate-700" />
+      </section>
+      <section className="dashboard-card h-72 rounded-lg">
+        <div className="flex h-full items-center justify-center">
+          <Loader2 className="animate-spin text-slate-400" size={24} />
+        </div>
+      </section>
     </div>
   );
 }

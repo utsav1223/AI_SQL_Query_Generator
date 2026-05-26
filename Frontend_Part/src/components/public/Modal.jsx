@@ -66,7 +66,7 @@ export default function Modal({ isOpen, onClose, children, className = "" }) {
           <motion.div
             role="dialog"
             aria-modal="true"
-            className={`relative w-full overflow-hidden rounded-[2rem] border border-white/15 bg-white/92 shadow-[0_40px_120px_-40px_rgba(15,23,42,0.45)] backdrop-blur-2xl ${className}`}
+            className={`relative w-full overflow-hidden rounded-lg border border-white/15 bg-white shadow-[0_40px_120px_-40px_rgba(15,23,42,0.45)] ${className}`}
             variants={panel}
             onClick={(event) => event.stopPropagation()}
           >
@@ -74,7 +74,7 @@ export default function Modal({ isOpen, onClose, children, className = "" }) {
               type="button"
               onClick={onClose}
               aria-label="Close modal"
-              className="absolute right-4 top-4 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/90 bg-white/90 text-slate-500 transition-all hover:border-slate-300 hover:bg-white hover:text-slate-900"
+              className="absolute right-4 top-4 z-20 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200/90 bg-white/90 text-slate-500 transition-all hover:border-slate-300 hover:bg-white hover:text-slate-900"
             >
               <X size={18} />
             </button>

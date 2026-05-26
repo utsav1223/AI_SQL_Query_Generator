@@ -12,5 +12,8 @@ export const paymentService = {
   },
   getInvoices() {
     return apiRequest("/payment/invoices", "GET");
+  },
+  downgradePlan() {
+    return apiRequest("/payment/downgrade", "POST");
   }
 };
