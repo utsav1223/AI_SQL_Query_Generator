@@ -2,9 +2,25 @@ const axios = require("axios");
 const AppError = require("./AppError");
 const logger = require("./logger");
 
-const GEMINI_API_URL =
-  process.env.GEMINI_API_URL ||
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+const DEFAULT_GEMINI_MODEL = "gemini-2.5-pro";
+
+const getGeminiModel = () =>
+  String(process.env.GEMINI_MODEL || DEFAULT_GEMINI_MODEL)
+    .trim()
+    .replace(/^models\//, "");
+
+const getGeminiApiUrl = () => {
+  const customUrl = String(process.env.GEMINI_API_URL || "").trim();
+
+  if (customUrl) {
+    return customUrl;
+  }
+
+  return `https://generativelanguage.googleapis.com/v1beta/models/${getGeminiModel()}:generateContent`;
+};
+
+const getGeminiApiKey = () =>
+  String(process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || "").trim();
 
 exports.callGemini = async ({
   systemInstruction,
@@ -39,7 +55,9 @@ exports.callGemini = async ({
     };
   }
 
-  if (!process.env.GEMINI_API_KEY) {
+  const apiKey = getGeminiApiKey();
+
+  if (!apiKey) {
     throw new AppError(503, "AI service is not configured on server.");
   }
 
@@ -47,7 +65,7 @@ exports.callGemini = async ({
 
   try {
     response = await axios.post(
-      `${GEMINI_API_URL}?key=${process.env.GEMINI_API_KEY}`,
+      `${getGeminiApiUrl()}?key=${apiKey}`,
       body
     );
   } catch (error) {

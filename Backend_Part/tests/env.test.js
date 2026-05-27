@@ -30,7 +30,8 @@ test("production env validation accepts required core settings", () => {
     ADMIN_USER_ID: "platform-admin",
     ADMIN_PASSWORD: "StrongAdminPassword123!",
     FRONTEND_URL: "https://example.com",
-    CORS_ORIGIN: "https://example.com"
+    CORS_ORIGIN: "https://example.com",
+    GEMINI_API_KEY: "gemini-test-key"
   };
 
   assert.doesNotThrow(() => validateEnv());
@@ -44,7 +45,8 @@ test("production env validation rejects weak admin password", () => {
     ADMIN_USER_ID: "platform-admin",
     ADMIN_PASSWORD: "short",
     FRONTEND_URL: "https://example.com",
-    CORS_ORIGIN: "https://example.com"
+    CORS_ORIGIN: "https://example.com",
+    GEMINI_API_KEY: "gemini-test-key"
   };
 
   assert.throws(

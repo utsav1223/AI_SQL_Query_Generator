@@ -179,7 +179,7 @@ function getAiErrorMessage(error) {
   }
 
   if (error?.code === "AI_PROVIDER_AUTH") {
-    return "AI is not configured correctly on the server. Check GEMINI_API_KEY and API access in your deployment environment.";
+    return "AI is unavailable because the backend Gemini key is missing or invalid. Add a valid GEMINI_API_KEY or GOOGLE_API_KEY in Render, then redeploy.";
   }
 
   return error?.message || "Unable to process your request right now.";

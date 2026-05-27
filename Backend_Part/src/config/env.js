@@ -28,6 +28,12 @@ const addPairValidation = (errors, keys, label) => {
   }
 };
 
+const addMissingAny = (errors, keys, label) => {
+  if (!keys.some(hasValue)) {
+    errors.push(`${label} is required (${keys.join(" or ")})`);
+  }
+};
+
 const assertUrl = (errors, key, { allowList = false } = {}) => {
   const rawValue = read(key);
   if (!rawValue) return;
@@ -101,6 +107,8 @@ const validateEnv = () => {
     ["JWT_SECRET", "ADMIN_USER_ID", "ADMIN_PASSWORD"].forEach((key) => {
       assertNoPlaceholder(errors, key);
     });
+
+    addMissingAny(errors, ["GEMINI_API_KEY", "GOOGLE_API_KEY"], "Gemini API key");
   }
 
   assertJwtSecret(errors);

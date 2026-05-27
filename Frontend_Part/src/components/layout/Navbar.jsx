@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { LogOut, Menu, Moon, Sun } from "lucide-react";
 import { ThemeContext } from "../../context/ThemeContext";
 import { useAuth } from "../../hooks/useAuth";
+import UserAvatar from "../ui/UserAvatar";
 
 const routeLabelMap = {
   dashboard: {
@@ -64,8 +65,6 @@ export default function Navbar({ onMenuClick }) {
       description: "Workspace page"
     };
 
-  const userInitial = user?.name?.trim()?.charAt(0)?.toUpperCase() || "U";
-
   return (
     <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[var(--app-bg)]/90 backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
@@ -93,9 +92,7 @@ export default function Navbar({ onMenuClick }) {
 
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="surface-card hidden items-center gap-3 rounded-lg px-3 py-2 text-slate-950 dark:text-slate-100 sm:flex">
-            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--accent-soft)] text-sm font-bold text-[var(--accent)]">
-              {userInitial}
-            </span>
+            <UserAvatar user={user} size="sm" />
             <div className="leading-tight">
               <p className="text-[13px] font-bold">{user?.name || "Workspace User"}</p>
               <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">

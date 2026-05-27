@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { ThemeContext } from "../../context/ThemeContext";
 import { useAuth } from "../../hooks/useAuth";
+import UserAvatar from "../ui/UserAvatar";
 
 const workspaceLinks = [
   { to: "/dashboard", icon: LayoutGrid, label: "Overview" },
@@ -124,11 +125,14 @@ export default function Sidebar({ onClose }) {
         </NavSection>
       </div>
 
-      <div className="surface-card mt-5 rounded-lg px-3 py-3 text-slate-950 dark:text-slate-100">
-        <p className="truncate text-[13px] font-bold">{user?.name || "Workspace User"}</p>
-        <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
-          {user?.email || "Signed in"}
-        </p>
+      <div className="surface-card mt-5 flex items-center gap-3 rounded-lg px-3 py-3 text-slate-950 dark:text-slate-100">
+        <UserAvatar user={user} size="lg" />
+        <div className="min-w-0">
+          <p className="truncate text-[13px] font-bold">{user?.name || "Workspace User"}</p>
+          <p className="mt-1 truncate text-[9px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+            {user?.email || "Signed in"}
+          </p>
+        </div>
       </div>
     </div>
   );

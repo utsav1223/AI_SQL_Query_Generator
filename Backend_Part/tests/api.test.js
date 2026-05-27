@@ -53,6 +53,26 @@ describe("API validation and auth guards", () => {
   });
 });
 
+describe("public user payload", () => {
+  it("includes Google avatar URL when one is saved", () => {
+    const { getPublicUser } = require("../src/utils/auth");
+    const publicUser = getPublicUser({
+      _id: "507f1f77bcf86cd799439011",
+      name: "Google User",
+      email: "google@example.com",
+      role: "user",
+      status: "active",
+      plan: "free",
+      avatarUrl: "https://lh3.googleusercontent.com/a/profile-photo"
+    });
+
+    assert.equal(
+      publicUser.avatarUrl,
+      "https://lh3.googleusercontent.com/a/profile-photo"
+    );
+  });
+});
+
 const mongoUri = process.env.MONGO_URI_TEST;
 const dbDescribe = mongoUri ? describe : describe.skip;
 

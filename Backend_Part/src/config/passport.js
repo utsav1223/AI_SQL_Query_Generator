@@ -19,6 +19,7 @@ if (googleOAuthEnabled) {
       async (accessToken, refreshToken, profile, done) => {
         try {
           const email = String(profile.emails?.[0]?.value || "").trim().toLowerCase();
+          const avatarUrl = String(profile.photos?.[0]?.value || "").trim() || null;
 
           if (!email) {
             return done(new Error("Google account email is required"), null);
@@ -29,6 +30,11 @@ if (googleOAuthEnabled) {
           });
 
           if (existingUser) {
+            if (avatarUrl && existingUser.avatarUrl !== avatarUrl) {
+              existingUser.avatarUrl = avatarUrl;
+              await existingUser.save();
+            }
+
             return done(null, existingUser);
           }
 
@@ -36,6 +42,9 @@ if (googleOAuthEnabled) {
 
           if (existingEmailUser) {
             existingEmailUser.googleId = profile.id;
+            if (avatarUrl) {
+              existingEmailUser.avatarUrl = avatarUrl;
+            }
             if (!existingEmailUser.name && profile.displayName) {
               existingEmailUser.name = profile.displayName;
             }
@@ -47,7 +56,8 @@ if (googleOAuthEnabled) {
           const user = await User.create({
             googleId: profile.id,
             name: profile.displayName || email.split("@")[0],
-            email
+            email,
+            avatarUrl
           });
 
           return done(null, user);

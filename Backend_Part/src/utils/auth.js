@@ -23,6 +23,7 @@ const getPublicUser = (user) => {
     role: user.role,
     status: user.status || "active",
     plan: user.plan || "free",
+    avatarUrl: user.avatarUrl || null,
     dailyUsage: user.dailyUsage || 0,
     billingRenewal: user.billingRenewal || null
   };

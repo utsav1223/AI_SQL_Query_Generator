@@ -415,6 +415,10 @@ GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 
 GEMINI_API_KEY=your_gemini_api_key
+# Or use GOOGLE_API_KEY instead of GEMINI_API_KEY.
+# Set only one Gemini key in production.
+GOOGLE_API_KEY=
+GEMINI_MODEL=gemini-2.5-pro
 
 RAZORPAY_KEY_ID=your_razorpay_key_id
 RAZORPAY_SECRET=your_razorpay_secret
@@ -425,7 +429,7 @@ EMAIL_FROM=your_sender_email
 ```
 
 Production startup validates required backend environment variables before the app boots.
-For `NODE_ENV=production`, set `JWT_SECRET`, `MONGO_URI`, `ADMIN_USER_ID`, `ADMIN_PASSWORD`, `FRONTEND_URL`, and `CORS_ORIGIN`.
+For `NODE_ENV=production`, set `JWT_SECRET`, `MONGO_URI`, `ADMIN_USER_ID`, `ADMIN_PASSWORD`, `FRONTEND_URL`, `CORS_ORIGIN`, and either `GEMINI_API_KEY` or `GOOGLE_API_KEY`.
 Optional integrations are validated only when configured, for example Google OAuth requires both Google secrets and Razorpay requires both payment secrets.
 Use a strong admin password with at least 12 characters, or store a bcrypt hash in `ADMIN_PASSWORD`.
 
