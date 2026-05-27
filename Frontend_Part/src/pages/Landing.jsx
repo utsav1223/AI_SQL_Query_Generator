@@ -6,9 +6,13 @@ import {
   BarChart3,
   BrainCircuit,
   CheckCircle2,
+  Clock3,
+  CreditCard,
   Database,
   FileText,
+  History,
   Layers3,
+  LockKeyhole,
   Menu,
   MessageSquareMore,
   ShieldCheck,
@@ -19,13 +23,12 @@ import {
 import AuthModal from "../components/public/AuthModal";
 import ForgotPasswordModal from "../components/public/ForgotPasswordModal";
 import ResetPasswordModal from "../components/public/ResetPasswordModal";
-import { developers } from "../data/developers";
 
 const navItems = [
   { label: "Home", sectionId: null },
   { label: "Features", sectionId: "features" },
   { label: "Pricing", sectionId: "pricing" },
-  { label: "Team", sectionId: "team" },
+  { label: "Platform", sectionId: "platform" },
   { label: "Contact", sectionId: "contact" }
 ];
 
@@ -61,17 +64,35 @@ const workflowSteps = [
 const plans = [
   {
     name: "Starter",
-    price: "Free",
+    price: "INR 0",
+    note: "/ month",
+    badge: "Current",
     description: "For students, prototypes, and personal projects.",
-    features: ["AI query generation", "Schema workspace", "Saved history"],
+    features: [
+      { label: "5 one-time credits", included: true },
+      { label: "Text-to-SQL generation", included: true },
+      { label: "7-day history", included: true },
+      { label: "Schema workspace", included: true },
+      { label: "Optimization tools", included: false },
+      { label: "Analytics dashboard", included: false }
+    ],
     action: "Start Free",
     mode: "register"
   },
   {
-    name: "Pro",
+    name: "Professional",
     price: "INR 499",
+    note: "/ month",
+    badge: "Best value",
     description: "For serious usage with billing, support, and stronger workflow tools.",
-    features: ["Unlimited generations", "Validation and explain tools", "Invoices and plan management"],
+    features: [
+      { label: "Unlimited monthly queries", included: true },
+      { label: "Advanced SQL optimizer", included: true },
+      { label: "Explain mode", included: true },
+      { label: "Full history archive", included: true },
+      { label: "Priority processing", included: true },
+      { label: "Invoices and plan management", included: true }
+    ],
     action: "Go Pro",
     mode: "login",
     highlighted: true
@@ -84,7 +105,47 @@ const stats = [
   { label: "Flow", value: "Prompt to SQL" }
 ];
 
-const developersPreview = developers.slice(0, 3);
+const platformHighlights = [
+  {
+    title: "Secure account flow",
+    description: "Login, registration, password recovery, protected routes, and admin-safe production checks are already built in.",
+    icon: LockKeyhole
+  },
+  {
+    title: "Usage and history",
+    description: "Users can keep generated queries, revisit previous work, and manage a practical SQL workflow from the dashboard.",
+    icon: History
+  },
+  {
+    title: "Billing-ready product",
+    description: "Plan upgrade, payment verification, invoices, support, feedback, and settings are part of the same experience.",
+    icon: CreditCard
+  },
+  {
+    title: "Fast review loop",
+    description: "Generated SQL stays visible beside schema context, explanations, and optimization paths for cleaner decisions.",
+    icon: Clock3
+  }
+];
+
+const footerGroups = [
+  {
+    title: "Product",
+    links: [
+      { label: "Features", sectionId: "features" },
+      { label: "Pricing", sectionId: "pricing" },
+      { label: "Platform", sectionId: "platform" }
+    ]
+  },
+  {
+    title: "Account",
+    links: [
+      { label: "Login", mode: "login" },
+      { label: "Register", mode: "register" },
+      { label: "Contact", sectionId: "contact" }
+    ]
+  }
+];
 
 const revealViewport = { once: false, amount: 0.18 };
 const fadeUp = {
@@ -508,13 +569,14 @@ ORDER BY monthly_revenue DESC;`}
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                       <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-teal-700">
-                        {plan.name}
+                        {plan.badge}
                       </p>
+                      <h3 className="mt-2 text-xl font-bold tracking-tight text-slate-950">
+                        {plan.name}
+                      </h3>
                       <div className="mt-2 flex items-end gap-2">
                         <p className="display-font text-3xl font-bold tracking-tight sm:text-4xl">{plan.price}</p>
-                        {plan.price !== "Free" ? (
-                          <span className="pb-1 text-xs font-semibold text-slate-500">/ month</span>
-                        ) : null}
+                        <span className="pb-1 text-xs font-semibold text-slate-500">{plan.note}</span>
                       </div>
                     </div>
                     {plan.highlighted ? (
@@ -532,11 +594,17 @@ ORDER BY monthly_revenue DESC;`}
 
                   <div className="space-y-3">
                     {plan.features.map((item) => (
-                      <div key={item} className="flex items-center gap-3">
-                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-teal-50 text-teal-700">
-                          <CheckCircle2 size={14} />
+                      <div key={item.label} className="flex items-center gap-3">
+                        <span
+                          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
+                            item.included ? "bg-teal-50 text-teal-700" : "bg-slate-100 text-slate-300"
+                          }`}
+                        >
+                          {item.included ? <CheckCircle2 size={14} /> : <X size={13} />}
                         </span>
-                        <span className="text-[13px] font-semibold text-slate-700">{item}</span>
+                        <span className={`text-[13px] font-semibold ${item.included ? "text-slate-700" : "text-slate-400"}`}>
+                          {item.label}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -557,7 +625,7 @@ ORDER BY monthly_revenue DESC;`}
         </motion.section>
 
         <motion.section
-          id="team"
+          id="platform"
           className="border-y border-slate-200 bg-white px-4 py-12 sm:px-6 lg:px-8"
           variants={stagger}
           initial="hidden"
@@ -565,33 +633,118 @@ ORDER BY monthly_revenue DESC;`}
           viewport={revealViewport}
         >
           <div className="mx-auto w-full max-w-7xl">
-            <motion.div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between" variants={fadeUp}>
-              <div className="max-w-3xl">
-                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal-700">Team</p>
-                <h2 className="display-font mt-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-4xl">
-                  Built by the team behind the product.
-                </h2>
-              </div>
-              <Link
-                to="/developers"
-                className="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-600 transition-colors hover:text-slate-950"
-              >
-                Full Team
-                <ArrowRight size={14} />
-              </Link>
+            <motion.div className="mb-8 max-w-3xl" variants={fadeUp}>
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal-700">Platform</p>
+              <h2 className="display-font mt-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+                More than a generator: a complete SQL workspace.
+              </h2>
+              <p className="mt-3 text-sm font-medium leading-7 text-slate-600">
+                Work from prompt to validated SQL with schema context, saved history, analytics, billing, support, and account controls in one product surface.
+              </p>
             </motion.div>
 
-            <motion.div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3" variants={stagger}>
-              {developersPreview.map((dev) => (
-                <motion.article key={dev.name} className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50 transition-all hover:-translate-y-1 hover:border-teal-200 hover:shadow-md" variants={cardReveal}>
-                  <img src={dev.image} alt={dev.name} loading="lazy" className="aspect-[16/10] w-full bg-slate-100 object-cover object-center" />
-                  <div className="p-4">
-                    <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-teal-700">{dev.role}</p>
-                    <h3 className="display-font mt-2 text-base font-bold tracking-tight text-slate-950">{dev.name}</h3>
-                    <p className="mt-2 text-[13px] font-medium leading-6 text-slate-600">{dev.shortBio}</p>
+            <motion.div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr] lg:items-stretch" variants={stagger}>
+              <motion.div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-950 shadow-sm" variants={cardReveal}>
+                <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2.5 w-2.5 rounded-full bg-rose-400" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
                   </div>
-                </motion.article>
-              ))}
+                  <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                    Full Website Preview
+                  </span>
+                </div>
+
+                <div className="grid min-h-[420px] bg-slate-900 text-white md:grid-cols-[180px_1fr]">
+                  <aside className="hidden border-r border-white/10 bg-slate-950/80 p-4 md:block">
+                    <div className="mb-5 flex items-center gap-2">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-md bg-teal-400 text-slate-950">
+                        <Database size={15} />
+                      </span>
+                      <span className="text-[11px] font-extrabold uppercase tracking-[0.14em]">AI SQL</span>
+                    </div>
+                    {["Generate", "Schema", "History", "Analytics", "Billing"].map((item, index) => (
+                      <div
+                        key={item}
+                        className={`mb-2 rounded-md px-3 py-2 text-[11px] font-bold ${
+                          index === 0 ? "bg-teal-400 text-slate-950" : "bg-white/5 text-slate-300"
+                        }`}
+                      >
+                        {item}
+                      </div>
+                    ))}
+                  </aside>
+
+                  <div className="p-4 sm:p-5">
+                    <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-teal-300">
+                          Query Builder
+                        </p>
+                        <h3 className="mt-1 text-xl font-bold tracking-tight">Generate production SQL</h3>
+                      </div>
+                      <span className="w-fit rounded-md bg-emerald-400/15 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-emerald-200">
+                        Pro tools
+                      </span>
+                    </div>
+
+                    <div className="grid gap-3 xl:grid-cols-[1fr_0.9fr]">
+                      <div className="rounded-md border border-white/10 bg-white/8 p-4">
+                        <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400">Prompt</p>
+                        <p className="mt-3 text-sm font-semibold leading-6 text-slate-100">
+                          Create a monthly revenue report grouped by plan, with active customers and churn risk.
+                        </p>
+                        <div className="mt-4 grid gap-2">
+                          {["subscriptions.plan", "payments.amount", "users.status"].map((item) => (
+                            <span key={item} className="rounded-md bg-slate-800 px-3 py-2 text-[11px] font-semibold text-slate-300">
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="rounded-md border border-white/10 bg-slate-950 p-4">
+                        <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400">Generated SQL</p>
+                        <pre className="mono-font mt-3 overflow-x-auto text-[10px] leading-5 text-teal-100">
+{`SELECT plan,
+       COUNT(*) AS customers,
+       SUM(amount) AS mrr
+FROM subscriptions
+JOIN payments USING (user_id)
+WHERE status = 'active'
+GROUP BY plan;`}
+                        </pre>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                      {["Validated", "Saved", "Invoice ready"].map((item) => (
+                        <div key={item} className="rounded-md border border-white/10 bg-white/8 p-3">
+                          <p className="text-[11px] font-bold text-slate-100">{item}</p>
+                          <div className="mt-2 h-1.5 rounded-full bg-teal-300" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1" variants={stagger}>
+                {platformHighlights.map((item) => (
+                  <motion.article key={item.title} className="rounded-lg border border-slate-200 bg-slate-50 p-4 transition-all hover:-translate-y-1 hover:border-teal-200 hover:bg-white hover:shadow-md" variants={cardReveal}>
+                    <div className="flex items-start gap-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[#10232d] text-teal-300">
+                        <item.icon size={17} />
+                      </span>
+                      <div>
+                        <h3 className="display-font text-base font-bold tracking-tight text-slate-950">{item.title}</h3>
+                        <p className="mt-2 text-[13px] font-medium leading-6 text-slate-600">{item.description}</p>
+                      </div>
+                    </div>
+                  </motion.article>
+                ))}
+              </motion.div>
             </motion.div>
           </div>
         </motion.section>
@@ -631,32 +784,61 @@ ORDER BY monthly_revenue DESC;`}
                 Get Started
                 <ArrowRight size={14} />
               </button>
-              <Link
-                to="/developers"
+              <button
+                type="button"
+                onClick={() => scrollToSection("pricing")}
                 className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-700 hover:bg-slate-50"
               >
-                Meet The Team
-              </Link>
+                View Pricing
+              </button>
             </div>
           </motion.div>
         </motion.section>
       </main>
 
-      <footer className="border-t border-slate-200 bg-white px-4 py-5 sm:px-6 lg:px-8">
-        <div className="mx-auto flex w-full max-w-7xl flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-          <p className="text-[13px] font-semibold text-slate-500">Copyright 2026 AI SQL Studio</p>
-          <div className="flex flex-wrap items-center gap-4">
-            {navItems.map((item) => (
-              <button
-                key={item.label}
-                type="button"
-                onClick={() => scrollToSection(item.sectionId)}
-                className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-slate-500 hover:text-slate-950"
-              >
-                {item.label}
-              </button>
-            ))}
+      <footer className="border-t border-slate-200 bg-[#10232d] px-4 py-10 text-white sm:px-6 lg:px-8">
+        <div className="mx-auto grid w-full max-w-7xl gap-8 lg:grid-cols-[1.2fr_1fr_1fr]">
+          <div className="max-w-md">
+            <div className="inline-flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-300 text-slate-950">
+                <Database size={17} />
+              </span>
+              <div>
+                <p className="display-font text-[12px] font-extrabold uppercase tracking-[0.18em]">
+                  AI SQL Studio
+                </p>
+                <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-300">
+                  Query workspace
+                </p>
+              </div>
+            </div>
+            <p className="mt-4 text-sm font-medium leading-7 text-slate-300">
+              Generate, optimize, explain, and manage SQL from a polished SaaS workspace with schema context and billing-ready account tools.
+            </p>
           </div>
+
+          {footerGroups.map((group) => (
+            <div key={group.title}>
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal-200">{group.title}</p>
+              <div className="mt-4 grid gap-3">
+                {group.links.map((item) => (
+                  <button
+                    key={item.label}
+                    type="button"
+                    onClick={() => (item.mode ? openAuthModal(item.mode) : scrollToSection(item.sectionId))}
+                    className="w-fit text-left text-sm font-semibold text-slate-300 transition-colors hover:text-white"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mx-auto mt-8 flex w-full max-w-7xl flex-col gap-3 border-t border-white/10 pt-5 text-[12px] font-semibold text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+          <p>Copyright 2026 AI SQL Studio. All rights reserved.</p>
+          <p>Built for faster, clearer database work.</p>
         </div>
       </footer>
 
