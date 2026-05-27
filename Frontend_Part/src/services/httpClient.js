@@ -45,8 +45,12 @@ const getSuccessData = (payload = {}) => {
   return payload;
 };
 
-const shouldNotifyAuthError = ({ endpoint, status, authScope }) => {
+const shouldNotifyAuthError = ({ endpoint, status, authScope, code }) => {
   if (!authScope || ![401, 403].includes(status)) {
+    return false;
+  }
+
+  if (status === 403 && code !== "AUTH_FORBIDDEN") {
     return false;
   }
 
@@ -118,7 +122,12 @@ export const createRequest = ({ getToken, authScope } = {}) => {
 
       if (
         notifyOnAuthError &&
-        shouldNotifyAuthError({ endpoint, status: response.status, authScope })
+        shouldNotifyAuthError({
+          endpoint,
+          status: response.status,
+          authScope,
+          code: details.code
+        })
       ) {
         notifyAuthError({
           endpoint,

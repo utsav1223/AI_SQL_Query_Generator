@@ -1,9 +1,10 @@
 import { useEffect, useEffectEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Lock, Sparkles } from "lucide-react";
+import { Lock, Sparkles } from "lucide-react";
 import ToolSelector from "../../components/ai/ToolSelector";
 import SQLInput from "../../components/ai/SQLInput";
 import SQLOutput from "../../components/ai/SQLOutput";
+import AILoadingState, { AILoadingIcon } from "../../components/ai/AILoadingState";
 import { useAuth } from "../../hooks/useAuth";
 import { aiService } from "../../services/aiService";
 
@@ -12,6 +13,20 @@ const PLACEHOLDERS = {
   optimize: "Paste SQL to improve performance and readability.",
   validate: "Paste SQL to check for syntax or logic issues.",
   explain: "Paste SQL to get a simple explanation of what it does."
+};
+
+const ACTION_LABELS = {
+  generate: "Generate SQL",
+  optimize: "Optimize SQL",
+  validate: "Validate SQL",
+  explain: "Explain SQL"
+};
+
+const LOADING_LABELS = {
+  generate: "Generating...",
+  optimize: "Optimizing...",
+  validate: "Validating...",
+  explain: "Explaining..."
 };
 
 export default function Generate() {
@@ -33,13 +48,14 @@ export default function Generate() {
 
     setLoading(true);
     setError("");
+    setResult("");
 
     try {
       const payload = mode === "generate" ? { mode, prompt: input } : { mode, sql: input };
       const data = await aiService.runTool(payload);
       setResult(data.result || "");
     } catch (requestError) {
-      setError(requestError.message || "Unable to process your request right now.");
+      setError(getAiErrorMessage(requestError));
     } finally {
       setLoading(false);
     }
@@ -132,8 +148,8 @@ export default function Generate() {
                     disabled={loading || !input.trim()}
                     className="button-primary inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {loading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-                    {loading ? "Working..." : "Run Tool"}
+                    {loading ? <AILoadingIcon compact className="h-6 w-6" /> : <Sparkles size={16} />}
+                    {loading ? LOADING_LABELS[mode] : ACTION_LABELS[mode]}
                   </button>
                 </div>
               </div>
@@ -142,7 +158,9 @@ export default function Generate() {
         </section>
 
         <section className="dashboard-card rounded-lg p-5 sm:p-6">
-          {result ? (
+          {loading ? (
+            <AILoadingState mode={mode} />
+          ) : result ? (
             <SQLOutput result={result} mode={mode} />
           ) : (
             <div className="flex min-h-[520px] items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50 px-8 text-center text-sm font-medium leading-7 text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
@@ -153,4 +171,16 @@ export default function Generate() {
       </div>
     </div>
   );
+}
+
+function getAiErrorMessage(error) {
+  if (error?.code === "LIMIT") {
+    return "Free 5-credit limit reached. Upgrade to Pro to continue generating SQL.";
+  }
+
+  if (error?.code === "AI_PROVIDER_AUTH") {
+    return "AI is not configured correctly on the server. Check GEMINI_API_KEY and API access in your deployment environment.";
+  }
+
+  return error?.message || "Unable to process your request right now.";
 }
