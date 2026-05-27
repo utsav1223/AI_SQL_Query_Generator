@@ -3,10 +3,14 @@ import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   BadgeCheck,
+  CalendarDays,
   CheckCircle2,
   CreditCard,
+  FileText,
+  HelpCircle,
   Loader2,
   LockKeyhole,
+  Receipt,
   ShieldCheck,
   Sparkles,
   Zap
@@ -17,10 +21,32 @@ import { paymentService } from "../services/paymentService";
 import { logger } from "../utils/logger";
 
 const proFeatures = [
-  "Unlimited SQL generation",
-  "Advanced optimization insights",
-  "Invoice and billing records",
-  "Priority technical support"
+  {
+    title: "Unlimited monthly queries",
+    description: "Generate, optimize, validate, format, and explain SQL without free credit limits.",
+    icon: Zap
+  },
+  {
+    title: "Advanced SQL optimizer",
+    description: "Improve query shape and readability before you move it into real work.",
+    icon: BadgeCheck
+  },
+  {
+    title: "Full history archive",
+    description: "Keep a reliable record of generated SQL and return to previous work quickly.",
+    icon: FileText
+  },
+  {
+    title: "Invoices and support",
+    description: "Review billing records and use the dashboard support flow when you need help.",
+    icon: Receipt
+  }
+];
+
+const trustItems = [
+  { label: "Razorpay checkout", icon: CreditCard },
+  { label: "SSL protected", icon: ShieldCheck },
+  { label: "Instant verification", icon: CheckCircle2 }
 ];
 
 export default function Billing() {
@@ -31,6 +57,7 @@ export default function Billing() {
   const [downgrading, setDowngrading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
   const isProUser = user?.plan === "pro";
   const renewalDate = user?.billingRenewal
     ? new Date(user.billingRenewal).toLocaleDateString("en-GB", {
@@ -38,7 +65,7 @@ export default function Billing() {
         month: "short",
         year: "numeric"
       })
-    : "Next cycle";
+    : "After successful checkout";
 
   const handlePayment = async () => {
     if (isProUser) {
@@ -101,161 +128,140 @@ export default function Billing() {
   };
 
   return (
-    <div className="public-page px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
-      <div className="mx-auto w-full max-w-6xl">
-        <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="inline-flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#112129] text-[#8fe1cf] shadow-[0_22px_38px_-28px_rgba(17,33,41,0.95)]">
-              <Zap size={16} />
+    <div className="public-page px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
+      <div className="mx-auto w-full max-w-6xl space-y-5">
+        <header className="flex flex-col gap-4 rounded-lg border border-slate-200 bg-white/86 px-4 py-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:px-5">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#10232d] text-teal-300">
+              <CreditCard size={17} />
             </span>
-            <div>
+            <div className="min-w-0">
               <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
                 AI SQL Studio
               </p>
-              <h1 className="display-font text-xl font-bold tracking-tight text-slate-950">
+              <h1 className="truncate text-xl font-bold tracking-tight text-slate-950">
                 Billing Center
               </h1>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white/75 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-slate-700 transition-all hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800"
-          >
-            <ArrowLeft size={14} />
-            Back
-          </button>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => navigate("/dashboard/pricing")}
+              className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-700 hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800"
+            >
+              Plans
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+            >
+              <ArrowLeft size={14} />
+              Back
+            </button>
+          </div>
         </header>
 
-        <main className="grid gap-6 lg:grid-cols-[1.08fr_0.92fr]">
-          <section className="public-card rounded-lg p-5 sm:p-7">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-md border border-[#0f766e]/12 bg-[#0f766e]/6 px-3 py-1.5 text-[#0f766e]">
-                <Sparkles size={13} />
-                <span className="text-[10px] font-bold uppercase tracking-[0.12em]">
-                  {isProUser ? "Professional Active" : "Professional Plan"}
-                </span>
-              </div>
+        {message ? <Alert tone="success" message={message} /> : null}
+        {error ? <Alert tone="error" message={error} /> : null}
 
-              <h2 className="display-font mt-4 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
-                {isProUser ? "Your Pro workspace is active." : "Upgrade your workspace to Pro."}
-              </h2>
-              <p className="mt-3 max-w-2xl text-sm font-medium leading-7 text-slate-600">
-                {isProUser
-                  ? "Manage your subscription, review invoices, or move back to the free plan from one billing surface."
-                  : "Unlock the complete SQL workflow with better generation freedom, query review tools, billing visibility, and a more capable SaaS experience."}
-              </p>
-
-              <div className="mt-6 rounded-lg bg-[#112129] p-5 text-white shadow-[0_36px_70px_-44px_rgba(17,33,41,0.98)] sm:p-6">
-                <div className="flex flex-wrap items-end justify-between gap-4">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#8fe1cf]">
-                      Monthly Charge
-                    </p>
-                    <p className="display-font mt-2 text-4xl font-bold tracking-tight sm:text-5xl">
-                      {isProUser ? "Pro Active" : "INR 499"}
-                    </p>
-                    <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-slate-300">
-                      {isProUser ? `Renewal: ${renewalDate}` : "Billed every 30 days"}
-                    </p>
-                  </div>
-                  <span className="rounded-md border border-white/10 bg-white/8 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white/80">
-                    Pro Access
+        <main className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_390px]">
+          <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-2xl">
+                <div className="inline-flex items-center gap-2 rounded-md border border-teal-200 bg-teal-50 px-3 py-1.5 text-teal-800">
+                  <Sparkles size={13} />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.12em]">
+                    {isProUser ? "Professional active" : "Professional plan"}
                   </span>
                 </div>
 
-                <div className="mt-6 grid gap-2.5">
-                  {proFeatures.map((feature) => (
-                    <div
-                      key={feature}
-                      className="flex items-center gap-3 rounded-md border border-white/8 bg-white/6 px-3 py-2.5"
-                    >
-                      <BadgeCheck size={16} className="text-[#8fe1cf]" />
-                      <span className="text-sm font-semibold text-slate-100">{feature}</span>
-                    </div>
-                  ))}
-                </div>
+                <h2 className="mt-4 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+                  {isProUser ? "Manage your Pro workspace." : "Upgrade to a cleaner SQL workflow."}
+                </h2>
+                <p className="mt-3 text-sm font-medium leading-7 text-slate-600">
+                  {isProUser
+                    ? "Your subscription is active. Review billing details, open invoices, or move back to the free plan from one focused page."
+                    : "Unlock unlimited generation, optimizer tools, explain mode, billing records, and priority workflow support with a secure checkout."}
+                </p>
               </div>
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                <InfoTile
-                  title="Activation"
-                  text="Pro access becomes active immediately after payment verification."
-                />
-                <InfoTile
-                  title="Manage Plan"
-                  text="Use the dashboard to review invoices and subscription history."
-                />
+              <div className="w-full rounded-lg border border-slate-200 bg-slate-50 p-4 lg:w-[240px]">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                  Monthly charge
+                </p>
+                <p className="mt-2 text-3xl font-bold tracking-tight text-slate-950">
+                  {isProUser ? "Active" : "INR 499"}
+                </p>
+                <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
+                  {isProUser ? "Pro plan" : "Every 30 days"}
+                </p>
               </div>
+            </div>
+
+            <div className="mt-6 grid gap-4 border-y border-slate-200 py-5 sm:grid-cols-3">
+              <PlanFact icon={BadgeCheck} label="Plan" value={isProUser ? "Professional" : "Upgrade ready"} />
+              <PlanFact icon={CalendarDays} label={isProUser ? "Renewal" : "Activation"} value={renewalDate} />
+              <PlanFact icon={ShieldCheck} label="Checkout" value="Razorpay secured" />
+            </div>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              {proFeatures.map((feature) => (
+                <FeatureRow key={feature.title} feature={feature} />
+              ))}
             </div>
           </section>
 
-          <section className="public-card rounded-lg p-5 sm:p-7">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
-                {isProUser ? "Plan Management" : "Checkout"}
-              </p>
-              <h2 className="display-font mt-2 text-2xl font-bold tracking-tight text-slate-950">
-                {isProUser ? "Manage your subscription" : "Secure payment flow"}
-              </h2>
-              <p className="mt-3 text-sm font-medium leading-7 text-slate-600">
-                {isProUser
-                  ? "Your current plan is active. You can review invoices or downgrade to the free plan."
-                  : "Your account details are shown below before we redirect you to Razorpay."}
-              </p>
+          <aside className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
+              {isProUser ? "Subscription" : "Checkout"}
+            </p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-950">
+              {isProUser ? "Account and plan" : "Confirm your details"}
+            </h2>
+            <p className="mt-2 text-sm font-medium leading-6 text-slate-600">
+              {isProUser
+                ? "Everything here is tied to your current signed-in workspace."
+                : "We will send you to Razorpay after checking your account details."}
+            </p>
+
+            <div className="mt-5 divide-y divide-slate-200 border-y border-slate-200">
+              <SummaryRow label="Name" value={user?.name || "Workspace Member"} />
+              <SummaryRow label="Email" value={user?.email || "Not available"} breakWords />
+              <SummaryRow label="Current plan" value={user?.plan || "free"} uppercase />
             </div>
 
-            <div className="mt-5 rounded-lg border border-slate-200 bg-white/76 p-4">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-500">
-                Account Summary
-              </p>
-
-              <div className="mt-4 space-y-3 text-sm font-semibold text-slate-700">
-                <SummaryRow label="Name" value={user?.name || "Workspace Member"} />
-                <SummaryRow label="Email" value={user?.email || "Not available"} breakWords />
-                <SummaryRow label="Current Plan" value={user?.plan || "free"} uppercase />
+            <div className="mt-5 rounded-lg border border-teal-200 bg-teal-50 px-4 py-3">
+              <div className="flex gap-3">
+                <LockKeyhole size={17} className="mt-0.5 shrink-0 text-teal-700" />
+                <p className="text-sm font-semibold leading-6 text-slate-800">
+                  {isProUser
+                    ? "Pro access includes unlimited usage, optimizer tools, analytics, invoices, and support."
+                    : "Payment is handled through Razorpay. Your card, UPI, or net banking details are not stored by this app."}
+                </p>
               </div>
             </div>
-
-            <div className="mt-5 rounded-lg border border-[#0f766e]/14 bg-[#0f766e]/6 px-4 py-4">
-              <p className="text-sm font-semibold leading-7 text-slate-800">
-                {isProUser
-                  ? "Pro access includes unlimited generation, optimizer tools, analytics, invoices, and priority support."
-                  : "You will be redirected to Razorpay for PCI-compliant checkout and payment verification."}
-              </p>
-            </div>
-
-            {message ? (
-              <div className="mt-5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
-                {message}
-              </div>
-            ) : null}
-
-            {error ? (
-              <div className="mt-5 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
-                {error}
-              </div>
-            ) : null}
 
             {isProUser ? (
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <div className="mt-5 grid gap-3">
                 <button
                   type="button"
                   onClick={() => navigate("/dashboard/invoices")}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-[#112129] px-4 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white transition-all hover:bg-[#0f766e]"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-[#10232d] px-4 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white hover:bg-teal-700"
                 >
-                  <CheckCircle2 size={16} className="text-[#8fe1cf]" />
+                  <Receipt size={15} className="text-teal-200" />
                   View Invoices
                 </button>
                 <button
                   type="button"
                   onClick={handleDowngrade}
                   disabled={downgrading}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-rose-200 bg-rose-50 px-4 text-[11px] font-extrabold uppercase tracking-[0.12em] text-rose-700 transition-all hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-70"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-rose-200 bg-rose-50 px-4 text-[11px] font-extrabold uppercase tracking-[0.12em] text-rose-700 hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {downgrading ? <Loader2 size={16} className="animate-spin" /> : null}
-                  {downgrading ? "Downgrading..." : "Downgrade Free"}
+                  {downgrading ? <Loader2 size={15} className="animate-spin" /> : null}
+                  {downgrading ? "Downgrading..." : "Downgrade To Free"}
                 </button>
               </div>
             ) : (
@@ -263,32 +269,24 @@ export default function Billing() {
                 type="button"
                 onClick={handlePayment}
                 disabled={loading}
-                className="mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[#112129] px-4 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white transition-all hover:bg-[#0f766e] disabled:cursor-not-allowed disabled:opacity-60"
+                className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[#10232d] px-4 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-600"
               >
-                {loading ? (
-                  <Loader2 size={18} className="animate-spin" />
-                ) : (
-                  <LockKeyhole size={16} className="text-[#8fe1cf]" />
-                )}
-                {loading ? "Processing..." : "Continue To Secure Checkout"}
+                {loading ? <Loader2 size={17} className="animate-spin" /> : <LockKeyhole size={15} />}
+                {loading ? "Processing..." : "Continue To Checkout"}
               </button>
             )}
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <TrustBadge
-                icon={<ShieldCheck size={15} className="text-[#0f766e]" />}
-                label="Secure Checkout"
-              />
-              <TrustBadge
-                icon={<CreditCard size={15} className="text-[#0f766e]" />}
-                label="PCI Compliant"
-              />
+            <div className="mt-5 grid gap-2">
+              {trustItems.map((item) => (
+                <TrustRow key={item.label} item={item} />
+              ))}
             </div>
 
-            <p className="mt-5 text-center text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">
-              Visa, Mastercard, UPI, and net banking supported
+            <p className="mt-5 flex items-center justify-center gap-2 text-center text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-400">
+              <HelpCircle size={13} />
+              UPI, cards, net banking, and wallets supported
             </p>
-          </section>
+          </aside>
         </main>
       </div>
       <ConfirmationDialog />
@@ -296,13 +294,61 @@ export default function Billing() {
   );
 }
 
+function Alert({ tone, message }) {
+  const isSuccess = tone === "success";
+
+  return (
+    <div
+      className={`rounded-lg border px-4 py-3 text-sm font-semibold ${
+        isSuccess
+          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+          : "border-rose-200 bg-rose-50 text-rose-700"
+      }`}
+    >
+      {message}
+    </div>
+  );
+}
+
+function PlanFact({ icon, label, value }) {
+  const Icon = icon;
+
+  return (
+    <div className="flex items-center gap-3">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-slate-100 text-teal-700">
+        <Icon size={17} />
+      </span>
+      <div className="min-w-0">
+        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">{label}</p>
+        <p className="mt-1 truncate text-sm font-bold text-slate-950">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function FeatureRow({ feature }) {
+  const Icon = feature.icon;
+
+  return (
+    <div className="flex gap-3">
+      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-teal-50 text-teal-700">
+        <Icon size={16} />
+      </span>
+      <div>
+        <h3 className="text-sm font-bold text-slate-950">{feature.title}</h3>
+        <p className="mt-1 text-[13px] font-medium leading-6 text-slate-600">{feature.description}</p>
+      </div>
+    </div>
+  );
+}
+
 function SummaryRow({ label, value, breakWords = false, uppercase = false }) {
   return (
-    <div className="flex items-start justify-between gap-3">
-      <span className="text-slate-500">{label}</span>
+    <div className="flex items-start justify-between gap-4 py-3">
+      <span className="shrink-0 text-sm font-semibold text-slate-500">{label}</span>
       <span
-        className={`text-right font-extrabold text-slate-950 ${
-          breakWords ? "break-all" : ""
+        className={`text-right text-sm font-extrabold text-slate-950 ${
+          breakWords ? "min-w-0 break-all" : ""
         } ${uppercase ? "uppercase" : ""}`}
       >
         {value}
@@ -311,23 +357,14 @@ function SummaryRow({ label, value, breakWords = false, uppercase = false }) {
   );
 }
 
-function InfoTile({ title, text }) {
-  return (
-    <div className="rounded-lg border border-slate-200 bg-white/76 p-4">
-      <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">
-        {title}
-      </p>
-      <p className="mt-2 text-[13px] font-semibold leading-6 text-slate-700">{text}</p>
-    </div>
-  );
-}
+function TrustRow({ item }) {
+  const Icon = item.icon;
 
-function TrustBadge({ icon, label }) {
   return (
-    <div className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white/76 px-3 py-2.5">
-      {icon}
+    <div className="flex items-center gap-3 rounded-md border border-slate-200 bg-slate-50 px-3 py-2.5">
+      <Icon size={15} className="text-teal-700" />
       <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-700">
-        {label}
+        {item.label}
       </span>
     </div>
   );

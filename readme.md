@@ -111,31 +111,19 @@ The app can generate SQL based on the saved schema, optimize existing SQL, expla
 
 ## Screenshots
 
-These screenshots give interviewers a quick visual walkthrough of the project: public landing page, team page, admin authentication, and the running application view.
+These screenshots give interviewers a quick visual walkthrough of the project: the full public website and admin authentication.
 
-### Landing Page
+### Full Website Screenshot
 
-The landing page introduces the AI SQL product, feature value, and public entry points.
+The full public website screenshot shows the hero, feature overview, workflow, pricing cards, platform preview, contact block, and footer.
 
-![AI SQL Studio landing page](docs/screenshots/landing.png)
-
-### Developers Page
-
-The developers page presents the project team and portfolio-style profile section.
-
-![AI SQL Studio developers page](docs/screenshots/developers.png)
+![AI SQL Studio full website screenshot](docs/screenshots/full_website.png)
 
 ### Admin Login
 
 The admin login screen shows the separate admin access flow used for moderation and platform management.
 
 ![AI SQL Studio admin login](docs/screenshots/admin-login.png)
-
-### Application View
-
-This view shows the app running during development/debug verification.
-
-![AI SQL Studio application view](docs/screenshots/debug.png)
 
 All screenshot assets are stored in `docs/screenshots`.
 
