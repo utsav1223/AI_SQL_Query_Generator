@@ -12,7 +12,7 @@ const resetDailyUsageIfNeeded = async (user) => {
   return false;
 };
 
-const checkAndUpdateUsage = async (userId) => {
+const assertUsageAvailable = async (userId) => {
   const user = await User.findById(userId);
 
   if (!user) {
@@ -30,6 +30,18 @@ const checkAndUpdateUsage = async (userId) => {
       "LIMIT"
     );
   }
+};
+
+const incrementUsage = async (userId) => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new AppError(404, "User not found");
+  }
+
+  if (user.plan === "pro") {
+    return;
+  }
 
   user.dailyUsage = (user.dailyUsage || 0) + 1;
   await user.save();
@@ -38,5 +50,6 @@ const checkAndUpdateUsage = async (userId) => {
 module.exports = {
   FREE_CREDIT_LIMIT,
   resetDailyUsageIfNeeded,
-  checkAndUpdateUsage
+  assertUsageAvailable,
+  incrementUsage
 };

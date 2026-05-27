@@ -13,7 +13,7 @@ const schemaSchema = new mongoose.Schema(
     schemaText: {
       type: String,
       required: true,
-      maxlength: 20000 // 🔥 prevent abuse (20KB limit)
+      maxlength: 20000 // 20KB limit to prevent oversized schema submissions
     }
   },
   { timestamps: true }

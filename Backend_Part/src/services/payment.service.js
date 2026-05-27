@@ -6,6 +6,7 @@ const Payment = require("../models/Payment");
 const Invoice = require("../models/Invoice");
 const AppError = require("../utils/AppError");
 const { getPublicUser } = require("../utils/auth");
+const logger = require("../utils/logger");
 const {
   sendEmail,
   buildSubscriptionActivatedEmail,
@@ -22,6 +23,16 @@ const {
 let razorpayClient = null;
 
 const buildInvoiceNumber = () => `INV-${Date.now()}`;
+
+const buildPaymentCallbackUrl = () => {
+  const frontendUrl = String(process.env.FRONTEND_URL || "").trim().replace(/\/+$/, "");
+
+  if (!frontendUrl) {
+    throw new AppError(503, "Frontend URL is not configured on server.");
+  }
+
+  return `${frontendUrl}/billingsuccess`;
+};
 
 const getRazorpayClient = () => {
   if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_SECRET) {
@@ -48,18 +59,26 @@ const getCurrentUser = async (userId) => {
   return user;
 };
 
-const createBillingRecords = async ({ user, paymentId, orderId }) => {
+const createBillingRecords = async ({ user, paymentId, orderId, pendingPayment = null }) => {
   const invoiceNumber = buildInvoiceNumber();
 
-  await Payment.create({
-    userId: user._id,
-    paymentId,
-    orderId,
-    amount: SUBSCRIPTION_AMOUNT_INR,
-    currency: "INR",
-    invoiceNumber,
-    status: "success"
-  });
+  if (pendingPayment) {
+    pendingPayment.paymentId = paymentId;
+    pendingPayment.orderId = orderId;
+    pendingPayment.invoiceNumber = invoiceNumber;
+    pendingPayment.status = "success";
+    await pendingPayment.save();
+  } else {
+    await Payment.create({
+      userId: user._id,
+      paymentId,
+      orderId,
+      amount: SUBSCRIPTION_AMOUNT_INR,
+      currency: "INR",
+      invoiceNumber,
+      status: "success"
+    });
+  }
 
   return Invoice.create({
     userId: user._id,
@@ -93,7 +112,10 @@ const sendSubscriptionConfirmation = async ({ user, invoiceNumber, renewalDate, 
       ]
     });
   } catch (error) {
-    console.error("Failed to send subscription confirmation email:", error);
+    logger.error("Failed to send subscription confirmation email", error, {
+      userId: user._id,
+      invoiceNumber
+    });
   }
 };
 
@@ -112,8 +134,13 @@ const verifySignature = (payload, signature) => {
   }
 };
 
-const finalizeSuccessfulPayment = async ({ user, paymentId, orderId }) => {
-  const existingInvoice = await Invoice.findOne({ paymentId });
+const finalizeSuccessfulPayment = async ({
+  user,
+  paymentId,
+  orderId,
+  pendingPayment = null
+}) => {
+  const existingInvoice = await Invoice.findOne({ paymentId, userId: user._id });
 
   if (existingInvoice) {
     return {
@@ -128,7 +155,8 @@ const finalizeSuccessfulPayment = async ({ user, paymentId, orderId }) => {
   const invoice = await createBillingRecords({
     user,
     paymentId,
-    orderId
+    orderId,
+    pendingPayment
   });
 
   void sendSubscriptionConfirmation({
@@ -154,13 +182,11 @@ const createOrder = async () => {
   });
 };
 
-const createPaymentLink = async ({ userId, callbackUrl }) => {
-  if (!callbackUrl) {
-    throw new AppError(400, "callbackUrl is required");
-  }
-
+const createPaymentLink = async ({ userId }) => {
   const razorpay = getRazorpayClient();
   const user = await getCurrentUser(userId);
+  const callbackUrl = buildPaymentCallbackUrl();
+  const referenceId = `REF${Date.now()}${String(user._id).slice(-6)}`;
 
   const paymentLink = await razorpay.paymentLink.create({
     amount: SUBSCRIPTION_AMOUNT_PAISE,
@@ -178,10 +204,19 @@ const createPaymentLink = async ({ userId, callbackUrl }) => {
     reminder_enable: true,
     callback_url: callbackUrl,
     callback_method: "get",
-    reference_id: `REF${Date.now()}`,
+    reference_id: referenceId,
     notes: {
       userId: String(user._id)
     }
+  });
+
+  await Payment.create({
+    userId: user._id,
+    paymentLinkId: paymentLink.id,
+    referenceId: paymentLink.reference_id,
+    amount: SUBSCRIPTION_AMOUNT_INR,
+    currency: "INR",
+    status: "pending"
   });
 
   return {
@@ -209,6 +244,37 @@ const verifyOrderPayment = async ({
     paymentId: razorpay_payment_id,
     orderId: razorpay_order_id
   });
+};
+
+const getVerifiedPaymentLinkRecord = async ({
+  userId,
+  razorpay_payment_link_id,
+  razorpay_payment_link_reference_id,
+  razorpay_payment_id
+}) => {
+  const paymentRecord = await Payment.findOne({
+    userId,
+    paymentLinkId: razorpay_payment_link_id,
+    referenceId: razorpay_payment_link_reference_id
+  });
+
+  if (!paymentRecord) {
+    throw new AppError(400, "Payment link does not belong to this user.");
+  }
+
+  if (paymentRecord.status === "success") {
+    if (paymentRecord.paymentId !== razorpay_payment_id) {
+      throw new AppError(400, "Payment link was already verified with a different payment.");
+    }
+
+    return paymentRecord;
+  }
+
+  if (paymentRecord.status !== "pending") {
+    throw new AppError(400, "Payment link is not pending verification.");
+  }
+
+  return paymentRecord;
 };
 
 const verifyHostedPaymentLink = async ({
@@ -245,11 +311,18 @@ const verifyHostedPaymentLink = async ({
   }
 
   const user = await getCurrentUser(userId);
+  const paymentRecord = await getVerifiedPaymentLinkRecord({
+    userId: user._id,
+    razorpay_payment_link_id,
+    razorpay_payment_link_reference_id,
+    razorpay_payment_id
+  });
 
   return finalizeSuccessfulPayment({
     user,
     paymentId: razorpay_payment_id,
-    orderId: razorpay_payment_link_id
+    orderId: razorpay_payment_link_id,
+    pendingPayment: paymentRecord.status === "pending" ? paymentRecord : null
   });
 };
 

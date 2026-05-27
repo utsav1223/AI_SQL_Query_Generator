@@ -4,18 +4,22 @@ const User = require("../models/User");
 const asyncHandler = require("./asyncHandler");
 const AppError = require("../utils/AppError");
 const { createSecurityEvent } = require("../utils/securityMonitor");
+const { USER_AUTH_COOKIE, getCookieValue } = require("../utils/sessionCookies");
 
 module.exports = asyncHandler(async (req, res, next) => {
   const authHeader = req.headers.authorization;
+  const bearerToken =
+    authHeader && authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : "";
+  const cookieToken = getCookieValue(req, USER_AUTH_COOKIE);
+  const token = bearerToken || cookieToken;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  if (!token) {
     throw new AppError(401, "Authorization token is required");
   }
 
   let decodedToken;
 
   try {
-    const token = authHeader.split(" ")[1];
     decodedToken = jwt.verify(token, process.env.JWT_SECRET);
   } catch (error) {
     throw new AppError(401, "Invalid token");

@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const SecurityEvent = require("../models/SecurityEvent");
+const logger = require("./logger");
 
 const clampRiskScore = (value) => Math.min(Math.max(value, 0), 100);
 
@@ -60,7 +61,7 @@ exports.createSecurityEvent = async ({
     await applyRiskUpdate({ userId, riskDelta, riskFlag });
     return event;
   } catch (error) {
-    console.error("Failed to create security event:", error.message);
+    logger.error("Failed to create security event", error, { type, severity, source, userId });
     return null;
   }
 };

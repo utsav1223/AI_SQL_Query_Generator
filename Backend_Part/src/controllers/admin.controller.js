@@ -2,16 +2,31 @@ const asyncHandler = require("../middlewares/asyncHandler");
 const sendResponse = require("../utils/sendResponse");
 const { getRequestMeta } = require("../utils/request");
 const adminService = require("../services/admin.service");
+const {
+  setAdminAuthCookie,
+  clearAdminAuthCookie
+} = require("../utils/sessionCookies");
 
 exports.adminLogin = asyncHandler(async (req, res) => {
   const result = await adminService.loginAdmin({
     ...req.body,
     requestMeta: getRequestMeta(req)
   });
+  setAdminAuthCookie(res, result.token);
 
   return sendResponse(res, {
     message: "Admin login successful",
-    data: result
+    data: {
+      admin: result.admin
+    }
+  });
+});
+
+exports.adminLogout = asyncHandler(async (req, res) => {
+  clearAdminAuthCookie(res);
+
+  return sendResponse(res, {
+    message: "Admin logout successful"
   });
 });
 
@@ -48,41 +63,6 @@ exports.moderateUserByAdmin = asyncHandler(async (req, res) => {
     requestMeta: getRequestMeta(req),
     userId: req.params.userId,
     action: req.body?.action,
-    reason: req.body?.reason || req.query?.reason
-  });
-
-  return sendResponse(res, {
-    message: result.message,
-    data: {
-      action: result.action,
-      user: result.user
-    }
-  });
-});
-
-exports.updateUserPlanByAdmin = asyncHandler(async (req, res) => {
-  const result = await adminService.updateUserPlanByAdmin({
-    adminId: req.admin?.adminId,
-    requestMeta: getRequestMeta(req),
-    userId: req.params.userId,
-    plan: req.body?.plan,
-    reason: req.body?.reason || req.query?.reason
-  });
-
-  return sendResponse(res, {
-    message: result.message,
-    data: {
-      action: result.action,
-      user: result.user
-    }
-  });
-});
-
-exports.deleteUserByAdmin = asyncHandler(async (req, res) => {
-  const result = await adminService.deleteUserByAdmin({
-    adminId: req.admin?.adminId,
-    requestMeta: getRequestMeta(req),
-    userId: req.params.userId,
     reason: req.body?.reason || req.query?.reason
   });
 

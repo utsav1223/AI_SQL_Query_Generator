@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { CalendarDays, CheckCircle2, FileText, Loader2, Receipt } from "lucide-react";
+import { EmptyState, Panel, SkeletonBlock, StatusBadge } from "../../components/ui/DashboardUI";
 import { paymentService } from "../../services/paymentService";
+import { logger } from "../../utils/logger";
 
 export default function Invoices() {
   const [invoices, setInvoices] = useState([]);
@@ -12,7 +14,7 @@ export default function Invoices() {
         const data = await paymentService.getInvoices();
         setInvoices(data);
       } catch (err) {
-        console.error("Failed to fetch invoices", err);
+        logger.error("Invoice fetch failed", err);
       } finally {
         setLoading(false);
       }
@@ -27,13 +29,12 @@ export default function Invoices() {
 
   return (
     <div className="dashboard-page space-y-6">
-      <section className="dashboard-card rounded-lg p-5 sm:p-6">
+      <Panel className="p-5 sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
-              <Receipt size={13} />
-              <span className="text-[10px] font-bold uppercase tracking-[0.12em]">Billing Records</span>
-            </div>
+            <StatusBadge tone="emerald" icon={<Receipt size={13} />}>
+              Billing Records
+            </StatusBadge>
             <h1 className="dashboard-heading mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
               Invoices
             </h1>
@@ -52,7 +53,7 @@ export default function Invoices() {
             </div>
           </div>
         </div>
-      </section>
+      </Panel>
 
       {invoices.length > 0 ? (
         <>
@@ -62,7 +63,7 @@ export default function Invoices() {
             ))}
           </section>
 
-          <section className="dashboard-card hidden overflow-hidden rounded-lg md:block">
+          <Panel className="hidden overflow-hidden md:block">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[720px] text-left">
                 <thead className="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900">
@@ -100,10 +101,14 @@ export default function Invoices() {
                 </tbody>
               </table>
             </div>
-          </section>
+          </Panel>
         </>
       ) : (
-        <EmptyState />
+        <EmptyState
+          icon={Receipt}
+          title="No invoices yet"
+          description="Your first invoice will appear here after a successful plan upgrade."
+        />
       )}
 
       <section className="grid gap-3 sm:grid-cols-3">
@@ -117,7 +122,7 @@ export default function Invoices() {
 
 function InvoiceCard({ invoice }) {
   return (
-    <article className="dashboard-card rounded-lg p-4">
+    <Panel as="article" className="p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
@@ -147,7 +152,7 @@ function InvoiceCard({ invoice }) {
           <p className="mt-2 text-lg font-bold text-slate-950 dark:text-slate-100">INR {invoice.amount}</p>
         </div>
       </div>
-    </article>
+    </Panel>
   );
 }
 
@@ -176,51 +181,36 @@ function DateText({ value }) {
 
 function PaidBadge() {
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
-      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+    <StatusBadge tone="emerald" className="rounded-full px-3 py-1" icon={<span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}>
       Paid
-    </span>
+    </StatusBadge>
   );
 }
 
 function TrustBadge({ label }) {
   return (
-    <div className="dashboard-card flex items-center gap-2 rounded-lg px-4 py-3">
+    <Panel className="flex items-center gap-2 px-4 py-3">
       <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-300" />
       <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-600 dark:text-slate-300">
         {label}
       </span>
-    </div>
-  );
-}
-
-function EmptyState() {
-  return (
-    <section className="dashboard-card rounded-lg px-5 py-12 text-center">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
-        <Receipt size={26} />
-      </div>
-      <h3 className="mt-5 text-xl font-bold tracking-tight text-slate-950 dark:text-slate-100">No invoices yet</h3>
-      <p className="mx-auto mt-2 max-w-md text-sm font-medium leading-7 text-slate-500 dark:text-slate-400">
-        Your first invoice will appear here after a successful plan upgrade.
-      </p>
-    </section>
+    </Panel>
   );
 }
 
 function InvoiceSkeleton() {
   return (
     <div className="dashboard-page space-y-6 animate-pulse">
-      <section className="dashboard-card rounded-lg p-6">
-        <div className="h-4 w-28 rounded bg-slate-200 dark:bg-slate-700" />
-        <div className="mt-4 h-9 w-56 rounded bg-slate-200 dark:bg-slate-700" />
-        <div className="mt-3 h-4 w-80 max-w-full rounded bg-slate-200 dark:bg-slate-700" />
-      </section>
-      <section className="dashboard-card h-72 rounded-lg">
+      <Panel className="p-6">
+        <SkeletonBlock className="h-4 w-28" />
+        <SkeletonBlock className="mt-4 h-9 w-56" />
+        <SkeletonBlock className="mt-3 h-4 w-80 max-w-full" />
+      </Panel>
+      <Panel className="h-72">
         <div className="flex h-full items-center justify-center">
           <Loader2 className="animate-spin text-slate-400" size={24} />
         </div>
-      </section>
+      </Panel>
     </div>
   );
 }

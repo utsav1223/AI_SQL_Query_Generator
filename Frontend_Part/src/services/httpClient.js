@@ -3,6 +3,15 @@ const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:500
   ""
 );
 const API_TIMEOUT_MS = 20000;
+export const API_AUTH_EVENT = "api:auth-error";
+
+const PUBLIC_AUTH_ENDPOINTS = new Set([
+  "/auth/login",
+  "/auth/register",
+  "/auth/forgot-password",
+  "/auth/verify-otp",
+  "/admin/login"
+]);
 
 const parseResponseBody = async (response) => {
   try {
@@ -36,15 +45,43 @@ const getSuccessData = (payload = {}) => {
   return payload;
 };
 
-export const createRequest = ({ getToken }) => {
-  return async (endpoint, method = "GET", body = null) => {
+const shouldNotifyAuthError = ({ endpoint, status, authScope }) => {
+  if (!authScope || ![401, 403].includes(status)) {
+    return false;
+  }
+
+  return !PUBLIC_AUTH_ENDPOINTS.has(endpoint.split("?")[0]);
+};
+
+const notifyAuthError = ({ endpoint, status, authScope, message }) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.dispatchEvent(
+    new CustomEvent(API_AUTH_EVENT, {
+      detail: {
+        endpoint,
+        status,
+        authScope,
+        message,
+        returnTo: window.location.pathname + window.location.search
+      }
+    })
+  );
+};
+
+export const createRequest = ({ getToken, authScope } = {}) => {
+  return async (endpoint, method = "GET", body = null, requestOptions = {}) => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
     const token = typeof getToken === "function" ? getToken() : null;
+    const notifyOnAuthError = requestOptions.notifyOnAuthError !== false;
 
     const options = {
       method,
       signal: controller.signal,
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {})
@@ -78,6 +115,19 @@ export const createRequest = ({ getToken }) => {
       error.code = details.code;
       error.errors = details.errors;
       error.data = payload.data || payload;
+
+      if (
+        notifyOnAuthError &&
+        shouldNotifyAuthError({ endpoint, status: response.status, authScope })
+      ) {
+        notifyAuthError({
+          endpoint,
+          status: response.status,
+          authScope,
+          message: details.message
+        });
+      }
+
       throw error;
     }
 

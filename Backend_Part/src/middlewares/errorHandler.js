@@ -1,4 +1,5 @@
 const sendResponse = require("../utils/sendResponse");
+const logger = require("../utils/logger");
 
 const errorHandler = (error, req, res, next) => {
   const statusCode = error.statusCode || 500;
@@ -10,7 +11,12 @@ const errorHandler = (error, req, res, next) => {
   }
 
   if (statusCode >= 500) {
-    console.error(error);
+    logger.error("Unhandled API error", error, {
+      method: req.method,
+      path: req.originalUrl,
+      statusCode,
+      userId: req.user?.userId
+    });
   }
 
   return sendResponse(res, {

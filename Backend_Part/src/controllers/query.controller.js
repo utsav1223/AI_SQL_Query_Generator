@@ -3,11 +3,11 @@ const sendResponse = require("../utils/sendResponse");
 const queryService = require("../services/query.service");
 
 exports.getUserQueries = asyncHandler(async (req, res) => {
-  const queries = await queryService.getUserQueries(req.user.userId);
+  const result = await queryService.getUserQueries(req.user.userId, req.query);
 
   return sendResponse(res, {
     message: "Query history fetched successfully",
-    data: queries
+    data: result
   });
 });
 

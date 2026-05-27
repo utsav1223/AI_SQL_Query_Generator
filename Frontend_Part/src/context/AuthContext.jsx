@@ -1,5 +1,6 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from "react";
 import { authService } from "../services/authService";
+import { API_AUTH_EVENT } from "../services/httpClient";
 import { STORAGE_KEYS, readJson, removeItems, writeJson } from "../utils/storage";
 
 export const AuthContext = createContext(null);
@@ -18,8 +19,7 @@ const normalizeUser = (user) => {
   };
 };
 
-const saveUserSession = (token, user) => {
-  localStorage.setItem(STORAGE_KEYS.token, token);
+const saveUserSession = (user) => {
   writeJson(STORAGE_KEYS.user, user);
 };
 
@@ -32,10 +32,10 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   const refreshCurrentUser = useCallback(
-    async (token, fallbackUser = null) => {
+    async (fallbackUser = null) => {
       try {
         const freshUser = normalizeUser(await authService.getCurrentUser());
-        saveUserSession(token, freshUser);
+        saveUserSession(freshUser);
         setUser(freshUser);
         return freshUser;
       } catch (error) {
@@ -52,16 +52,20 @@ export function AuthProvider({ children }) {
   );
 
   useEffect(() => {
-    const loadUser = async () => {
-      const token = localStorage.getItem(STORAGE_KEYS.token);
-
-      if (!token) {
-        setLoading(false);
+    const handleAuthError = (event) => {
+      if (event.detail?.authScope !== "user") {
         return;
       }
 
+      clearUserSession();
+      setUser(null);
+    };
+
+    window.addEventListener(API_AUTH_EVENT, handleAuthError);
+
+    const loadUser = async () => {
       try {
-        await refreshCurrentUser(token);
+        await refreshCurrentUser();
       } catch {
         clearUserSession();
         setUser(null);
@@ -71,28 +75,27 @@ export function AuthProvider({ children }) {
     };
 
     loadUser();
+
+    return () => {
+      window.removeEventListener(API_AUTH_EVENT, handleAuthError);
+    };
   }, [refreshCurrentUser]);
 
   const login = useCallback(
     async (data) => {
-      if (!data?.token) {
-        throw new Error("Missing authentication token");
-      }
-
       const incomingUser = normalizeUser(data.user);
 
       if (incomingUser) {
-        saveUserSession(data.token, incomingUser);
+        saveUserSession(incomingUser);
         setUser(incomingUser);
         setLoading(false);
         return incomingUser;
       }
 
-      localStorage.setItem(STORAGE_KEYS.token, data.token);
       setLoading(false);
 
       try {
-        return await refreshCurrentUser(data.token);
+        return await refreshCurrentUser();
       } catch {
         throw new Error("Failed to load account details");
       }
@@ -100,7 +103,13 @@ export function AuthProvider({ children }) {
     [refreshCurrentUser]
   );
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    try {
+      await authService.logout();
+    } catch {
+      // Local cleanup should still happen if the network request fails.
+    }
+
     clearUserSession();
     setUser(null);
   }, []);

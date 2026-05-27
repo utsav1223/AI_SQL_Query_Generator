@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Check, CreditCard, Loader2, Shield, Sparkles, X, Zap } from "lucide-react";
+import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
 import { useAuth } from "../../hooks/useAuth";
 import { paymentService } from "../../services/paymentService";
 
@@ -37,6 +38,7 @@ const plans = [
 export default function Pricing() {
   const { user, login } = useAuth();
   const navigate = useNavigate();
+  const { confirmAction, ConfirmationDialog } = useConfirmationDialog();
   const [downgrading, setDowngrading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -46,11 +48,14 @@ export default function Pricing() {
       return;
     }
 
-    const confirmed = window.confirm(
-      "Downgrade to the free plan? You will lose Pro-only tools and analytics immediately."
-    );
+    const result = await confirmAction({
+      title: "Downgrade to Free",
+      description: "You will lose Pro-only tools and analytics immediately.",
+      confirmLabel: "Downgrade",
+      tone: "warning"
+    });
 
-    if (!confirmed) {
+    if (!result?.confirmed) {
       return;
     }
 
@@ -60,10 +65,9 @@ export default function Pricing() {
 
     try {
       const result = await paymentService.downgradePlan();
-      const token = localStorage.getItem("token");
 
-      if (result?.user && token) {
-        await login({ token, user: result.user });
+      if (result?.user) {
+        await login({ user: result.user });
       }
 
       setMessage("Your workspace is now on the free plan.");
@@ -229,6 +233,7 @@ export default function Pricing() {
           </div>
         </div>
       </section>
+      <ConfirmationDialog />
     </div>
   );
 }

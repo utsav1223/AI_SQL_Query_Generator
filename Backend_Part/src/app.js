@@ -12,6 +12,12 @@ const schemaRoutes = require("./routes/schema.routes");
 const paymentRoutes = require("./routes/payment.routes");
 const adminRoutes = require("./routes/admin.routes");
 const feedbackRoutes = require("./routes/feedback.routes");
+const {
+  tinyJson,
+  standardJson,
+  schemaJson,
+  aiJson
+} = require("./middlewares/bodyLimit.middleware");
 
 require("./utils/subscription.cron");
 
@@ -41,17 +47,15 @@ app.use(
     credentials: true
   })
 );
-app.use(express.json());
 app.use(passport.initialize());
 
-app.use("/api/auth", authRoutes);
-app.use("/api/payment", paymentRoutes);
-app.use("/api/schema", schemaRoutes);
-app.use("/api/ai", aiRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/feedback", feedbackRoutes);
+app.use("/api/auth", tinyJson, authRoutes);
+app.use("/api/payment", tinyJson, paymentRoutes);
+app.use("/api/schema", schemaJson, schemaRoutes);
+app.use("/api/ai", aiJson, aiRoutes);
+app.use("/api/admin", standardJson, adminRoutes);
+app.use("/api/feedback", standardJson, feedbackRoutes);
 app.use("/api/queries", queryRoutes);
-app.use("/api/query", queryRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

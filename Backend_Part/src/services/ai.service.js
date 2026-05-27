@@ -3,7 +3,10 @@ const SchemaModel = require("../models/Schema");
 const Query = require("../models/Query");
 const AppError = require("../utils/AppError");
 const { callGemini } = require("../utils/geminiClient");
-const { checkAndUpdateUsage } = require("../utils/usageManager");
+const {
+  assertUsageAvailable,
+  incrementUsage
+} = require("../utils/usageManager");
 const { createSecurityEvent } = require("../utils/securityMonitor");
 
 const GEMINI_MAX_OUTPUT_TOKENS = 1024;
@@ -517,13 +520,13 @@ const runAiRequest = async ({ userId, mode, prompt, sql, requestMeta = {} }) => 
     throw new AppError(403, "Upgrade to Pro to use this feature.");
   }
 
+  let cleanResult = "";
+
   if (mode === "format") {
-    return {
-      result: formatSqlSafely(sql)
-    };
+    cleanResult = formatSqlSafely(sql);
   }
 
-  const schemaData = await SchemaModel.findOne({ userId });
+  const schemaData = mode === "format" ? null : await SchemaModel.findOne({ userId });
   const schemaText = String(schemaData?.schemaText || "").trim();
   const hasSchema = schemaText.length > 0;
 
@@ -534,7 +537,7 @@ const runAiRequest = async ({ userId, mode, prompt, sql, requestMeta = {} }) => 
     );
   }
 
-  const userPrompt = buildUserPrompt({
+  const userPrompt = mode === "format" ? "" : buildUserPrompt({
     mode,
     schemaText,
     hasSchema,
@@ -542,92 +545,94 @@ const runAiRequest = async ({ userId, mode, prompt, sql, requestMeta = {} }) => 
     sql
   });
 
-  if (!userPrompt || !SYSTEM_PROMPTS[mode]) {
+  if (mode !== "format" && (!userPrompt || !SYSTEM_PROMPTS[mode])) {
     throw new AppError(400, "Invalid mode");
   }
 
-  try {
-    await checkAndUpdateUsage(user._id);
-  } catch (error) {
-    if (error.code === "LIMIT") {
-      await createSecurityEvent({
-        userId: user._id,
-        type: "daily_free_limit_hit",
-        severity: "low",
-        source: "ai",
-        message: "User hit daily free credit limit.",
-        ...requestMeta
-      });
-    }
-
-    throw error;
-  }
-
-  const aiResponse = await callGemini({
-    systemInstruction: SYSTEM_PROMPTS[mode],
-    userPrompt,
-    temperature: mode === "explain" ? 0.1 : 0,
-    maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
-    responseMimeType: "application/json",
-    returnMeta: true
-  });
-
-  const aiResult =
-    typeof aiResponse === "string" ? aiResponse : aiResponse?.text || "";
-  const finishReason =
-    typeof aiResponse === "string" ? null : aiResponse?.finishReason;
-
-  if (!aiResult) {
-    throw new AppError(500, "AI failed");
-  }
-
-  let cleanResult = "";
-
-  if (mode === "explain") {
-    const parsed = await parseJsonWithRepair({
-      mode,
-      rawText: aiResult
-    });
-    const normalized = normalizeExplainPayload(parsed, aiResult);
-    cleanResult = buildExplainOutput(normalized);
-  } else {
-    const parsed = await parseJsonWithRepair({
-      mode,
-      rawText: aiResult
-    });
-
-    let sqlText =
-      parsed && typeof parsed.sql === "string"
-        ? parsed.sql
-        : stripCodeFences(aiResult);
-
-    if (mode === "generate") {
-      const initialCandidateSql = sqlText;
-      sqlText = await reviewGeneratedSql({
-        schemaText,
-        prompt,
-        candidateSql: sqlText
-      });
-
-      if (finishReason === "MAX_TOKENS" || isLikelyIncompleteSql(sqlText)) {
-        const completionSeed =
-          sqlText || (finishReason === "MAX_TOKENS" ? initialCandidateSql : "");
-
-        sqlText = await completeGeneratedSqlIfNeeded({
-          schemaText,
-          prompt,
-          candidateSql: completionSeed
+  if (mode !== "format") {
+    try {
+      await assertUsageAvailable(user._id);
+    } catch (error) {
+      if (error.code === "LIMIT") {
+        await createSecurityEvent({
+          userId: user._id,
+          type: "daily_free_limit_hit",
+          severity: "low",
+          source: "ai",
+          message: "User hit daily free credit limit.",
+          ...requestMeta
         });
       }
+
+      throw error;
+    }
+  }
+
+  if (mode !== "format") {
+    const aiResponse = await callGemini({
+      systemInstruction: SYSTEM_PROMPTS[mode],
+      userPrompt,
+      temperature: mode === "explain" ? 0.1 : 0,
+      maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
+      responseMimeType: "application/json",
+      returnMeta: true
+    });
+
+    const aiResult =
+      typeof aiResponse === "string" ? aiResponse : aiResponse?.text || "";
+    const finishReason =
+      typeof aiResponse === "string" ? null : aiResponse?.finishReason;
+
+    if (!aiResult) {
+      throw new AppError(500, "AI failed");
     }
 
-    cleanResult = formatSqlSafely(sqlText);
+    if (mode === "explain") {
+      const parsed = await parseJsonWithRepair({
+        mode,
+        rawText: aiResult
+      });
+      const normalized = normalizeExplainPayload(parsed, aiResult);
+      cleanResult = buildExplainOutput(normalized);
+    } else {
+      const parsed = await parseJsonWithRepair({
+        mode,
+        rawText: aiResult
+      });
 
-    if (mode === "generate" && !cleanResult.trim()) {
-      throw new AppError(
-        400,
-        "Unable to generate SQL from saved schema context for this request."
-      );
+      let sqlText =
+        parsed && typeof parsed.sql === "string"
+          ? parsed.sql
+          : stripCodeFences(aiResult);
+
+      if (mode === "generate") {
+        const initialCandidateSql = sqlText;
+        sqlText = await reviewGeneratedSql({
+          schemaText,
+          prompt,
+          candidateSql: sqlText
+        });
+
+        if (finishReason === "MAX_TOKENS" || isLikelyIncompleteSql(sqlText)) {
+          const completionSeed =
+            sqlText || (finishReason === "MAX_TOKENS" ? initialCandidateSql : "");
+
+          sqlText = await completeGeneratedSqlIfNeeded({
+            schemaText,
+            prompt,
+            candidateSql: completionSeed
+          });
+        }
+      }
+
+      cleanResult = formatSqlSafely(sqlText);
+
+      if (mode === "generate" && !cleanResult.trim()) {
+        throw new AppError(
+          400,
+          "Unable to generate SQL from saved schema context for this request."
+        );
+      }
     }
   }
 
@@ -641,6 +646,10 @@ const runAiRequest = async ({ userId, mode, prompt, sql, requestMeta = {} }) => 
     generatedSQL: cleanResult,
     mode
   });
+
+  if (mode !== "format") {
+    await incrementUsage(user._id);
+  }
 
   return {
     result: cleanResult

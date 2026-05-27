@@ -2,6 +2,7 @@ const nodemailer = require("nodemailer");
 const axios = require("axios");
 const PDFDocument = require("pdfkit");
 const { PassThrough } = require("stream");
+const logger = require("./logger");
 
 const EMAIL_PROVIDER = (
   process.env.EMAIL_PROVIDER ||
@@ -40,20 +41,18 @@ const transporter = EMAIL_PROVIDER === "smtp" && emailAuthConfigured
 if (EMAIL_PROVIDER === "smtp" && transporter) {
   transporter.verify((error) => {
     if (error) {
-      console.error("Email transporter configuration error:", error);
+      logger.error("Email transporter configuration error", error, { provider: EMAIL_PROVIDER });
     } else {
-      console.log("Email server is ready to take our messages");
+      logger.info("Email server is ready to send messages", { provider: EMAIL_PROVIDER });
     }
   });
 } else if (EMAIL_PROVIDER === "smtp") {
-  console.warn(
-    "Email transport disabled: set EMAIL_USER and EMAIL_PASS to enable outbound emails."
-  );
+  logger.warn("Email transport disabled: set EMAIL_USER and EMAIL_PASS to enable outbound emails.");
 } else if (EMAIL_PROVIDER === "resend") {
   if (!RESEND_API_KEY) {
-    console.warn("Email transport disabled: set RESEND_API_KEY to enable Resend emails.");
+    logger.warn("Email transport disabled: set RESEND_API_KEY to enable Resend emails.");
   } else {
-    console.log("Email provider set to Resend API.");
+    logger.info("Email provider set to Resend API", { provider: EMAIL_PROVIDER });
   }
 }
 

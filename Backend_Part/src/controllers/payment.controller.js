@@ -13,8 +13,7 @@ exports.createOrder = asyncHandler(async (req, res) => {
 
 exports.createPaymentLink = asyncHandler(async (req, res) => {
   const paymentLink = await paymentService.createPaymentLink({
-    userId: req.user.userId,
-    callbackUrl: req.body.callbackUrl
+    userId: req.user.userId
   });
 
   return sendResponse(res, {

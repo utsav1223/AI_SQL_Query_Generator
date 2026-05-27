@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail, ArrowRight } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { useAuth } from "../hooks/useAuth";
@@ -13,6 +13,10 @@ const GOOGLE_AUTH_URL =
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnTo = location.state?.from
+    ? `${location.state.from.pathname}${location.state.from.search || ""}`
+    : "/dashboard";
 
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
@@ -52,7 +56,7 @@ export default function Login() {
     try {
       const data = await authService.login(form);
       await login(data);
-      navigate("/dashboard", { replace: true });
+      navigate(returnTo, { replace: true });
     } catch (err) {
       if (err.errors) setErrors({ server: err.errors.join(", ") });
       else if (err.message) setErrors({ server: err.message });

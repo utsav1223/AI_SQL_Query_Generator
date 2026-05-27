@@ -2,6 +2,10 @@ const asyncHandler = require("../middlewares/asyncHandler");
 const sendResponse = require("../utils/sendResponse");
 const { getRequestMeta } = require("../utils/request");
 const authService = require("../services/auth.service");
+const {
+  setUserAuthCookie,
+  clearUserAuthCookie
+} = require("../utils/sessionCookies");
 
 exports.register = asyncHandler(async (req, res) => {
   const result = await authService.registerUser(req.body);
@@ -9,7 +13,9 @@ exports.register = asyncHandler(async (req, res) => {
   return sendResponse(res, {
     statusCode: 201,
     message: "Registration successful",
-    data: result
+    data: {
+      user: result.user
+    }
   });
 });
 
@@ -18,10 +24,21 @@ exports.login = asyncHandler(async (req, res) => {
     ...req.body,
     requestMeta: getRequestMeta(req)
   });
+  setUserAuthCookie(res, result.token);
 
   return sendResponse(res, {
     message: "Login successful",
-    data: result
+    data: {
+      user: result.user
+    }
+  });
+});
+
+exports.logout = asyncHandler(async (req, res) => {
+  clearUserAuthCookie(res);
+
+  return sendResponse(res, {
+    message: "Logout successful"
   });
 });
 

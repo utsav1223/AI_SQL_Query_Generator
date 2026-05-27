@@ -16,16 +16,14 @@ services:
         sync: false
       - key: JWT_SECRET
         generateValue: true
+      - key: ADMIN_USER_ID
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
       - key: CORS_ORIGIN
-        fromService:
-          type: web
-          name: ai-sql-frontend
-          property: url
+        value: https://ai-sql-frontend.onrender.com
       - key: FRONTEND_URL
-        fromService:
-          type: web
-          name: ai-sql-frontend
-          property: url
+        value: https://ai-sql-frontend.onrender.com
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_CLIENT_SECRET
@@ -47,7 +45,7 @@ services:
     runtime: static
     plan: free
     buildCommand: npm install && npm run build
-    staticPublishDir: dist
+    staticPublishPath: dist
     rootDir: Frontend_Part
     routes:
       - type: rewrite
@@ -55,14 +53,6 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_BASE_URL
-        fromService:
-          type: web
-          name: ai-sql-query-generator-b
-          property: url
-        value: ${AI_SQL_QUERY_GENERATOR_B_URL}/api
+        value: https://ai-sql-query-generator-b.onrender.com/api
       - key: VITE_GOOGLE_AUTH_URL
-        fromService:
-          type: web
-          name: ai-sql-query-generator-b
-          property: url
-        value: ${AI_SQL_QUERY_GENERATOR_B_URL}/api/auth/google
+        value: https://ai-sql-query-generator-b.onrender.com/api/auth/google

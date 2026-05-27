@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   Eye,
@@ -15,8 +15,12 @@ import { useAdminAuth } from "../../hooks/useAdminAuth";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAdminAuth();
   const { isDark, toggleTheme } = useContext(ThemeContext);
+  const returnTo = location.state?.from
+    ? `${location.state.from.pathname}${location.state.from.search || ""}`
+    : "/admin/dashboard";
 
   const [form, setForm] = useState({ userId: "", password: "" });
   const [error, setError] = useState("");
@@ -46,7 +50,7 @@ export default function AdminLogin() {
         userId: form.userId.trim(),
         password: form.password
       });
-      navigate("/admin/dashboard", { replace: true });
+      navigate(returnTo, { replace: true });
     } catch (requestError) {
       setError(requestError.message || "Admin login failed");
     } finally {

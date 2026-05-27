@@ -12,7 +12,9 @@ import {
   Zap
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import { useConfirmationDialog } from "../hooks/useConfirmationDialog";
 import { paymentService } from "../services/paymentService";
+import { logger } from "../utils/logger";
 
 const proFeatures = [
   "Unlimited SQL generation",
@@ -24,6 +26,7 @@ const proFeatures = [
 export default function Billing() {
   const { user, login } = useAuth();
   const navigate = useNavigate();
+  const { confirmAction, ConfirmationDialog } = useConfirmationDialog();
   const [loading, setLoading] = useState(false);
   const [downgrading, setDowngrading] = useState(false);
   const [message, setMessage] = useState("");
@@ -48,8 +51,7 @@ export default function Billing() {
     setMessage("");
 
     try {
-      const callbackUrl = `${window.location.origin}/billingsuccess`;
-      const link = await paymentService.createPaymentLink(callbackUrl);
+      const link = await paymentService.createPaymentLink();
 
       if (!link?.short_url) {
         throw new Error("Unable to initialize checkout.");
@@ -57,7 +59,7 @@ export default function Billing() {
 
       window.location.assign(link.short_url);
     } catch (requestError) {
-      console.error("Payment Error:", requestError);
+      logger.error("Payment link creation failed", requestError);
       setError(requestError?.message || "Unable to start payment right now. Please try again.");
       setLoading(false);
     }
@@ -68,11 +70,14 @@ export default function Billing() {
       return;
     }
 
-    const confirmed = window.confirm(
-      "Downgrade to the free plan? Pro tools, analytics, and unlimited usage will stop immediately."
-    );
+    const result = await confirmAction({
+      title: "Downgrade to Free",
+      description: "Pro tools, analytics, and unlimited usage will stop immediately.",
+      confirmLabel: "Downgrade",
+      tone: "warning"
+    });
 
-    if (!confirmed) {
+    if (!result?.confirmed) {
       return;
     }
 
@@ -82,10 +87,9 @@ export default function Billing() {
 
     try {
       const result = await paymentService.downgradePlan();
-      const token = localStorage.getItem("token");
 
-      if (result?.user && token) {
-        await login({ token, user: result.user });
+      if (result?.user) {
+        await login({ user: result.user });
       }
 
       setMessage("Your workspace has been downgraded to the free plan.");
@@ -287,6 +291,7 @@ export default function Billing() {
           </section>
         </main>
       </div>
+      <ConfirmationDialog />
     </div>
   );
 }

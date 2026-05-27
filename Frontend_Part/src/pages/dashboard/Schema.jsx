@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Database, Loader2, RotateCcw, Save } from "lucide-react";
+import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
 import { schemaService } from "../../services/schemaService";
 
 const MAX_SCHEMA_SIZE_BYTES = 20000;
 
 export default function Schema() {
+  const { confirmAction, ConfirmationDialog } = useConfirmationDialog();
   const [schemaText, setSchemaText] = useState("");
   const [lastUpdated, setLastUpdated] = useState(null);
   const [size, setSize] = useState(0);
@@ -49,7 +51,14 @@ export default function Schema() {
   };
 
   const handleClear = async () => {
-    if (!window.confirm("Clear the saved schema?")) {
+    const result = await confirmAction({
+      title: "Clear saved schema",
+      description: "The schema context used for SQL generation will be removed.",
+      confirmLabel: "Clear Schema",
+      tone: "warning"
+    });
+
+    if (!result?.confirmed) {
       return;
     }
 
@@ -167,6 +176,7 @@ CREATE TABLE users (
 
       {message ? <StatusMessage tone="success">{message}</StatusMessage> : null}
       {error ? <StatusMessage tone="error">{error}</StatusMessage> : null}
+      <ConfirmationDialog />
     </div>
   );
 }

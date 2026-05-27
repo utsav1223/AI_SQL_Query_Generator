@@ -1,87 +1,143 @@
 # AI SQL Studio
 
-AI SQL Studio is a full-stack SaaS application for generating, optimizing, validating, and explaining SQL with AI. It includes user authentication, Google OAuth, schema-aware query generation, saved query history, Pro billing through Razorpay, invoices, feedback, support pages, and an admin control center for user and platform management.
+AI SQL Studio is a full-stack SaaS-style web application that helps developers generate, optimize, validate, format, and explain SQL using AI.
 
-The project is structured as a React frontend and an Express/MongoDB backend, with clear separation between UI, API services, controllers, business logic, and database models.
+The goal of this project is not only to make SQL easier to write, but also to show how a real product is structured: authentication, protected dashboards, AI integration, saved history, schema-aware generation, billing, invoices, admin moderation, analytics, feedback, and deployment configuration.
+
+This is a strong interview project because it demonstrates both frontend and backend thinking. It shows that you can build screens, APIs, database models, third-party integrations, and business rules that work together as one product.
 
 ## Table Of Contents
 
-- [Features](#features)
+- [What This Project Does](#what-this-project-does)
+- [Key Features](#key-features)
 - [Tech Stack](#tech-stack)
+- [Screenshots](#screenshots)
 - [Project Structure](#project-structure)
-- [System Architecture](#system-architecture)
-- [Data Flow](#data-flow)
+- [Architecture](#architecture)
+- [Advanced Code To Highlight In Interviews](#advanced-code-to-highlight-in-interviews)
+- [Beginner-Friendly Explanation](#beginner-friendly-explanation)
 - [Getting Started](#getting-started)
 - [Environment Variables](#environment-variables)
 - [Available Scripts](#available-scripts)
 - [API Overview](#api-overview)
 - [Database Models](#database-models)
-- [Billing And Plans](#billing-and-plans)
-- [Admin Console](#admin-console)
 - [Deployment](#deployment)
-- [Troubleshooting](#troubleshooting)
+- [SEO, Security, And Quality Status](#seo-security-and-quality-status)
+- [Interview Talking Points](#interview-talking-points)
 
-## Features
+## What This Project Does
+
+Many developers know what data they want, but they struggle to write the correct SQL query quickly. AI SQL Studio solves that problem by allowing users to save their database schema and then ask the AI for SQL queries in plain English.
+
+Example:
+
+```text
+Show me the top 5 customers by total order amount this month.
+```
+
+The app can generate SQL based on the saved schema, optimize existing SQL, explain how a query works, validate/fix SQL, and save the result in query history.
+
+## Key Features
 
 ### Public Website
 
-- Professional landing page with product sections, pricing, developers, FAQ, and support entry points.
-- Responsive login and registration flows.
-- Forgot password and OTP-based reset flow.
-- Google OAuth sign-in support.
-- Light and dark mode support.
+- Landing page for the product.
+- Login and registration.
+- Forgot password with OTP reset flow.
+- Google OAuth login.
+- Developers page.
+- Light and dark theme support.
 
 ### User Dashboard
 
-- Workspace overview with plan status, usage stats, recent activity, and quick actions.
-- AI Workspace for:
-  - Natural language to SQL generation.
-  - SQL optimization.
-  - SQL explanation.
-  - SQL validation.
-- Schema context storage so AI output can follow the user's real database structure.
-- Query history with search, filtering, pinning for Pro users, copy, and delete actions.
-- Analytics dashboard for Pro users.
-- Pricing, billing, invoices, settings, support, FAQ, and feedback pages.
+- Dashboard overview with usage and activity.
+- AI workspace for SQL generation, optimization, validation, formatting, and explanation.
+- Schema context page where users save database structure.
+- Query history with copy, delete, filtering, and Pro-only pinning.
+- Analytics page for Pro users.
+- Billing, invoices, settings, FAQ, support, and feedback pages.
 
-### Billing
+### AI SQL Features
 
-- Razorpay hosted checkout integration.
-- Payment link creation and verification.
+- Natural language to SQL generation.
+- Schema-aware prompt building.
+- Strict JSON response handling from the AI model.
+- AI response repair when the model returns invalid JSON.
+- SQL formatting fallback.
+- Query completion when an AI response is incomplete.
+- Second-pass SQL review for generated queries.
+- Usage limits for free users.
+- Pro-only access for advanced AI modes.
+
+### Billing And Subscription
+
+- Razorpay payment link and order support.
+- Signature verification for payment safety.
 - Pro plan activation after successful payment.
 - Invoice and payment record creation.
-- Subscription renewal tracking.
-- User self-downgrade from Pro to Free.
-- Expired subscription downgrade job.
+- Email confirmation with invoice attachment.
+- Subscription renewal date handling.
+- User downgrade from Pro to Free.
+- Scheduled expired-subscription downgrade logic.
 
 ### Admin Console
 
-- Secure admin login.
-- Platform overview with users, revenue, feedback, invoices, and security signals.
-- User moderation:
-  - Set Pro or Free plan.
-  - Suspend or unsuspend users.
-  - Delete users.
+- Separate admin login.
+- Admin dashboard with platform metrics.
+- User listing with pagination and search.
+- User moderation: upgrade, downgrade, suspend, unsuspend, delete.
 - Feedback triage.
-- Security event monitoring and status updates.
-- Admin audit logging.
+- Security event monitoring.
+- Admin audit logs for moderation actions.
+- Revenue, signup, plan, feedback, and security summaries.
 
 ## Tech Stack
 
 | Layer | Technology |
 | --- | --- |
 | Frontend | React 19, Vite, React Router |
-| Styling | Tailwind CSS v4, custom CSS variables, responsive light/dark UI |
-| Animation | Framer Motion |
+| Styling | Tailwind CSS v4, custom CSS variables |
+| UI Motion | Framer Motion |
 | Charts | Recharts |
-| Icons | Lucide React |
+| Icons | Lucide React, React Icons |
 | Backend | Node.js, Express 5 |
 | Database | MongoDB, Mongoose |
 | Authentication | JWT, bcrypt, Passport Google OAuth |
-| AI Provider | Google Gemini API |
+| AI | Google Gemini API |
 | Payments | Razorpay |
-| Email | Nodemailer SMTP or Resend API |
-| Deployment | Render blueprint support |
+| Email | Nodemailer |
+| Scheduled Jobs | node-cron |
+| Deployment | Render blueprint |
+
+## Screenshots
+
+These screenshots give interviewers a quick visual walkthrough of the project: public landing page, team page, admin authentication, and the running application view.
+
+### Landing Page
+
+The landing page introduces the AI SQL product, feature value, and public entry points.
+
+![AI SQL Studio landing page](docs/screenshots/landing.png)
+
+### Developers Page
+
+The developers page presents the project team and portfolio-style profile section.
+
+![AI SQL Studio developers page](docs/screenshots/developers.png)
+
+### Admin Login
+
+The admin login screen shows the separate admin access flow used for moderation and platform management.
+
+![AI SQL Studio admin login](docs/screenshots/admin-login.png)
+
+### Application View
+
+This view shows the app running during development/debug verification.
+
+![AI SQL Studio application view](docs/screenshots/debug.png)
+
+All screenshot assets are stored in `docs/screenshots`.
 
 ## Project Structure
 
@@ -89,61 +145,57 @@ The project is structured as a React frontend and an Express/MongoDB backend, wi
 .
 +-- Backend_Part/
 |   +-- src/
-|   |   +-- config/           # Database and Passport OAuth config
-|   |   +-- controllers/      # Route handlers
-|   |   +-- middlewares/      # Auth, validation, errors, plan guards
-|   |   +-- models/           # Mongoose models
+|   |   +-- config/           # Database, OAuth, and environment validation
+|   |   +-- controllers/      # Request handlers
+|   |   +-- middlewares/      # Auth, validation, plan guards, errors
+|   |   +-- models/           # MongoDB/Mongoose schemas
 |   |   +-- routes/           # API route definitions
-|   |   +-- services/         # Business logic
-|   |   +-- utils/            # JWT, email, AI client, security monitor
+|   |   +-- services/         # Main business logic
+|   |   +-- utils/            # Helpers for auth, email, AI, responses
 |   |   +-- app.js            # Express app setup
-|   |   +-- server.js         # Server bootstrap
-|   +-- .env.example
+|   |   +-- server.js         # Server startup
+|   +-- tests/                # Backend API and environment tests
 |   +-- package.json
 |
 +-- Frontend_Part/
+|   +-- public/               # SEO files, favicon, robots, sitemap, manifest
 |   +-- src/
-|   |   +-- components/       # Shared UI, auth, layout, AI controls
-|   |   +-- context/          # Auth, admin auth, theme providers
-|   |   +-- hooks/            # React hooks
+|   |   +-- components/       # Reusable UI, SEO metadata, route guards
+|   |   +-- context/          # Auth, admin auth, theme state
+|   |   +-- hooks/            # Custom React hooks
 |   |   +-- pages/            # Public, dashboard, billing, admin pages
-|   |   +-- routes/           # App route tree
-|   |   +-- services/         # API clients
-|   |   +-- utils/            # Storage helpers
+|   |   +-- routes/           # Route tree
+|   |   +-- services/         # API service functions
+|   |   +-- utils/            # Browser storage helpers
+|   |   +-- test/             # Frontend test setup
 |   |   +-- App.jsx
 |   |   +-- main.jsx
-|   +-- .env.example
 |   +-- package.json
 |
 +-- docs/
 |   +-- data-flow.md
+|   +-- screenshots/
++-- EXTRA_FEATURES.md
++-- PROJECT_REVIEW_README.md
 +-- render.yaml
-+-- readme.md
++-- .gitignore
++-- README.md
 ```
 
-## System Architecture
+## Architecture
+
+The app follows a clean full-stack separation.
 
 ```mermaid
 flowchart LR
-  user[User Browser] --> frontend[React + Vite Frontend]
+  user[User Browser] --> frontend[React Frontend]
   admin[Admin Browser] --> frontend
 
-  frontend --> authApi[Auth API]
-  frontend --> aiApi[AI API]
-  frontend --> queryApi[Query API]
-  frontend --> schemaApi[Schema API]
-  frontend --> paymentApi[Payment API]
-  frontend --> feedbackApi[Feedback API]
-  frontend --> adminApi[Admin API]
+  frontend --> api[Express API]
 
-  subgraph backend[Express Backend]
-    authApi --> controllers[Controllers]
-    aiApi --> controllers
-    queryApi --> controllers
-    schemaApi --> controllers
-    paymentApi --> controllers
-    feedbackApi --> controllers
-    adminApi --> controllers
+  subgraph backend[Backend]
+    api --> routes[Routes]
+    routes --> controllers[Controllers]
     controllers --> services[Services]
     services --> models[Mongoose Models]
   end
@@ -151,62 +203,150 @@ flowchart LR
   models --> mongo[(MongoDB)]
   services --> gemini[Gemini API]
   services --> razorpay[Razorpay]
-  services --> email[SMTP or Resend Email]
-  authApi --> google[Google OAuth]
+  services --> email[Email Service]
+  routes --> google[Google OAuth]
 ```
 
-## Data Flow
-
-A detailed version is available in [docs/data-flow.md](docs/data-flow.md).
-
-### AI Query Generation Flow
+### AI Request Flow
 
 ```mermaid
 sequenceDiagram
   participant U as User
-  participant FE as React Dashboard
+  participant FE as React App
   participant API as Express API
   participant S as AI Service
   participant DB as MongoDB
-  participant G as Gemini API
+  participant G as Gemini
 
   U->>FE: Enter prompt or SQL
-  FE->>API: POST /api/ai with JWT
-  API->>API: Validate token and plan
-  API->>S: Run AI tool
-  S->>DB: Load saved schema context
-  S->>G: Send prompt + schema + mode
-  G-->>S: Return generated result
+  FE->>API: Send request with token
+  API->>S: Run selected AI mode
+  S->>DB: Load user's schema context
+  S->>G: Send structured prompt
+  G-->>S: Return AI response
+  S->>S: Parse, repair, review, format
   S->>DB: Save query history
-  API-->>FE: Return SQL or explanation
-  FE-->>U: Display output
+  API-->>FE: Return final result
+  FE-->>U: Show SQL or explanation
 ```
 
-### Billing Flow
+## Advanced Code To Highlight In Interviews
 
-```mermaid
-sequenceDiagram
-  participant U as User
-  participant FE as Billing UI
-  participant API as Payment API
-  participant R as Razorpay
-  participant DB as MongoDB
-  participant E as Email Service
+Use this section when explaining the project to an interviewer.
 
-  U->>FE: Click upgrade
-  FE->>API: POST /api/payment/create-payment-link
-  API->>R: Create hosted payment link
-  R-->>API: Return short URL
-  API-->>FE: Return checkout URL
-  FE->>R: Redirect to Razorpay
-  R->>FE: Redirect to success callback
-  FE->>API: Verify Razorpay callback
-  API->>R: Verify signature
-  API->>DB: Activate Pro plan
-  API->>DB: Create payment and invoice
-  API->>E: Send confirmation email
-  API-->>FE: Return success
-```
+### 1. AI Service Design
+
+File: `Backend_Part/src/services/ai.service.js`
+
+This is one of the strongest parts of the project.
+
+What makes it advanced:
+
+- Different system prompts for generate, optimize, validate, explain, and format modes.
+- Schema-aware SQL generation, so the AI is guided by the user's saved database structure.
+- Strict JSON contract expected from the AI model.
+- Safe JSON parsing and repair when the AI returns messy text.
+- Second-pass review for generated SQL.
+- Incomplete SQL detection and completion retry.
+- SQL formatting fallback.
+- Free-plan usage limit and Pro-only feature checks.
+- Query history save after successful AI output.
+
+How to explain it simply:
+
+> I did not just call the AI API and print the response. I created a service layer that validates the request, adds schema context, controls the AI output format, repairs invalid responses, reviews generated SQL, formats the final result, checks plan limits, and stores the query history.
+
+### 2. Billing And Payment Verification
+
+File: `Backend_Part/src/services/payment.service.js`
+
+What makes it advanced:
+
+- Razorpay order and payment-link support.
+- HMAC signature verification.
+- Payment status validation.
+- Pro plan activation after verified payment.
+- Invoice and payment record creation.
+- Email confirmation with generated invoice.
+- Duplicate verification protection using existing invoice lookup.
+
+How to explain it simply:
+
+> The payment flow verifies Razorpay signatures before upgrading the user. After payment, the backend activates the Pro plan, stores payment details, creates an invoice, and sends a confirmation email.
+
+### 3. Admin Dashboard And Moderation
+
+File: `Backend_Part/src/services/admin.service.js`
+
+What makes it advanced:
+
+- Admin authentication separate from user authentication.
+- Aggregated dashboard metrics using MongoDB aggregation.
+- User pagination and search.
+- Moderation actions with required reasons.
+- Audit logs for admin actions.
+- Security event creation when risky actions happen.
+- Feedback and security-event triage.
+
+How to explain it simply:
+
+> The admin system is not just a static page. It reads platform data, summarizes business metrics, lets admins take action on users, and keeps audit logs so important actions are traceable.
+
+### 4. Protected Frontend Routing
+
+File: `Frontend_Part/src/routes/AppRoutes.jsx`
+
+What makes it advanced:
+
+- Public routes for landing/login/register.
+- Protected user dashboard routes.
+- Separate protected admin dashboard route.
+- Redirects for old or shortcut URLs.
+- Nested dashboard layout with child pages.
+
+How to explain it simply:
+
+> The frontend has route guards, so normal users, logged-out visitors, and admins see the correct screens.
+
+### 5. Separation Of Concerns
+
+The backend is split into routes, controllers, services, models, middleware, and utilities.
+
+Why this matters:
+
+- Routes define URLs.
+- Controllers handle request and response.
+- Services contain business logic.
+- Models define database structure.
+- Middleware handles auth, validation, and errors.
+- Utilities handle reusable helpers.
+
+This structure is interview-friendly because it shows you understand maintainable backend architecture.
+
+## Beginner-Friendly Explanation
+
+Think of the app like a restaurant.
+
+- The frontend is the dining area where users interact.
+- The backend routes are the waiters taking requests.
+- Controllers decide which service should handle the request.
+- Services are the kitchen where the real work happens.
+- Models are the storage shelves where data is organized.
+- MongoDB is the database where everything is saved.
+- Gemini is the AI chef that helps create SQL.
+- Razorpay is the cashier for Pro subscriptions.
+- Admin dashboard is the manager's office.
+
+When a user asks for SQL:
+
+1. The user enters a prompt in the React dashboard.
+2. The frontend sends it to the Express backend.
+3. The backend checks if the user is logged in.
+4. The AI service loads the user's saved schema.
+5. The app sends a carefully written prompt to Gemini.
+6. The response is parsed, repaired if needed, reviewed, and formatted.
+7. The final SQL is saved in history.
+8. The frontend displays the result.
 
 ## Getting Started
 
@@ -216,66 +356,53 @@ sequenceDiagram
 - npm
 - MongoDB database
 - Gemini API key
-- Razorpay test or live credentials
+- Razorpay test credentials
 - Optional Google OAuth credentials
-- Optional SMTP or Resend credentials for emails
+- Optional email SMTP credentials
 
-### 1. Clone the repository
-
-```bash
-git clone <your-repository-url>
-cd SQL
-```
-
-### 2. Install dependencies
+### 1. Install Backend Dependencies
 
 ```bash
 cd Backend_Part
 npm install
+```
 
+### 2. Install Frontend Dependencies
+
+```bash
 cd ../Frontend_Part
 npm install
 ```
 
-### 3. Configure environment variables
+### 3. Create Backend Environment File
 
-Create backend env file:
+Create `Backend_Part/.env` and add the backend variables listed below.
 
-```bash
-cd Backend_Part
-cp .env.example .env
-```
+### 4. Create Frontend Environment File
 
-Create frontend env file:
+Create `Frontend_Part/.env.local` and add the frontend variables listed below.
 
-```bash
-cd ../Frontend_Part
-cp .env.example .env.local
-```
-
-Update the values for your local or deployed services.
-
-### 4. Run the backend
+### 5. Run Backend
 
 ```bash
 cd Backend_Part
 npm run dev
 ```
 
-The backend runs on:
+Backend runs on:
 
 ```text
 http://localhost:5000
 ```
 
-### 5. Run the frontend
+### 6. Run Frontend
 
 ```bash
 cd Frontend_Part
 npm run dev
 ```
 
-The frontend runs on:
+Frontend runs on:
 
 ```text
 http://localhost:5173
@@ -283,41 +410,38 @@ http://localhost:5173
 
 ## Environment Variables
 
-### Backend
+### Backend `.env`
 
-See [Backend_Part/.env.example](Backend_Part/.env.example).
+```env
+PORT=5000
+NODE_ENV=development
+MONGO_URI=your_mongodb_connection_string
+MONGO_URI_TEST=your_test_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+CORS_ORIGIN=http://localhost:5173
+FRONTEND_URL=http://localhost:5173
+ADMIN_USER_ID=admin
+ADMIN_PASSWORD=change_this_password
 
-| Variable | Description |
-| --- | --- |
-| `PORT` | Backend port, usually `5000` |
-| `NODE_ENV` | `development` or `production` |
-| `MONGO_URI` | MongoDB connection string |
-| `JWT_SECRET` | Secret used to sign JWTs |
-| `CORS_ORIGIN` | Allowed frontend origin |
-| `FRONTEND_URL` | Frontend URL used for OAuth and payment callbacks |
-| `GOOGLE_CLIENT_ID` | Google OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
-| `GEMINI_API_KEY` | Gemini API key |
-| `RAZORPAY_KEY_ID` | Razorpay key ID |
-| `RAZORPAY_SECRET` | Razorpay secret |
-| `ADMIN_USER_ID` | Admin login user ID |
-| `ADMIN_PASSWORD` | Admin login password |
-| `EMAIL_PROVIDER` | `smtp` or `resend` |
-| `EMAIL_USER` | SMTP email user |
-| `EMAIL_PASS` | SMTP email password |
-| `EMAIL_FROM` | Email sender |
-| `RESEND_API_KEY` | Resend API key |
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
 
-### Frontend
+GEMINI_API_KEY=your_gemini_api_key
 
-See [Frontend_Part/.env.example](Frontend_Part/.env.example).
+RAZORPAY_KEY_ID=your_razorpay_key_id
+RAZORPAY_SECRET=your_razorpay_secret
 
-| Variable | Description |
-| --- | --- |
-| `VITE_API_BASE_URL` | Backend API base URL |
-| `VITE_GOOGLE_AUTH_URL` | Google OAuth redirect URL |
+EMAIL_USER=your_email
+EMAIL_PASS=your_email_password
+EMAIL_FROM=your_sender_email
+```
 
-For local development:
+Production startup validates required backend environment variables before the app boots.
+For `NODE_ENV=production`, set `JWT_SECRET`, `MONGO_URI`, `ADMIN_USER_ID`, `ADMIN_PASSWORD`, `FRONTEND_URL`, and `CORS_ORIGIN`.
+Optional integrations are validated only when configured, for example Google OAuth requires both Google secrets and Razorpay requires both payment secrets.
+Use a strong admin password with at least 12 characters, or store a bcrypt hash in `ADMIN_PASSWORD`.
+
+### Frontend `.env.local`
 
 ```env
 VITE_API_BASE_URL=http://localhost:5000/api
@@ -330,9 +454,9 @@ VITE_GOOGLE_AUTH_URL=http://localhost:5000/api/auth/google
 
 | Command | Description |
 | --- | --- |
-| `npm run dev` | Start the Express server |
-| `npm start` | Start the production server |
-| `npm test` | Run backend smoke test imports |
+| `npm run dev` | Start backend server |
+| `npm start` | Start backend in production mode |
+| `npm test` | Run backend API and environment validation tests |
 
 ### Frontend
 
@@ -342,6 +466,7 @@ VITE_GOOGLE_AUTH_URL=http://localhost:5000/api/auth/google
 | `npm run build` | Build frontend for production |
 | `npm run preview` | Preview production build |
 | `npm run lint` | Run ESLint |
+| `npm test` | Run frontend unit tests |
 
 ## API Overview
 
@@ -350,35 +475,34 @@ VITE_GOOGLE_AUTH_URL=http://localhost:5000/api/auth/google
 | Method | Endpoint | Description |
 | --- | --- | --- |
 | `POST` | `/api/auth/register` | Register a user |
-| `POST` | `/api/auth/login` | Login with email and password |
+| `POST` | `/api/auth/login` | Login user |
 | `POST` | `/api/auth/forgot-password` | Send reset OTP |
-| `POST` | `/api/auth/verify-otp` | Reset password with OTP |
+| `POST` | `/api/auth/verify-otp` | Verify OTP and reset password |
 | `GET` | `/api/auth/me` | Get current user |
 | `PUT` | `/api/auth/update-profile` | Update profile |
 | `PUT` | `/api/auth/change-password` | Change password |
 | `DELETE` | `/api/auth/delete-account` | Delete account |
 | `GET` | `/api/auth/google` | Start Google OAuth |
-| `GET` | `/api/auth/google/callback` | Google OAuth callback |
 
-### AI And Queries
+### AI And Query History
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| `POST` | `/api/ai` | Run generate, optimize, explain, or validate |
+| `POST` | `/api/ai` | Run AI SQL tool |
 | `GET` | `/api/queries/overview` | Dashboard overview |
 | `GET` | `/api/queries` | Query history |
 | `GET` | `/api/queries/analytics` | Basic analytics |
 | `GET` | `/api/queries/advanced-analytics` | Pro analytics |
-| `PATCH` | `/api/queries/:id/pin` | Pin a query, Pro only |
-| `DELETE` | `/api/queries/:id` | Delete a query |
+| `PATCH` | `/api/queries/:id/pin` | Pin query |
+| `DELETE` | `/api/queries/:id` | Delete query |
 
 ### Schema
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| `GET` | `/api/schema` | Load saved schema |
-| `POST` | `/api/schema` | Save schema context |
-| `DELETE` | `/api/schema` | Delete schema context |
+| `GET` | `/api/schema` | Get saved schema |
+| `POST` | `/api/schema` | Save schema |
+| `DELETE` | `/api/schema` | Delete schema |
 
 ### Payments
 
@@ -386,10 +510,10 @@ VITE_GOOGLE_AUTH_URL=http://localhost:5000/api/auth/google
 | --- | --- | --- |
 | `POST` | `/api/payment/create-order` | Create Razorpay order |
 | `POST` | `/api/payment/create-payment-link` | Create Razorpay payment link |
-| `POST` | `/api/payment/verify` | Verify Razorpay order payment |
-| `POST` | `/api/payment/verify-payment-link` | Verify payment link callback |
-| `POST` | `/api/payment/downgrade` | Downgrade Pro user to Free |
-| `GET` | `/api/payment/invoices` | Get user invoices |
+| `POST` | `/api/payment/verify` | Verify order payment |
+| `POST` | `/api/payment/verify-payment-link` | Verify hosted payment link |
+| `POST` | `/api/payment/downgrade` | Downgrade to Free |
+| `GET` | `/api/payment/invoices` | Get invoices |
 
 ### Feedback
 
@@ -403,12 +527,11 @@ VITE_GOOGLE_AUTH_URL=http://localhost:5000/api/auth/google
 | Method | Endpoint | Description |
 | --- | --- | --- |
 | `POST` | `/api/admin/login` | Admin login |
-| `GET` | `/api/admin/me` | Get current admin session |
-| `GET` | `/api/admin/overview` | Admin dashboard overview |
+| `POST` | `/api/admin/logout` | Admin logout |
+| `GET` | `/api/admin/me` | Get admin profile |
+| `GET` | `/api/admin/overview` | Admin dashboard data |
 | `GET` | `/api/admin/users` | List users |
-| `POST` | `/api/admin/users/:userId/moderate` | Suspend, unsuspend, set plan, or delete user |
-| `PATCH` | `/api/admin/users/:userId/plan` | Update user plan |
-| `DELETE` | `/api/admin/users/:userId` | Delete user |
+| `POST` | `/api/admin/users/:userId/moderate` | Moderate user: set Pro, set Free, suspend, unsuspend, or delete |
 | `GET` | `/api/admin/feedback` | List feedback |
 | `PATCH` | `/api/admin/feedback/:feedbackId/status` | Update feedback status |
 | `GET` | `/api/admin/security-events` | List security events |
@@ -418,129 +541,104 @@ VITE_GOOGLE_AUTH_URL=http://localhost:5000/api/auth/google
 
 | Model | Purpose |
 | --- | --- |
-| `User` | Account, plan, auth state, usage, renewal, risk data |
-| `Query` | Saved AI prompts and results |
-| `Schema` | User-provided database schema context |
-| `Payment` | Payment transaction records |
-| `Invoice` | User invoices |
-| `Feedback` | User feedback and ratings |
-| `SecurityEvent` | Auth and risk monitoring events |
-| `AdminAuditLog` | Admin moderation history |
-
-## Billing And Plans
-
-| Plan | Capabilities |
-| --- | --- |
-| Free | Limited SQL generation credits, basic history, schema context |
-| Pro | Unlimited workflow access, optimization, explanation, validation, analytics, invoices, priority tools |
-
-Subscription behavior:
-
-- Successful Razorpay verification activates the Pro plan.
-- Billing renewal date is saved on the user record.
-- Payment and invoice documents are created after verification.
-- A scheduled job downgrades expired Pro users.
-- Users can downgrade themselves to Free from the billing UI.
-
-## Admin Console
-
-The admin dashboard helps manage the platform:
-
-- Monitor users, revenue, invoices, feedback, and security events.
-- Moderate users with audit history.
-- Change user plan from Free to Pro or Pro to Free.
-- Triage feedback.
-- Track suspicious security events.
-
-Admin credentials are configured through:
-
-```env
-ADMIN_USER_ID=admin
-ADMIN_PASSWORD=Admin@123
-```
-
-Use stronger credentials in production.
+| `User` | Stores account, plan, usage, auth, and risk data |
+| `Query` | Stores prompts, generated SQL, mode, and history |
+| `Schema` | Stores user's database schema context |
+| `Payment` | Stores payment transaction data |
+| `Invoice` | Stores billing invoice data |
+| `Feedback` | Stores user feedback |
+| `SecurityEvent` | Stores suspicious or important security events |
+| `AdminAuditLog` | Stores admin moderation history |
 
 ## Deployment
 
-The repository includes [render.yaml](render.yaml) for Render deployment.
+The repository includes `render.yaml` for Render deployment.
 
-Deployment services:
+Production checklist:
 
-- Backend web service from `Backend_Part`
-- Frontend static site from `Frontend_Part`
-
-Important production notes:
-
-- Do not commit `.env` files.
-- Configure all secrets in the hosting provider dashboard.
-- Set `FRONTEND_URL` and `CORS_ORIGIN` to the deployed frontend URL.
+- Add all backend secrets in the hosting dashboard.
+- Add frontend environment variables before building the frontend.
+- Set `CORS_ORIGIN` and `FRONTEND_URL` to the deployed frontend URL.
 - Set `VITE_API_BASE_URL` to the deployed backend `/api` URL.
-- After backend route changes, redeploy or restart the backend service.
+- Use strong admin credentials.
+- Do not commit `.env` files.
+- Keep generated folders such as `dist`, `node_modules`, coverage output, logs, and browser cache folders out of Git.
 
-## Troubleshooting
+## SEO, Security, And Quality Status
 
-### Downgrade or new API route returns 404
+This pass cleaned the production-facing website and project structure.
 
-The frontend may be calling an old deployed backend or a stale local backend process.
+### SEO Readiness
 
-Check:
+- The frontend now has a production title, meta description, keywords, author, theme color, canonical URL, Open Graph tags, and Twitter metadata in `Frontend_Part/index.html`.
+- Route-level metadata is handled by `Frontend_Part/src/components/Seo.jsx`.
+- Public pages such as `/` and `/developers` are indexable.
+- Private, admin, billing, OAuth, and dashboard routes are marked `noindex,follow` from the React route metadata layer.
+- `Frontend_Part/public/robots.txt`, `sitemap.xml`, `site.webmanifest`, and `favicon.svg` are included.
+- The unused global Razorpay checkout script was removed from `index.html`; payments are handled by backend/payment services instead.
 
-```env
-VITE_API_BASE_URL=http://localhost:5000/api
-```
+### Security And Leakage Check
 
-Then restart both servers:
+- Backend and frontend dependency audits reported `0 vulnerabilities`.
+- `.env` files are ignored and should stay local only.
+- Production backend startup validates required environment variables before the app boots.
+- Admin credentials, JWT secret, MongoDB URI, Gemini key, Google OAuth secrets, Razorpay secrets, and email credentials must be configured in the hosting dashboard, not committed.
+- Console logging is centralized through logger utilities instead of scattered `console.*` calls.
+
+### Cleanup And Structure
+
+- Removed tracked `.tmp-chrome` browser profile/cache output.
+- Removed stale Vite template assets and old subproject README files.
+- Removed an unused backend root `server.js` wrapper; `Backend_Part/package.json` starts `src/server.js` directly.
+- Added a root `.gitignore` so generated files, logs, dependencies, local environment files, build output, coverage, cache, and temporary browser files do not enter Git again.
+- The root `README.md` is the canonical documentation. Use `EXTRA_FEATURES.md` for optional future ideas and `PROJECT_REVIEW_README.md` for the issue-by-issue review log.
+
+### Verification Commands
+
+These checks passed locally during the cleanup:
 
 ```bash
 cd Backend_Part
-npm run dev
+npm audit --audit-level=moderate
+npm test
+
+cd ../Frontend_Part
+npm audit --audit-level=moderate
+npm run lint
+npm test
+npm run build
 ```
 
-```bash
-cd Frontend_Part
-npm run dev
-```
+## Interview Talking Points
 
-For production, redeploy the backend after adding new routes.
+Use these points when presenting the project.
 
-### Backend cannot start
+### Short Project Pitch
 
-If MongoDB DNS fails with `querySrv ETIMEOUT` or `ECONNREFUSED`, verify:
+> AI SQL Studio is a full-stack SaaS application that helps users generate and manage SQL queries using AI. It includes authentication, schema-aware AI generation, query history, Pro billing, invoices, feedback, analytics, and an admin console.
 
-- Your internet connection.
-- MongoDB Atlas network access.
-- `MONGO_URI` is correct.
-- Your IP is allowed in Atlas.
+### What I Built
 
-### Google login fails
+- Built a React/Vite frontend with public pages, protected dashboard pages, admin pages, and theme support.
+- Built an Express/MongoDB backend with clean route-controller-service-model separation.
+- Integrated Gemini for AI-powered SQL generation and explanation.
+- Added schema context so generated SQL can match the user's real database.
+- Added Razorpay billing and invoice generation for Pro subscriptions.
+- Built an admin dashboard with metrics, user moderation, feedback triage, and security monitoring.
 
-Verify:
+### Most Advanced Part
 
-- `GOOGLE_CLIENT_ID`
-- `GOOGLE_CLIENT_SECRET`
-- OAuth redirect URI in Google Cloud Console
-- `FRONTEND_URL`
+The AI service is the most advanced part because it handles prompt design, schema grounding, strict JSON parsing, fallback repair, SQL review, incomplete SQL completion, formatting, usage limits, and query persistence.
 
-### Razorpay verification fails
+### What I Learned
 
-Verify:
+- How to structure a full-stack project.
+- How to protect routes on both frontend and backend.
+- How to integrate an AI API into a real user workflow.
+- How to manage subscription features and billing state.
+- How to design admin features with auditability.
+- How to think about security, rate limits, validation, and production readiness.
 
-- `RAZORPAY_KEY_ID`
-- `RAZORPAY_SECRET`
-- Callback URL
-- Frontend success route `/billingsuccess` or `/billing/success`
+## Current Status
 
-## Security Notes
-
-- JWT authentication protects user routes.
-- Admin routes use a separate admin token flow.
-- Passwords are hashed with bcrypt.
-- Suspended users are blocked by auth middleware.
-- Security events track suspicious behavior.
-- Helmet and CORS are enabled on the backend.
-- Secrets must stay in `.env` files or deployment environment variables.
-
-## License
-
-This project is currently marked as ISC in the backend package metadata. Update the license section if you choose a different license before publishing.
+This project is a strong intermediate-to-advanced portfolio project. It is suitable for interviews because it demonstrates real product features, not only CRUD operations.

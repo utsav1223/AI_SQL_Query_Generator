@@ -4,6 +4,9 @@ export const authService = {
   login(credentials) {
     return apiRequest("/auth/login", "POST", credentials);
   },
+  logout() {
+    return apiRequest("/auth/logout", "POST");
+  },
   register(payload) {
     return apiRequest("/auth/register", "POST", payload);
   },

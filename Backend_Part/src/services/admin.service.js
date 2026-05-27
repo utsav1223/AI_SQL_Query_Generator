@@ -1,5 +1,7 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
+const mongoose = require("mongoose");
 
 const User = require("../models/User");
 const Query = require("../models/Query");
@@ -44,9 +46,19 @@ const generateAdminToken = (adminId) => {
 };
 
 const getAdminCredentials = () => {
+  const userId = String(process.env.ADMIN_USER_ID || "").trim();
+  const password = String(process.env.ADMIN_PASSWORD || "").trim();
+
+  if (!userId || !password) {
+    throw new AppError(
+      503,
+      "Admin login is not configured. Set ADMIN_USER_ID and ADMIN_PASSWORD."
+    );
+  }
+
   return {
-    userId: process.env.ADMIN_USER_ID || "admin",
-    password: process.env.ADMIN_PASSWORD || "Admin@123"
+    userId,
+    password
   };
 };
 
@@ -59,7 +71,13 @@ const verifyPassword = async (inputPassword, storedPassword) => {
     return bcrypt.compare(inputPassword, storedPassword);
   }
 
-  return inputPassword === storedPassword;
+  const inputBuffer = Buffer.from(String(inputPassword));
+  const storedBuffer = Buffer.from(String(storedPassword));
+
+  return (
+    inputBuffer.length === storedBuffer.length &&
+    crypto.timingSafeEqual(inputBuffer, storedBuffer)
+  );
 };
 
 const getRecentMonthBuckets = (count = 6) => {
@@ -84,6 +102,14 @@ const getRecentMonthBuckets = (count = 6) => {
 };
 
 const normalizeReason = (reason) => String(reason || "").trim();
+
+const normalizeSearchText = (search) => {
+  return String(search || "").trim().slice(0, 120);
+};
+
+const escapeRegex = (value) => {
+  return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
 
 const snapshotUserState = (user) => {
   return {
@@ -119,6 +145,45 @@ const createAdminAuditLog = async ({
   });
 };
 
+const deleteUserOwnedData = async ({ userId, session = null }) => {
+  const queryOptions = session ? { session } : {};
+
+  await Query.deleteMany({ userId }, queryOptions);
+  await Schema.deleteMany({ userId }, queryOptions);
+  await Payment.deleteMany({ userId }, queryOptions);
+  await Invoice.deleteMany({ userId }, queryOptions);
+  await Feedback.deleteMany({ userId }, queryOptions);
+  await User.findByIdAndDelete(userId, queryOptions);
+};
+
+const isTransactionUnsupportedError = (error) => {
+  const message = String(error?.message || "").toLowerCase();
+
+  return (
+    message.includes("transaction numbers are only allowed") ||
+    message.includes("replica set member") ||
+    message.includes("transactions are not supported")
+  );
+};
+
+const deleteUserOwnedDataSafely = async (userId) => {
+  const session = await mongoose.startSession();
+
+  try {
+    await session.withTransaction(async () => {
+      await deleteUserOwnedData({ userId, session });
+    });
+  } catch (error) {
+    if (!isTransactionUnsupportedError(error)) {
+      throw error;
+    }
+
+    await deleteUserOwnedData({ userId });
+  } finally {
+    await session.endSession();
+  }
+};
+
 const runModerationAction = async ({ adminId, requestMeta, user, action, reason }) => {
   const previousState = snapshotUserState(user);
 
@@ -139,14 +204,7 @@ const runModerationAction = async ({ adminId, requestMeta, user, action, reason 
     user.status = "active";
     await user.save();
   } else if (action === ADMIN_USER_ACTIONS.delete) {
-    await Promise.all([
-      Query.deleteMany({ userId: user._id }),
-      Schema.deleteMany({ userId: user._id }),
-      Payment.deleteMany({ userId: user._id }),
-      Invoice.deleteMany({ userId: user._id }),
-      Feedback.deleteMany({ userId: user._id }),
-      User.findByIdAndDelete(user._id)
-    ]);
+    await deleteUserOwnedDataSafely(user._id);
   }
 
   const nextState =
@@ -487,14 +545,15 @@ const getAdminOverview = async () => {
 const getAdminUsers = async ({ page, limit, search }) => {
   const safePage = Math.max(parseInt(page || "1", 10), 1);
   const safeLimit = Math.min(Math.max(parseInt(limit || "10", 10), 1), 50);
-  const searchText = String(search || "").trim();
+  const searchText = normalizeSearchText(search);
   const skip = (safePage - 1) * safeLimit;
+  const safeSearch = escapeRegex(searchText);
 
   const filter = searchText
     ? {
         $or: [
-          { name: { $regex: searchText, $options: "i" } },
-          { email: { $regex: searchText, $options: "i" } }
+          { name: { $regex: safeSearch, $options: "i" } },
+          { email: { $regex: safeSearch, $options: "i" } }
         ]
       }
     : {};
@@ -531,40 +590,11 @@ const moderateUserByAdmin = async ({ adminId, requestMeta, userId, action, reaso
   });
 };
 
-const updateUserPlanByAdmin = async ({ adminId, requestMeta, userId, plan, reason }) => {
-  const normalizedPlan = String(plan || "").trim().toLowerCase();
-
-  if (!["free", "pro"].includes(normalizedPlan)) {
-    throw new AppError(400, "Plan must be free or pro");
-  }
-
-  const action =
-    normalizedPlan === "pro" ? ADMIN_USER_ACTIONS.setPro : ADMIN_USER_ACTIONS.setFree;
-
-  return executeModeration({
-    adminId,
-    requestMeta,
-    userId,
-    action,
-    reason
-  });
-};
-
-const deleteUserByAdmin = async ({ adminId, requestMeta, userId, reason }) => {
-  return executeModeration({
-    adminId,
-    requestMeta,
-    userId,
-    action: ADMIN_USER_ACTIONS.delete,
-    reason
-  });
-};
-
 const getAdminFeedback = async ({ page, limit, status, search }) => {
   const safePage = Math.max(parseInt(page || "1", 10), 1);
   const safeLimit = Math.min(Math.max(parseInt(limit || "10", 10), 1), 50);
   const statusFilter = String(status || "all");
-  const searchText = String(search || "").trim();
+  const searchText = normalizeSearchText(search);
   const skip = (safePage - 1) * safeLimit;
 
   const filter = {};
@@ -574,9 +604,10 @@ const getAdminFeedback = async ({ page, limit, status, search }) => {
   }
 
   if (searchText) {
+    const safeSearch = escapeRegex(searchText);
     filter.$or = [
-      { topic: { $regex: searchText, $options: "i" } },
-      { message: { $regex: searchText, $options: "i" } }
+      { topic: { $regex: safeSearch, $options: "i" } },
+      { message: { $regex: safeSearch, $options: "i" } }
     ];
   }
 
@@ -624,7 +655,7 @@ const getAdminSecurityEvents = async ({ page, limit, severity, status, search })
   const safeLimit = Math.min(Math.max(parseInt(limit || "10", 10), 1), 50);
   const severityFilter = String(severity || "all").trim().toLowerCase();
   const statusFilter = String(status || "all").trim().toLowerCase();
-  const searchText = String(search || "").trim();
+  const searchText = normalizeSearchText(search);
   const skip = (safePage - 1) * safeLimit;
 
   const filter = {};
@@ -638,10 +669,11 @@ const getAdminSecurityEvents = async ({ page, limit, severity, status, search })
   }
 
   if (searchText) {
+    const safeSearch = escapeRegex(searchText);
     filter.$or = [
-      { type: { $regex: searchText, $options: "i" } },
-      { message: { $regex: searchText, $options: "i" } },
-      { emailSnapshot: { $regex: searchText, $options: "i" } }
+      { type: { $regex: safeSearch, $options: "i" } },
+      { message: { $regex: safeSearch, $options: "i" } },
+      { emailSnapshot: { $regex: safeSearch, $options: "i" } }
     ];
   }
 
@@ -689,8 +721,6 @@ module.exports = {
   getAdminOverview,
   getAdminUsers,
   moderateUserByAdmin,
-  updateUserPlanByAdmin,
-  deleteUserByAdmin,
   getAdminFeedback,
   updateFeedbackStatus,
   getAdminSecurityEvents,

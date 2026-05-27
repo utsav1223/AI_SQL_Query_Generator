@@ -1,42 +1,28 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import { logger } from "../utils/logger";
 
 export default function OAuthSuccess() {
-  const [params] = useSearchParams();
   const navigate = useNavigate();
   const { login } = useAuth();
   const [error, setError] = useState("");
 
-  const token = useMemo(() => params.get("token"), [params]);
-  const userParam = useMemo(() => params.get("user"), [params]);
-
   useEffect(() => {
     const completeOAuthLogin = async () => {
-      if (!token) {
-        setError("Missing OAuth token");
-        setTimeout(() => navigate("/login", { replace: true }), 1200);
-        return;
-      }
-
       try {
-        let user = null;
-        if (userParam) {
-          user = JSON.parse(userParam);
-        }
-
-        await login({ token, user });
+        await login({});
         navigate("/dashboard", { replace: true });
       } catch (err) {
-        console.error("OAuth login failed:", err);
+        logger.error("OAuth login failed", err);
         setError("OAuth login failed");
         setTimeout(() => navigate("/login", { replace: true }), 1200);
       }
     };
 
     completeOAuthLogin();
-  }, [login, navigate, token, userParam]);
+  }, [login, navigate]);
 
   return (
     <div className="public-page px-6 py-10">

@@ -1,8 +1,8 @@
 import { apiRequest } from "./api";
 
 export const paymentService = {
-  createPaymentLink(callbackUrl) {
-    return apiRequest("/payment/create-payment-link", "POST", { callbackUrl });
+  createPaymentLink() {
+    return apiRequest("/payment/create-payment-link", "POST");
   },
   verifyPayment(payload) {
     return apiRequest("/payment/verify", "POST", payload);

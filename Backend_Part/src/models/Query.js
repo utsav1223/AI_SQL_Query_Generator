@@ -22,4 +22,7 @@ const querySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+querySchema.index({ userId: 1, pinned: -1, createdAt: -1 });
+querySchema.index({ userId: 1, mode: 1, createdAt: -1 });
+
 module.exports = mongoose.model("Query", querySchema);

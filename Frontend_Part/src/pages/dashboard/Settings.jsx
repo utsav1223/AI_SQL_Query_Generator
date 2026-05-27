@@ -10,12 +10,14 @@ import {
   Trash2,
   User
 } from "lucide-react";
+import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
 import { useAuth } from "../../hooks/useAuth";
 import { authService } from "../../services/authService";
 
 export default function Settings() {
   const { user, login, logout } = useAuth();
   const navigate = useNavigate();
+  const { confirmAction, ConfirmationDialog } = useConfirmationDialog();
 
   const [name, setName] = useState(user?.name || "");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -30,7 +32,7 @@ export default function Settings() {
       setProfileLoading(true);
       setMessage({ text: "", type: "" });
       const updatedUser = await authService.updateProfile({ name });
-      await login({ token: localStorage.getItem("token"), user: updatedUser });
+      await login({ user: updatedUser });
       setMessage({ text: "Profile updated successfully.", type: "success" });
       setTimeout(() => setMessage({ text: "", type: "" }), 3000);
     } catch {
@@ -65,11 +67,15 @@ export default function Settings() {
       return;
     }
 
-    const confirmed = window.confirm(
-      "This will permanently delete your account, schema data, and query history. Continue?"
-    );
+    const result = await confirmAction({
+      title: "Delete your account",
+      description: "This permanently deletes your account, saved schema, and query history.",
+      confirmLabel: "Delete Account",
+      tone: "danger",
+      confirmText: "DELETE"
+    });
 
-    if (!confirmed) {
+    if (!result?.confirmed) {
       return;
     }
 
@@ -275,6 +281,7 @@ export default function Settings() {
           </div>
         </div>
       ) : null}
+      <ConfirmationDialog />
     </div>
   );
 }

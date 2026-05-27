@@ -7,11 +7,54 @@ const { FREE_CREDIT_LIMIT, resetDailyUsageIfNeeded } = require("../utils/usageMa
 
 const toObjectId = (value) => new mongoose.Types.ObjectId(value);
 
-const getUserQueries = async (userId) => {
-  return Query.find({ userId }).sort({
+const escapeRegex = (value) => {
+  return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
+
+const getUserQueries = async (userId, options = {}) => {
+  const ownerId = toObjectId(userId);
+  const safePage = Math.max(parseInt(options.page || "1", 10), 1);
+  const safeLimit = Math.min(Math.max(parseInt(options.limit || "10", 10), 1), 50);
+  const mode = String(options.mode || "all").trim().toLowerCase();
+  const search = String(options.search || "").trim().slice(0, 120);
+  const sortOrder = String(options.sort || "newest").trim().toLowerCase();
+  const skip = (safePage - 1) * safeLimit;
+
+  const filter = {
+    userId: ownerId
+  };
+
+  if (["generate", "optimize", "validate", "explain", "format"].includes(mode)) {
+    filter.mode = mode;
+  }
+
+  if (search) {
+    const safeSearch = escapeRegex(search);
+    filter.$or = [
+      { prompt: { $regex: safeSearch, $options: "i" } },
+      { generatedSQL: { $regex: safeSearch, $options: "i" } }
+    ];
+  }
+
+  const sort = {
     pinned: -1,
-    createdAt: -1
-  });
+    createdAt: sortOrder === "oldest" ? 1 : -1
+  };
+
+  const [queries, total] = await Promise.all([
+    Query.find(filter).sort(sort).skip(skip).limit(safeLimit),
+    Query.countDocuments(filter)
+  ]);
+
+  return {
+    queries,
+    pagination: {
+      total,
+      page: safePage,
+      limit: safeLimit,
+      pages: Math.max(Math.ceil(total / safeLimit), 1)
+    }
+  };
 };
 
 const deleteUserQuery = async (userId, queryId) => {

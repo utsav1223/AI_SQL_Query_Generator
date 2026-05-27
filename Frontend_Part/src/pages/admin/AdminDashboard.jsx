@@ -1,20 +1,14 @@
-import { createElement, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useContext } from "react";
 import {
   AlertTriangle,
-  BadgeIndianRupee,
   CheckCircle2,
   Clock3,
-  Crown,
   Filter,
   LogOut,
-  MessageSquareText,
   Moon,
   RefreshCw,
   Search,
-  ShieldAlert,
   Sun,
-  UserRoundPlus,
-  Users
 } from "lucide-react";
 import {
   Bar,
@@ -29,60 +23,49 @@ import {
   YAxis
 } from "recharts";
 import { ThemeContext } from "../../context/ThemeContext";
+import { AdminSummary } from "../../components/admin/AdminSummary";
 import { useAdminAuth } from "../../hooks/useAdminAuth";
-import { adminService } from "../../services/adminService";
-
-const initialOverview = {
-  stats: {
-    totalUsers: 0,
-    proUsers: 0,
-    freeUsers: 0,
-    totalQueries: 0,
-    totalInvoices: 0,
-    totalRevenue: 0,
-    totalFeedback: 0,
-    avgFeedbackRating: 0,
-    pendingFeedback: 0,
-    pendingSecurityEvents: 0,
-    recentHighSeverityEvents: 0
-  },
-  charts: {
-    monthlyBusiness: [],
-    feedbackStatus: [],
-    planDistribution: []
-  },
-  recentUsers: [],
-  recentInvoices: [],
-  recentFeedback: [],
-  recentSecurityEvents: [],
-  riskyUsers: [],
-  recentAdminActions: []
-};
-
-const FEEDBACK_STATUSES = ["all", "new", "reviewed", "resolved"];
+import { FEEDBACK_STATUSES, useAdminDashboardData } from "../../hooks/useAdminDashboardData";
 
 export default function AdminDashboard() {
   const { admin, logout } = useAdminAuth();
   const { isDark, toggleTheme } = useContext(ThemeContext);
-
-  const [overview, setOverview] = useState(initialOverview);
-  const [users, setUsers] = useState([]);
-  const [usersPagination, setUsersPagination] = useState({ total: 0, page: 1, limit: 10, pages: 1 });
-  const [usersSearchInput, setUsersSearchInput] = useState("");
-  const [usersSearchQuery, setUsersSearchQuery] = useState("");
-
-  const [feedbackItems, setFeedbackItems] = useState([]);
-  const [feedbackPagination, setFeedbackPagination] = useState({ total: 0, page: 1, limit: 10, pages: 1 });
-  const [feedbackStatus, setFeedbackStatus] = useState("all");
-  const [feedbackSearchInput, setFeedbackSearchInput] = useState("");
-  const [feedbackSearchQuery, setFeedbackSearchQuery] = useState("");
-  const [securityEvents, setSecurityEvents] = useState([]);
-
-  const [loadingOverview, setLoadingOverview] = useState(true);
-  const [loadingUsers, setLoadingUsers] = useState(true);
-  const [loadingFeedback, setLoadingFeedback] = useState(true);
-  const [actioningId, setActioningId] = useState("");
-  const [error, setError] = useState("");
+  const {
+    actioningId,
+    ConfirmationDialog,
+    error,
+    feedbackItems,
+    feedbackPagination,
+    feedbackSearchInput,
+    feedbackSearchQuery,
+    feedbackStatus,
+    feedbackStatusData,
+    handleDeleteUser,
+    handleFeedbackSearch,
+    handleFeedbackStatusFilter,
+    handleFeedbackStatusUpdate,
+    handleSecurityEventStatusUpdate,
+    handleSuspendToggle,
+    handleTogglePlan,
+    handleUsersSearch,
+    loadFeedback,
+    loadUsers,
+    loadingFeedback,
+    loadingOverview,
+    loadingUsers,
+    monthlyBusinessData,
+    overview,
+    planDistributionData,
+    proPercent,
+    refreshAll,
+    securityEvents,
+    setFeedbackSearchInput,
+    setUsersSearchInput,
+    users,
+    usersPagination,
+    usersSearchInput,
+    usersSearchQuery
+  } = useAdminDashboardData();
 
   const surfaceClass = isDark
     ? "bg-slate-900 border-slate-700 text-slate-100"
@@ -94,231 +77,10 @@ export default function AdminDashboard() {
     ? "bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-500 focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/20"
     : "bg-white border-slate-200 text-slate-800 placeholder:text-slate-300 focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-100";
 
-  const loadOverview = useCallback(async () => {
-    setLoadingOverview(true);
-    try {
-      const data = await adminService.getOverview();
-      setOverview(data);
-      setSecurityEvents(data.recentSecurityEvents || []);
-    } catch (err) {
-      setError(err.message || "Failed to load overview");
-    } finally {
-      setLoadingOverview(false);
-    }
-  }, []);
-
-  const loadUsers = useCallback(async (page = 1, query = "") => {
-    setLoadingUsers(true);
-    try {
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: "10",
-        ...(query ? { search: query } : {})
-      });
-
-      const data = await adminService.getUsers(params.toString());
-      setUsers(data.users || []);
-      setUsersPagination(data.pagination || { total: 0, page: 1, limit: 10, pages: 1 });
-    } catch (err) {
-      setError(err.message || "Failed to load users");
-    } finally {
-      setLoadingUsers(false);
-    }
-  }, []);
-
-  const loadFeedback = useCallback(async (page = 1, status = "all", query = "") => {
-    setLoadingFeedback(true);
-    try {
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: "10",
-        status,
-        ...(query ? { search: query } : {})
-      });
-
-      const data = await adminService.getFeedback(params.toString());
-      setFeedbackItems(data.feedback || []);
-      setFeedbackPagination(data.pagination || { total: 0, page: 1, limit: 10, pages: 1 });
-    } catch (err) {
-      setError(err.message || "Failed to load feedback");
-    } finally {
-      setLoadingFeedback(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadOverview();
-    loadUsers(1, "");
-    loadFeedback(1, "all", "");
-  }, [loadFeedback, loadOverview, loadUsers]);
-
-  const proPercent = useMemo(() => {
-    const total = overview.stats.totalUsers || 0;
-    if (!total) return "0.0";
-    return ((overview.stats.proUsers / total) * 100).toFixed(1);
-  }, [overview.stats.proUsers, overview.stats.totalUsers]);
-
-  const monthlyBusinessData = overview?.charts?.monthlyBusiness || [];
-  const feedbackStatusData = overview?.charts?.feedbackStatus || [];
-  const planDistributionData = overview?.charts?.planDistribution || [];
-
   const chartAxisColor = isDark ? "#94a3b8" : "#64748b";
   const chartGridColor = isDark ? "#334155" : "#e2e8f0";
   const chartTooltipBg = isDark ? "#0f172a" : "#ffffff";
   const chartTooltipBorder = isDark ? "#334155" : "#e2e8f0";
-
-  const refreshAll = async () => {
-    setError("");
-    await Promise.all([
-      loadOverview(),
-      loadUsers(usersPagination.page, usersSearchQuery),
-      loadFeedback(feedbackPagination.page, feedbackStatus, feedbackSearchQuery)
-    ]);
-  };
-
-  const handleUsersSearch = async (e) => {
-    e.preventDefault();
-    const value = usersSearchInput.trim();
-    setUsersSearchQuery(value);
-    await loadUsers(1, value);
-  };
-
-  const handleFeedbackSearch = async (e) => {
-    e.preventDefault();
-    const value = feedbackSearchInput.trim();
-    setFeedbackSearchQuery(value);
-    await loadFeedback(1, feedbackStatus, value);
-  };
-
-  const handleFeedbackStatusFilter = async (status) => {
-    setFeedbackStatus(status);
-    await loadFeedback(1, status, feedbackSearchQuery);
-  };
-
-  const handleTogglePlan = async (user) => {
-    const nextPlan = user.plan === "pro" ? "free" : "pro";
-    const reason = window.prompt(
-      `Reason required: ${nextPlan === "pro" ? "upgrade to pro" : "set to free"} for ${user.email}`
-    );
-    if (reason === null) return;
-    if (!reason.trim()) {
-      setError("Moderation reason is required.");
-      return;
-    }
-
-    const action = nextPlan === "pro" ? "set_pro" : "set_free";
-    setActioningId(user._id);
-    setError("");
-    try {
-      await adminService.moderateUser(user._id, {
-        action,
-        reason: reason.trim()
-      });
-      await Promise.all([
-        loadOverview(),
-        loadUsers(usersPagination.page, usersSearchQuery)
-      ]);
-    } catch (err) {
-      setError(err.message || "Failed to update user plan");
-    } finally {
-      setActioningId("");
-    }
-  };
-
-  const handleDeleteUser = async (user) => {
-    const confirmed = window.confirm(`Delete ${user.email}? This action cannot be undone.`);
-    if (!confirmed) return;
-
-    const reason = window.prompt(`Reason required: delete user ${user.email}`);
-    if (reason === null) return;
-    if (!reason.trim()) {
-      setError("Moderation reason is required.");
-      return;
-    }
-
-    setActioningId(user._id);
-    setError("");
-    try {
-      await adminService.moderateUser(user._id, {
-        action: "delete",
-        reason: reason.trim()
-      });
-      const targetPage =
-        users.length === 1 && usersPagination.page > 1
-          ? usersPagination.page - 1
-          : usersPagination.page;
-
-      await Promise.all([
-        loadOverview(),
-        loadUsers(targetPage, usersSearchQuery)
-      ]);
-    } catch (err) {
-      setError(err.message || "Failed to delete user");
-    } finally {
-      setActioningId("");
-    }
-  };
-
-  const handleSuspendToggle = async (user) => {
-    const action = user.status === "suspended" ? "unsuspend" : "suspend";
-    const label = action === "suspend" ? "suspend" : "unsuspend";
-    const reason = window.prompt(`Reason required: ${label} user ${user.email}`);
-    if (reason === null) return;
-    if (!reason.trim()) {
-      setError("Moderation reason is required.");
-      return;
-    }
-
-    setActioningId(user._id);
-    setError("");
-    try {
-      await adminService.moderateUser(user._id, {
-        action,
-        reason: reason.trim()
-      });
-
-      await Promise.all([
-        loadOverview(),
-        loadUsers(usersPagination.page, usersSearchQuery)
-      ]);
-    } catch (err) {
-      setError(err.message || "Failed to update user status");
-    } finally {
-      setActioningId("");
-    }
-  };
-
-  const handleFeedbackStatusUpdate = async (feedbackId, status) => {
-    setActioningId(feedbackId);
-    setError("");
-    try {
-      await adminService.updateFeedbackStatus(feedbackId, { status });
-      await Promise.all([
-        loadOverview(),
-        loadFeedback(feedbackPagination.page, feedbackStatus, feedbackSearchQuery)
-      ]);
-    } catch (err) {
-      setError(err.message || "Failed to update feedback");
-    } finally {
-      setActioningId("");
-    }
-  };
-
-  const handleSecurityEventStatusUpdate = async (eventId, status) => {
-    setActioningId(eventId);
-    setError("");
-    try {
-      await adminService.updateSecurityEventStatus(eventId, { status });
-      setSecurityEvents((prev) =>
-        prev.map((event) => (event._id === eventId ? { ...event, status } : event))
-      );
-      await loadOverview();
-    } catch (err) {
-      setError(err.message || "Failed to update security event status");
-    } finally {
-      setActioningId("");
-    }
-  };
 
   return (
     <div className={`admin-shell min-h-screen overflow-x-hidden ${isDark ? "bg-slate-950 text-slate-100" : "bg-slate-100 text-slate-900"}`}>
@@ -378,30 +140,14 @@ export default function AdminDashboard() {
           </div>
         ) : null}
 
-        <section className={`rounded-lg border p-4 shadow-sm ${surfaceClass}`}>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <SummaryMetric isDark={isDark} label="Admin" value={admin?.id || "active session"} />
-            <SummaryMetric isDark={isDark} label="Conversion" value={`${proPercent}% pro`} />
-            <SummaryMetric isDark={isDark} label="Open Feedback" value={overview.stats.pendingFeedback || 0} tone="amber" />
-            <SummaryMetric isDark={isDark} label="Security Queue" value={overview.stats.pendingSecurityEvents || 0} tone="rose" />
-          </div>
-        </section>
-
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
-          <StatCard isDark={isDark} title="Total Users" value={loadingOverview ? "..." : overview.stats.totalUsers} subtitle="All registered accounts" icon={Users} />
-          <StatCard isDark={isDark} title="Pro Users" value={loadingOverview ? "..." : overview.stats.proUsers} subtitle={`${proPercent}% of users`} icon={Crown} accent="emerald" />
-          <StatCard isDark={isDark} title="Total Queries" value={loadingOverview ? "..." : overview.stats.totalQueries} subtitle="All-time generated SQL" icon={UserRoundPlus} />
-          <StatCard isDark={isDark} title="Revenue (INR)" value={loadingOverview ? "..." : overview.stats.totalRevenue} subtitle={`Invoices: ${overview.stats.totalInvoices || 0}`} icon={BadgeIndianRupee} accent="blue" />
-          <StatCard isDark={isDark} title="Feedback" value={loadingOverview ? "..." : overview.stats.totalFeedback} subtitle={`Pending: ${overview.stats.pendingFeedback || 0}`} icon={MessageSquareText} accent="amber" />
-          <StatCard
-            isDark={isDark}
-            title="Security Events"
-            value={loadingOverview ? "..." : overview.stats.pendingSecurityEvents}
-            subtitle={`High severity (6m): ${overview.stats.recentHighSeverityEvents || 0}`}
-            icon={ShieldAlert}
-            accent="rose"
-          />
-        </section>
+        <AdminSummary
+          admin={admin}
+          overview={overview}
+          loadingOverview={loadingOverview}
+          proPercent={proPercent}
+          isDark={isDark}
+          surfaceClass={surfaceClass}
+        />
 
         <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
           <article className={`min-w-0 rounded-lg border p-5 shadow-sm ${surfaceClass}`}>
@@ -1022,48 +768,7 @@ export default function AdminDashboard() {
           </p>
         </div>
       </footer>
-    </div>
-  );
-}
-
-function StatCard({ title, value, subtitle, icon, accent = "slate", isDark }) {
-  const accentClassMap = {
-    slate: isDark ? "bg-slate-800 text-slate-200" : "bg-slate-100 text-slate-700",
-    emerald: "bg-emerald-100 text-emerald-700",
-    blue: "bg-sky-100 text-sky-700",
-    amber: "bg-amber-100 text-amber-700",
-    rose: "bg-rose-100 text-rose-700"
-  };
-
-  return (
-    <article className={`rounded-lg border p-5 shadow-sm ${isDark ? "bg-slate-900 border-slate-700" : "bg-white border-slate-200"}`}>
-      <div className="mb-4 flex items-center justify-between">
-        <p className={`text-[10px] font-bold uppercase tracking-[0.12em] ${isDark ? "text-slate-300" : "text-slate-500"}`}>{title}</p>
-        <span className={`rounded-md p-2 ${accentClassMap[accent] || accentClassMap.slate}`}>
-          {icon ? createElement(icon, { size: 16 }) : null}
-        </span>
-      </div>
-      <p className={`text-2xl font-bold tracking-tight ${isDark ? "text-slate-100" : "text-slate-900"}`}>{value}</p>
-      <p className={`mt-2 text-[13px] font-medium leading-6 ${isDark ? "text-slate-300" : "text-slate-500"}`}>{subtitle}</p>
-    </article>
-  );
-}
-
-function SummaryMetric({ label, value, tone = "slate", isDark }) {
-  const toneClassMap = {
-    slate: isDark ? "text-slate-100" : "text-slate-900",
-    amber: "text-amber-500",
-    rose: "text-rose-500"
-  };
-
-  return (
-    <div className={`rounded-lg border px-4 py-3 ${isDark ? "border-slate-700 bg-slate-800/70" : "border-slate-200 bg-slate-50"}`}>
-      <p className={`text-[10px] font-bold uppercase tracking-[0.12em] ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-        {label}
-      </p>
-      <p className={`mt-1 truncate text-sm font-bold ${toneClassMap[tone] || toneClassMap.slate}`}>
-        {value}
-      </p>
+      <ConfirmationDialog />
     </div>
   );
 }

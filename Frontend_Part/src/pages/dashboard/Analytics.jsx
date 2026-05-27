@@ -16,6 +16,7 @@ import { Activity, ArrowRight, BarChart3, Lock, TrendingUp } from "lucide-react"
 import { ThemeContext } from "../../context/ThemeContext";
 import { useAuth } from "../../hooks/useAuth";
 import { queryService } from "../../services/queryService";
+import { logger } from "../../utils/logger";
 
 const COLORS = ["#0f766e", "#0891b2", "#f59e0b", "#8b5cf6"];
 
@@ -37,7 +38,7 @@ export default function Analytics() {
         const analyticsData = await queryService.getAdvancedAnalytics();
         setData(analyticsData);
       } catch (error) {
-        console.error("Analytics fetch error:", error);
+        logger.error("Analytics fetch failed", error);
       } finally {
         setIsLoading(false);
       }

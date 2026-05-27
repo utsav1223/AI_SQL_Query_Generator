@@ -4,6 +4,7 @@ import { ArrowRight, CheckCircle2, Loader2, Receipt, ShieldCheck, Zap } from "lu
 import { useAuth } from "../hooks/useAuth";
 import { authService } from "../services/authService";
 import { paymentService } from "../services/paymentService";
+import { logger } from "../utils/logger";
 
 export default function BillingSuccess() {
   const { user, login } = useAuth();
@@ -60,10 +61,10 @@ export default function BillingSuccess() {
         }
 
         const updatedUser = await authService.getCurrentUser();
-        await login({ token: localStorage.getItem("token"), user: updatedUser });
+        await login({ user: updatedUser });
         setIsVerified(true);
       } catch (err) {
-        console.error("Callback verification failed:", err);
+        logger.error("Callback verification failed", err);
         navigate("/billing", { replace: true });
       } finally {
         setTimeout(() => setLoading(false), 800);

@@ -1,5 +1,6 @@
 import { createContext, useEffect, useState } from "react";
 import { adminService } from "../services/adminService";
+import { API_AUTH_EVENT } from "../services/httpClient";
 import { STORAGE_KEYS, readJson, removeItems, writeJson } from "../utils/storage";
 
 export const AdminAuthContext = createContext(null);
@@ -13,14 +14,18 @@ export function AdminAuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadAdmin = async () => {
-      const token = localStorage.getItem(STORAGE_KEYS.adminToken);
-
-      if (!token) {
-        setLoading(false);
+    const handleAuthError = (event) => {
+      if (event.detail?.authScope !== "admin") {
         return;
       }
 
+      clearAdminSession();
+      setAdmin(null);
+    };
+
+    window.addEventListener(API_AUTH_EVENT, handleAuthError);
+
+    const loadAdmin = async () => {
       try {
         const freshAdmin = await adminService.getCurrentAdmin();
         writeJson(STORAGE_KEYS.admin, freshAdmin);
@@ -34,22 +39,31 @@ export function AdminAuthProvider({ children }) {
     };
 
     loadAdmin();
+
+    return () => {
+      window.removeEventListener(API_AUTH_EVENT, handleAuthError);
+    };
   }, []);
 
   const login = async (credentials) => {
     const data = await adminService.login(credentials);
 
-    if (!data?.token || !data?.admin) {
+    if (!data?.admin) {
       throw new Error("Invalid admin login response");
     }
 
-    localStorage.setItem(STORAGE_KEYS.adminToken, data.token);
     writeJson(STORAGE_KEYS.admin, data.admin);
     setAdmin(data.admin);
     return data.admin;
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await adminService.logout();
+    } catch {
+      // Local cleanup should still happen if the network request fails.
+    }
+
     clearAdminSession();
     setAdmin(null);
   };

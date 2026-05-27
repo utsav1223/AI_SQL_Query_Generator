@@ -9,6 +9,10 @@ const AppError = require("../utils/AppError");
 const { generateUserToken, getPublicUser } = require("../utils/auth");
 const { sendEmail, buildPasswordResetOtpEmail } = require("../utils/sendEmail");
 const { createSecurityEvent } = require("../utils/securityMonitor");
+const {
+  PASSWORD_POLICY_MESSAGE,
+  validatePassword
+} = require("../utils/passwordPolicy");
 const { downgradeExpiredUserIfNeeded } = require("./subscription.service");
 
 const hashOtp = (otp) => {
@@ -16,6 +20,10 @@ const hashOtp = (otp) => {
 };
 
 const registerUser = async ({ name, email, password }) => {
+  if (!validatePassword(password)) {
+    throw new AppError(400, PASSWORD_POLICY_MESSAGE);
+  }
+
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     throw new AppError(400, "User already exists");
@@ -105,7 +113,7 @@ const sendPasswordResetOtp = async ({ email, requestMeta }) => {
       ...requestMeta
     });
 
-    throw new AppError(404, "User not found");
+    return;
   }
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -124,6 +132,10 @@ const sendPasswordResetOtp = async ({ email, requestMeta }) => {
 const resetPasswordWithOtp = async ({ email, otp, password, requestMeta }) => {
   if (!email || !otp || !password) {
     throw new AppError(400, "Email, OTP and password are required");
+  }
+
+  if (!validatePassword(password)) {
+    throw new AppError(400, PASSWORD_POLICY_MESSAGE);
   }
 
   const user = await User.findOne({ email });
@@ -208,6 +220,10 @@ const updateUserProfile = async (userId, { name }) => {
 const changeUserPassword = async (userId, { currentPassword, newPassword }) => {
   if (!currentPassword || !newPassword) {
     throw new AppError(400, "All fields are required");
+  }
+
+  if (!validatePassword(newPassword)) {
+    throw new AppError(400, PASSWORD_POLICY_MESSAGE);
   }
 
   const user = await User.findById(userId);

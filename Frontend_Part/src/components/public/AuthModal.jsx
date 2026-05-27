@@ -33,12 +33,14 @@ function Field({
   onChange,
   placeholder,
   error,
-  icon: Icon,
+  icon,
   type = "text",
   autoComplete,
   autoFocus = false,
   rightSlot
 }) {
+  const FieldIcon = icon;
+
   return (
     <div className="space-y-2.5">
       <label htmlFor={name} className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
@@ -52,7 +54,7 @@ function Field({
             : "border-slate-200 bg-white shadow-sm hover:border-slate-300 focus-within:border-teal-600 focus-within:ring-4 focus-within:ring-teal-100"
         }`}
       >
-        <Icon
+        <FieldIcon
           size={16}
           className={error ? "text-rose-500" : "text-slate-400 transition-colors group-focus-within:text-teal-700"}
         />

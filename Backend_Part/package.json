@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node src/server.js",
-    "test": "node -e \"require('dotenv').config(); require('./src/controllers/auth.controller'); require('./src/controllers/admin.controller'); require('./src/controllers/ai.controller'); require('./src/controllers/payment.controller'); require('./src/routes/admin.routes'); require('./src/routes/auth.routes'); require('./src/routes/payment.routes'); console.log('backend smoke test passed'); process.exit(0);\""
+    "test": "node --test tests/*.test.js"
   },
   "keywords": [],
   "author": "",
@@ -16,7 +16,6 @@
     "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
-    "crypto": "^1.0.1",
     "dotenv": "^17.2.4",
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
@@ -30,5 +29,8 @@
     "passport-google-oauth20": "^2.0.0",
     "pdfkit": "^0.17.2",
     "razorpay": "^2.9.6"
+  },
+  "devDependencies": {
+    "supertest": "^7.2.2"
   }
 }

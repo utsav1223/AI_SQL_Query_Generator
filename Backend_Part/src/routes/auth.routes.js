@@ -3,14 +3,27 @@ const passport = require("passport");
 
 const authMiddleware = require("../middlewares/auth.middleware");
 const validate = require("../middlewares/validate.middleware");
-const { registerValidator, loginValidator } = require("../validators/auth.validator");
-const { generateUserToken, getPublicUser } = require("../utils/auth");
+const {
+  authLimiter,
+  passwordResetLimiter
+} = require("../middlewares/rateLimit.middleware");
+const {
+  registerValidator,
+  loginValidator,
+  forgotPasswordValidator,
+  verifyOtpValidator,
+  updateProfileValidator,
+  changePasswordValidator
+} = require("../validators/auth.validator");
+const { generateUserToken } = require("../utils/auth");
+const { setUserAuthCookie } = require("../utils/sessionCookies");
 const sendResponse = require("../utils/sendResponse");
 const {
   register,
   login,
   forgotPassword,
   verifyOTPAndReset,
+  logout,
   getMe,
   updateProfile,
   changePassword,
@@ -31,14 +44,15 @@ const ensureGoogleOAuthConfigured = (req, res, next) => {
   return next();
 };
 
-router.post("/register", registerValidator, validate, register);
-router.post("/login", loginValidator, validate, login);
-router.post("/forgot-password", forgotPassword);
-router.post("/verify-otp", verifyOTPAndReset);
+router.post("/register", authLimiter, registerValidator, validate, register);
+router.post("/login", authLimiter, loginValidator, validate, login);
+router.post("/logout", logout);
+router.post("/forgot-password", passwordResetLimiter, forgotPasswordValidator, validate, forgotPassword);
+router.post("/verify-otp", passwordResetLimiter, verifyOtpValidator, validate, verifyOTPAndReset);
 
 router.get("/me", authMiddleware, getMe);
-router.put("/update-profile", authMiddleware, updateProfile);
-router.put("/change-password", authMiddleware, changePassword);
+router.put("/update-profile", authMiddleware, updateProfileValidator, validate, updateProfile);
+router.put("/change-password", authMiddleware, changePasswordValidator, validate, changePassword);
 router.delete("/delete-account", authMiddleware, deleteAccount);
 
 router.get(
@@ -55,8 +69,8 @@ router.get(
   passport.authenticate("google", { session: false }),
   (req, res) => {
     const token = generateUserToken(req.user);
-    const encodedUser = encodeURIComponent(JSON.stringify(getPublicUser(req.user)));
-    res.redirect(`${FRONTEND_URL}/oauth-success?token=${token}&user=${encodedUser}`);
+    setUserAuthCookie(res, token);
+    res.redirect(`${FRONTEND_URL}/oauth-success`);
   }
 );
 

@@ -1,15 +1,14 @@
 const jwt = require("jsonwebtoken");
 
 const AppError = require("../utils/AppError");
+const { ADMIN_AUTH_COOKIE, getCookieValue } = require("../utils/sessionCookies");
 
 module.exports = (req, res, next) => {
   const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return next(new AppError(401, "Authorization token is required"));
-  }
-
-  const token = authHeader.split(" ")[1];
+  const bearerToken =
+    authHeader && authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : "";
+  const cookieToken = getCookieValue(req, ADMIN_AUTH_COOKIE);
+  const token = bearerToken || cookieToken;
 
   if (!token) {
     return next(new AppError(401, "Authorization token is required"));

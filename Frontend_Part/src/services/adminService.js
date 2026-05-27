@@ -4,6 +4,9 @@ export const adminService = {
   login(credentials) {
     return adminApiRequest("/admin/login", "POST", credentials);
   },
+  logout() {
+    return adminApiRequest("/admin/logout", "POST");
+  },
   getCurrentAdmin() {
     return adminApiRequest("/admin/me", "GET");
   },
