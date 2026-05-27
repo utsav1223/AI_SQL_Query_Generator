@@ -322,19 +322,22 @@ export default function AdminDashboard() {
 
   return (
     <div className={`admin-shell min-h-screen overflow-x-hidden ${isDark ? "bg-slate-950 text-slate-100" : "bg-slate-100 text-slate-900"}`}>
-      <header className={`sticky top-0 z-30 border-b backdrop-blur-xl ${isDark ? "border-slate-700 bg-slate-900/90" : "border-slate-200 bg-white/90"}`}>
-        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-start justify-between gap-3 px-4 py-4 sm:items-center sm:px-6">
+      <header className={`sticky top-0 z-30 border-b shadow-sm backdrop-blur-xl ${isDark ? "border-slate-800 bg-slate-950/88" : "border-slate-200 bg-white/88"}`}>
+        <div className="mx-auto flex w-full max-w-[1500px] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <div className="min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-[0.12em] text-emerald-500 sm:tracking-[0.18em]">Admin Dashboard</p>
-            <h1 className={`text-base font-black tracking-tight sm:text-xl ${isDark ? "text-slate-100" : "text-slate-900"}`}>
+            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-emerald-500">Admin Dashboard</p>
+            <h1 className={`text-xl font-bold tracking-tight ${isDark ? "text-slate-100" : "text-slate-950"}`}>
               Platform Control Center
             </h1>
+            <p className={`hidden text-[13px] md:block ${mutedTextClass}`}>
+              Monitor users, revenue, feedback, and security actions from one operational view.
+            </p>
           </div>
           <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
             <button
               type="button"
               onClick={toggleTheme}
-              className={`inline-flex flex-1 items-center justify-center gap-2 rounded-xl border px-3 py-2 text-[11px] font-black uppercase tracking-[0.08em] sm:flex-none sm:text-xs sm:tracking-[0.14em] ${
+              className={`inline-flex flex-1 items-center justify-center gap-2 rounded-md border px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] sm:flex-none ${
                 isDark
                   ? "border-slate-700 bg-slate-800 text-slate-200 hover:border-slate-600"
                   : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
@@ -346,7 +349,7 @@ export default function AdminDashboard() {
             <button
               type="button"
               onClick={refreshAll}
-              className={`inline-flex flex-1 items-center justify-center gap-2 rounded-xl border px-3 py-2 text-[11px] font-black uppercase tracking-[0.08em] sm:flex-none sm:text-xs sm:tracking-[0.14em] ${
+              className={`inline-flex flex-1 items-center justify-center gap-2 rounded-md border px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] sm:flex-none ${
                 isDark
                   ? "border-slate-700 bg-slate-800 text-slate-200 hover:border-slate-600"
                   : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
@@ -358,7 +361,7 @@ export default function AdminDashboard() {
             <button
               type="button"
               onClick={logout}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-[11px] font-black uppercase tracking-[0.08em] text-white hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500 sm:flex-none sm:text-xs sm:tracking-[0.14em]"
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-slate-900 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-white hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500 sm:flex-none"
             >
               <LogOut size={14} />
               Logout
@@ -367,15 +370,24 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 sm:px-6">
+      <main className="mx-auto w-full max-w-[1500px] space-y-5 px-4 py-4 sm:px-6 lg:px-8">
         {error ? (
-          <div className={`flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold ${isDark ? "border-rose-400/30 bg-rose-500/10 text-rose-300" : "border-rose-200 bg-rose-50 text-rose-700"}`}>
+          <div className={`flex items-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold ${isDark ? "border-rose-400/30 bg-rose-500/10 text-rose-300" : "border-rose-200 bg-rose-50 text-rose-700"}`}>
             <AlertTriangle size={16} />
             {error}
           </div>
         ) : null}
 
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+        <section className={`rounded-lg border p-4 shadow-sm ${surfaceClass}`}>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <SummaryMetric isDark={isDark} label="Admin" value={admin?.id || "active session"} />
+            <SummaryMetric isDark={isDark} label="Conversion" value={`${proPercent}% pro`} />
+            <SummaryMetric isDark={isDark} label="Open Feedback" value={overview.stats.pendingFeedback || 0} tone="amber" />
+            <SummaryMetric isDark={isDark} label="Security Queue" value={overview.stats.pendingSecurityEvents || 0} tone="rose" />
+          </div>
+        </section>
+
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
           <StatCard isDark={isDark} title="Total Users" value={loadingOverview ? "..." : overview.stats.totalUsers} subtitle="All registered accounts" icon={Users} />
           <StatCard isDark={isDark} title="Pro Users" value={loadingOverview ? "..." : overview.stats.proUsers} subtitle={`${proPercent}% of users`} icon={Crown} accent="emerald" />
           <StatCard isDark={isDark} title="Total Queries" value={loadingOverview ? "..." : overview.stats.totalQueries} subtitle="All-time generated SQL" icon={UserRoundPlus} />
@@ -391,24 +403,24 @@ export default function AdminDashboard() {
           />
         </section>
 
-        <section className="grid gap-6 xl:grid-cols-2">
-          <article className={`min-w-0 rounded-3xl border p-5 shadow-sm ${surfaceClass}`}>
+        <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
+          <article className={`min-w-0 rounded-lg border p-5 shadow-sm ${surfaceClass}`}>
             <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h3 className={`text-sm font-black uppercase tracking-[0.1em] sm:tracking-[0.18em] ${mutedTextClass}`}>
+                <h3 className={`text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
                   Revenue Trend
                 </h3>
-                <p className={`mt-1 text-xs font-semibold ${mutedTextClass}`}>
+                <p className={`mt-1 text-xs font-medium ${mutedTextClass}`}>
                   Last 6 months (INR)
                 </p>
               </div>
               <div className="text-right">
-                <p className={`text-[10px] font-black uppercase tracking-[0.16em] ${mutedTextClass}`}>Total</p>
-                <p className="text-lg font-black text-emerald-500">INR {overview.stats.totalRevenue || 0}</p>
+                <p className={`text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>Total</p>
+                <p className="text-base font-bold text-emerald-500">INR {overview.stats.totalRevenue || 0}</p>
               </div>
             </div>
 
-            <div className="h-[220px] w-full sm:h-[280px]">
+            <div className="h-[190px] w-full sm:h-[230px]">
               {loadingOverview ? (
                 <ChartSkeleton isDark={isDark} />
               ) : (
@@ -433,22 +445,22 @@ export default function AdminDashboard() {
             </div>
           </article>
 
-          <article className={`min-w-0 rounded-3xl border p-5 shadow-sm ${surfaceClass}`}>
+          <article className={`min-w-0 rounded-lg border p-5 shadow-sm ${surfaceClass}`}>
             <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h3 className={`text-sm font-black uppercase tracking-[0.1em] sm:tracking-[0.18em] ${mutedTextClass}`}>
+                <h3 className={`text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
                   Feedback Pipeline
                 </h3>
-                <p className={`mt-1 text-xs font-semibold ${mutedTextClass}`}>
+                <p className={`mt-1 text-xs font-medium ${mutedTextClass}`}>
                   New vs reviewed vs resolved
                 </p>
               </div>
-              <div className={`inline-flex rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.14em] ${isDark ? "bg-slate-800 text-slate-200 border border-slate-700" : "bg-slate-100 text-slate-600 border border-slate-200"}`}>
+              <div className={`inline-flex rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${isDark ? "bg-slate-800 text-slate-200 border border-slate-700" : "bg-slate-100 text-slate-600 border border-slate-200"}`}>
                 Pending: {overview.stats.pendingFeedback || 0}
               </div>
             </div>
 
-            <div className="h-[210px] w-full sm:h-[220px]">
+            <div className="h-[180px] w-full sm:h-[200px]">
               {loadingOverview ? (
                 <ChartSkeleton isDark={isDark} />
               ) : (
@@ -483,7 +495,7 @@ export default function AdminDashboard() {
             </div>
 
             <div className="mt-4 border-t border-slate-200/70 pt-4 dark:border-slate-700">
-              <p className={`mb-3 text-[10px] font-black uppercase tracking-[0.16em] ${mutedTextClass}`}>
+              <p className={`mb-3 text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
                 Plan Distribution
               </p>
               <div className="space-y-2">
@@ -496,8 +508,8 @@ export default function AdminDashboard() {
                     return (
                     <div key={item.name}>
                       <div className="mb-1 flex items-center justify-between">
-                        <span className={`text-xs font-black ${isDark ? "text-slate-200" : "text-slate-700"}`}>{item.name}</span>
-                        <span className={`text-[10px] font-black uppercase tracking-[0.14em] ${mutedTextClass}`}>
+                        <span className={`text-xs font-bold ${isDark ? "text-slate-200" : "text-slate-700"}`}>{item.name}</span>
+                        <span className={`text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
                           {item.value} ({percent.toFixed(1)}%)
                         </span>
                       </div>
@@ -516,14 +528,17 @@ export default function AdminDashboard() {
           </article>
         </section>
 
-        <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-          <section className={`min-w-0 rounded-3xl border p-5 shadow-sm ${surfaceClass}`}>
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <h2 className={`text-lg font-black tracking-tight ${isDark ? "text-slate-100" : "text-slate-900"}`}>
-                User Management
-              </h2>
+        <section className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(340px,0.75fr)]">
+          <section className={`min-w-0 rounded-lg border p-5 shadow-sm ${surfaceClass}`}>
+            <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className={`text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>Operations</p>
+                <h2 className={`text-xl font-bold tracking-tight ${isDark ? "text-slate-100" : "text-slate-900"}`}>
+                  User Management
+                </h2>
+              </div>
               <form onSubmit={handleUsersSearch} className="flex w-full max-w-md flex-col items-stretch gap-2 sm:flex-row sm:items-center">
-                <div className={`flex flex-1 items-center gap-2 rounded-xl border px-3 py-2 ${inputClass}`}>
+                <div className={`flex flex-1 items-center gap-2 rounded-md border px-3 py-2 ${inputClass}`}>
                   <Search size={15} className={isDark ? "text-slate-500" : "text-slate-400"} />
                   <input
                     value={usersSearchInput}
@@ -534,7 +549,7 @@ export default function AdminDashboard() {
                 </div>
                 <button
                   type="submit"
-                  className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-white hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 sm:w-auto"
+                  className="rounded-md bg-slate-900 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-white hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 sm:w-auto"
                 >
                   Search
                 </button>
@@ -550,25 +565,25 @@ export default function AdminDashboard() {
                 users.map((user) => {
                   const isBusy = actioningId === user._id;
                   return (
-                    <article key={user._id} className={`rounded-2xl border p-4 ${subtleBgClass}`}>
+                    <article key={user._id} className={`rounded-lg border px-4 py-3 ${subtleBgClass}`}>
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <p className={`text-sm font-black break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>{user.name}</p>
-                          <p className={`text-xs font-semibold break-all ${mutedTextClass}`}>{user.email}</p>
-                          <p className={`mt-1 text-[10px] font-black uppercase tracking-[0.14em] ${user.riskScore > 40 ? "text-rose-500" : mutedTextClass}`}>
+                          <p className={`text-sm font-bold break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>{user.name}</p>
+                          <p className={`text-xs font-medium break-all ${mutedTextClass}`}>{user.email}</p>
+                          <p className={`mt-1 text-[10px] font-bold uppercase tracking-[0.12em] ${user.riskScore > 40 ? "text-rose-500" : mutedTextClass}`}>
                             Risk Score: {user.riskScore || 0}
                           </p>
                         </div>
                         <div className="flex flex-col items-end gap-1.5">
-                          <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${user.plan === "pro" ? "bg-emerald-100 text-emerald-700" : isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700"}`}>
+                          <span className={`inline-flex rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${user.plan === "pro" ? "bg-emerald-100 text-emerald-700" : isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700"}`}>
                             {user.plan}
                           </span>
-                          <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${user.status === "suspended" ? "bg-rose-100 text-rose-700" : isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700"}`}>
+                          <span className={`inline-flex rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${user.status === "suspended" ? "bg-rose-100 text-rose-700" : isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700"}`}>
                             {user.status || "active"}
                           </span>
                         </div>
                       </div>
-                      <p className={`mt-3 text-[11px] font-semibold ${mutedTextClass}`}>
+                      <p className={`mt-2 text-[11px] font-medium ${mutedTextClass}`}>
                         Joined: {new Date(user.createdAt).toLocaleDateString()}
                       </p>
                       <div className="mt-3 flex items-center gap-2">
@@ -576,7 +591,7 @@ export default function AdminDashboard() {
                           type="button"
                           disabled={isBusy}
                           onClick={() => handleTogglePlan(user)}
-                          className={`rounded-lg border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] disabled:opacity-60 ${isDark ? "border-slate-600 text-slate-200" : "border-slate-200 text-slate-700"}`}
+                          className={`rounded-md border px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] disabled:opacity-60 ${isDark ? "border-slate-600 text-slate-200" : "border-slate-200 text-slate-700"}`}
                         >
                           {user.plan === "pro" ? "Set Free" : "Set Pro"}
                         </button>
@@ -584,7 +599,7 @@ export default function AdminDashboard() {
                           type="button"
                           disabled={isBusy}
                           onClick={() => handleSuspendToggle(user)}
-                          className={`rounded-lg border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] disabled:opacity-60 ${user.status === "suspended" ? "border-emerald-300 text-emerald-500" : "border-amber-300 text-amber-500"}`}
+                          className={`rounded-md border px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] disabled:opacity-60 ${user.status === "suspended" ? "border-emerald-300 text-emerald-500" : "border-amber-300 text-amber-500"}`}
                         >
                           {user.status === "suspended" ? "Unsuspend" : "Suspend"}
                         </button>
@@ -592,7 +607,7 @@ export default function AdminDashboard() {
                           type="button"
                           disabled={isBusy}
                           onClick={() => handleDeleteUser(user)}
-                          className="rounded-lg border border-rose-300 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-rose-500 disabled:opacity-60"
+                          className="rounded-md border border-rose-300 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-rose-500 disabled:opacity-60"
                         >
                           Delete
                         </button>
@@ -603,16 +618,16 @@ export default function AdminDashboard() {
               )}
             </div>
 
-            <div className="hidden overflow-x-auto md:block">
-              <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+            <div className={`hidden overflow-x-auto rounded-lg border md:block ${isDark ? "border-slate-700" : "border-slate-200"}`}>
+              <table className="min-w-[880px] divide-y divide-slate-200 dark:divide-slate-700">
                 <thead>
-                  <tr className={`text-left text-[10px] font-black uppercase tracking-[0.16em] ${mutedTextClass}`}>
-                    <th className="px-3 py-3">User</th>
-                    <th className="px-3 py-3">Plan</th>
-                    <th className="px-3 py-3">Status</th>
-                    <th className="px-3 py-3">Risk</th>
-                    <th className="px-3 py-3">Joined</th>
-                    <th className="px-3 py-3 text-right">Actions</th>
+                  <tr className={`text-left text-[10px] font-bold uppercase tracking-[0.12em] ${isDark ? "bg-slate-800/70 text-slate-300" : "bg-slate-50 text-slate-500"}`}>
+                    <th className="px-3 py-2.5">User</th>
+                    <th className="px-3 py-2.5">Plan</th>
+                    <th className="px-3 py-2.5">Status</th>
+                    <th className="px-3 py-2.5">Risk</th>
+                    <th className="px-3 py-2.5">Joined</th>
+                    <th className="px-3 py-2.5 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -620,7 +635,7 @@ export default function AdminDashboard() {
                     <UserTableSkeletonRows isDark={isDark} />
                   ) : users.length === 0 ? (
                     <tr>
-                      <td className={`px-3 py-6 text-sm font-semibold ${mutedTextClass}`} colSpan={6}>
+                      <td className={`px-3 py-5 text-sm font-medium ${mutedTextClass}`} colSpan={6}>
                         No users found.
                       </td>
                     </tr>
@@ -628,34 +643,34 @@ export default function AdminDashboard() {
                     users.map((user) => {
                       const isBusy = actioningId === user._id;
                       return (
-                        <tr key={user._id}>
-                          <td className="px-3 py-4">
-                            <p className={`text-sm font-black ${isDark ? "text-slate-100" : "text-slate-900"}`}>{user.name}</p>
-                            <p className={`text-xs font-semibold ${mutedTextClass}`}>{user.email}</p>
+                        <tr key={user._id} className={isDark ? "hover:bg-slate-800/55" : "hover:bg-slate-50"}>
+                          <td className="px-3 py-3">
+                            <p className={`text-sm font-bold ${isDark ? "text-slate-100" : "text-slate-900"}`}>{user.name}</p>
+                            <p className={`text-xs font-medium ${mutedTextClass}`}>{user.email}</p>
                           </td>
-                          <td className="px-3 py-4">
-                            <span className={`inline-flex rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${user.plan === "pro" ? "bg-emerald-100 text-emerald-700" : isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700"}`}>
+                          <td className="px-3 py-3">
+                            <span className={`inline-flex rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${user.plan === "pro" ? "bg-emerald-100 text-emerald-700" : isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700"}`}>
                               {user.plan}
                             </span>
                           </td>
-                          <td className="px-3 py-4">
-                            <span className={`inline-flex rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${user.status === "suspended" ? "bg-rose-100 text-rose-700" : isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700"}`}>
+                          <td className="px-3 py-3">
+                            <span className={`inline-flex rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${user.status === "suspended" ? "bg-rose-100 text-rose-700" : isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700"}`}>
                               {user.status || "active"}
                             </span>
                           </td>
-                          <td className={`px-3 py-4 text-xs font-black uppercase tracking-[0.12em] ${user.riskScore > 40 ? "text-rose-500" : mutedTextClass}`}>
+                          <td className={`px-3 py-3 text-xs font-bold uppercase tracking-[0.12em] ${user.riskScore > 40 ? "text-rose-500" : mutedTextClass}`}>
                             {user.riskScore || 0}
                           </td>
-                          <td className={`px-3 py-4 text-xs font-semibold ${mutedTextClass}`}>
+                          <td className={`px-3 py-3 text-xs font-medium ${mutedTextClass}`}>
                             {new Date(user.createdAt).toLocaleDateString()}
                           </td>
-                          <td className="px-3 py-4 text-right">
-                            <div className="inline-flex items-center gap-2">
+                          <td className="px-3 py-3 text-right">
+                            <div className="inline-flex flex-wrap items-center justify-end gap-2">
                               <button
                                 type="button"
                                 disabled={isBusy}
                                 onClick={() => handleTogglePlan(user)}
-                                className={`rounded-lg border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] disabled:opacity-60 ${isDark ? "border-slate-600 text-slate-200" : "border-slate-200 text-slate-700"}`}
+                                className={`rounded-md border px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] disabled:opacity-60 ${isDark ? "border-slate-600 text-slate-200" : "border-slate-200 text-slate-700"}`}
                               >
                                 {user.plan === "pro" ? "Set Free" : "Set Pro"}
                               </button>
@@ -663,7 +678,7 @@ export default function AdminDashboard() {
                                 type="button"
                                 disabled={isBusy}
                                 onClick={() => handleSuspendToggle(user)}
-                                className={`rounded-lg border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] disabled:opacity-60 ${user.status === "suspended" ? "border-emerald-300 text-emerald-500" : "border-amber-300 text-amber-500"}`}
+                                className={`rounded-md border px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] disabled:opacity-60 ${user.status === "suspended" ? "border-emerald-300 text-emerald-500" : "border-amber-300 text-amber-500"}`}
                               >
                                 {user.status === "suspended" ? "Unsuspend" : "Suspend"}
                               </button>
@@ -671,7 +686,7 @@ export default function AdminDashboard() {
                                 type="button"
                                 disabled={isBusy}
                                 onClick={() => handleDeleteUser(user)}
-                                className="rounded-lg border border-rose-300 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-rose-500 disabled:opacity-60"
+                                className="rounded-md border border-rose-300 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-rose-500 disabled:opacity-60"
                               >
                                 Delete
                               </button>
@@ -694,23 +709,23 @@ export default function AdminDashboard() {
             />
           </section>
 
-          <div className="min-w-0 space-y-6">
-            <section className={`min-w-0 rounded-3xl border p-5 shadow-sm ${surfaceClass}`}>
+          <div className="min-w-0 space-y-4">
+            <section className={`min-w-0 rounded-lg border p-5 shadow-sm ${surfaceClass}`}>
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <h3 className={`text-sm font-black uppercase tracking-[0.1em] sm:tracking-[0.18em] ${mutedTextClass}`}>
+                <h3 className={`text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
                   Security Alerts
                 </h3>
                 <div className="inline-flex items-center gap-2">
-                  <span className="inline-flex rounded-full bg-rose-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-rose-700">
+                  <span className="inline-flex rounded-md bg-rose-100 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-rose-700">
                     New: {overview.stats.pendingSecurityEvents || 0}
                   </span>
-                  <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-amber-700">
+                  <span className="inline-flex rounded-md bg-amber-100 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-amber-700">
                     High: {overview.stats.recentHighSeverityEvents || 0}
                   </span>
                 </div>
               </div>
 
-              <div className="space-y-3 max-h-[360px] overflow-auto pr-1 custom-scrollbar">
+              <div className="space-y-3 max-h-[320px] overflow-auto pr-1 custom-scrollbar">
                 {loadingOverview ? (
                   <FeedbackCardsSkeleton isDark={isDark} />
                 ) : securityEvents.length === 0 ? (
@@ -721,27 +736,27 @@ export default function AdminDashboard() {
                     const eventActor = event.userId?.email || event.emailSnapshot || "Unknown user";
 
                     return (
-                      <article key={event._id} className={`rounded-2xl border p-4 ${subtleBgClass}`}>
+                      <article key={event._id} className={`rounded-lg border px-4 py-3 ${subtleBgClass}`}>
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <p className={`text-sm font-black break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>
+                            <p className={`text-sm font-bold break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>
                               {event.type?.replace(/_/g, " ") || "security_event"}
                             </p>
-                            <p className={`text-[11px] font-semibold break-all ${mutedTextClass}`}>
+                            <p className={`text-[11px] font-medium break-all ${mutedTextClass}`}>
                               {eventActor}
                             </p>
                           </div>
-                          <span className={`inline-flex rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${severityBadgeClass(event.severity)}`}>
+                          <span className={`inline-flex rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${severityBadgeClass(event.severity)}`}>
                             {event.severity || "low"}
                           </span>
                         </div>
 
-                        <p className={`mt-2 text-sm leading-relaxed ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+                        <p className={`mt-2 text-[13px] leading-6 ${isDark ? "text-slate-300" : "text-slate-600"}`}>
                           {event.message || "No details provided."}
                         </p>
 
                         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                          <span className={`text-[10px] font-black uppercase tracking-[0.14em] ${mutedTextClass}`}>
+                          <span className={`text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
                             <Clock3 size={12} className="mr-1 inline" />
                             {new Date(event.createdAt).toLocaleString()}
                           </span>
@@ -749,7 +764,7 @@ export default function AdminDashboard() {
                             value={event.status || "new"}
                             disabled={isBusy}
                             onChange={(e) => handleSecurityEventStatusUpdate(event._id, e.target.value)}
-                            className={`h-8 rounded-lg border px-2 text-[10px] font-black uppercase tracking-[0.12em] outline-none ${isDark ? "border-slate-600 bg-slate-800 text-slate-200" : "border-slate-200 bg-white text-slate-700"}`}
+                            className={`h-8 rounded-md border px-2 text-[10px] font-bold uppercase tracking-[0.12em] outline-none ${isDark ? "border-slate-600 bg-slate-800 text-slate-200" : "border-slate-200 bg-white text-slate-700"}`}
                           >
                             <option value="new">New</option>
                             <option value="reviewed">Reviewed</option>
@@ -763,8 +778,8 @@ export default function AdminDashboard() {
               </div>
             </section>
 
-            <section className={`min-w-0 rounded-3xl border p-5 shadow-sm ${surfaceClass}`}>
-              <h3 className={`text-sm font-black uppercase tracking-[0.1em] sm:tracking-[0.18em] ${mutedTextClass}`}>
+            <section className={`min-w-0 rounded-lg border p-5 shadow-sm ${surfaceClass}`}>
+              <h3 className={`text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
                 Risk Watchlist
               </h3>
               <div className="mt-4 space-y-3">
@@ -774,21 +789,21 @@ export default function AdminDashboard() {
                   <p className={`text-xs font-semibold ${mutedTextClass}`}>No risky users flagged.</p>
                 ) : (
                   (overview.riskyUsers || []).map((user) => (
-                    <div key={user._id} className={`rounded-xl border p-3 ${subtleBgClass}`}>
+                    <div key={user._id} className={`rounded-lg border px-4 py-3 ${subtleBgClass}`}>
                       <div className="flex items-center justify-between gap-2">
-                        <p className={`text-sm font-black break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>
+                        <p className={`text-sm font-bold break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>
                           {user.name}
                         </p>
-                        <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${user.status === "suspended" ? "bg-rose-100 text-rose-700" : "bg-slate-200 text-slate-700"}`}>
+                        <span className={`inline-flex rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${user.status === "suspended" ? "bg-rose-100 text-rose-700" : "bg-slate-200 text-slate-700"}`}>
                           {user.status || "active"}
                         </span>
                       </div>
-                      <p className={`text-xs font-semibold break-all ${mutedTextClass}`}>{user.email}</p>
-                      <p className={`mt-2 text-[10px] font-black uppercase tracking-[0.14em] ${user.riskScore > 40 ? "text-rose-500" : mutedTextClass}`}>
+                      <p className={`text-xs font-medium break-all ${mutedTextClass}`}>{user.email}</p>
+                      <p className={`mt-2 text-[10px] font-bold uppercase tracking-[0.12em] ${user.riskScore > 40 ? "text-rose-500" : mutedTextClass}`}>
                         Risk Score: {user.riskScore || 0}
                       </p>
                       {Array.isArray(user.riskFlags) && user.riskFlags.length > 0 ? (
-                        <p className={`mt-1 text-[10px] font-semibold ${mutedTextClass}`}>
+                        <p className={`mt-1 text-[10px] font-medium ${mutedTextClass}`}>
                           Flags: {user.riskFlags.join(", ")}
                         </p>
                       ) : null}
@@ -798,10 +813,10 @@ export default function AdminDashboard() {
               </div>
             </section>
 
-            <section className={`min-w-0 rounded-3xl border p-5 shadow-sm ${surfaceClass}`}>
+            <section className={`min-w-0 rounded-lg border p-5 shadow-sm ${surfaceClass}`}>
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <h3 className={`text-sm font-black uppercase tracking-[0.1em] sm:tracking-[0.18em] ${mutedTextClass}`}>Feedback Triage</h3>
-                <p className="text-xs font-black text-amber-500">Avg Rating: {overview.stats.avgFeedbackRating || 0}</p>
+                <h3 className={`text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>Feedback Triage</h3>
+                <p className="text-xs font-bold text-amber-500">Avg Rating: {overview.stats.avgFeedbackRating || 0}</p>
               </div>
 
               <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -810,7 +825,7 @@ export default function AdminDashboard() {
                     key={status}
                     type="button"
                     onClick={() => handleFeedbackStatusFilter(status)}
-                    className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.08em] sm:tracking-[0.14em] ${
+                    className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] ${
                       feedbackStatus === status
                         ? "border-emerald-300 bg-emerald-100 text-emerald-700"
                         : isDark
@@ -825,7 +840,7 @@ export default function AdminDashboard() {
               </div>
 
               <form onSubmit={handleFeedbackSearch} className="mb-4 flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
-                <div className={`flex flex-1 items-center gap-2 rounded-xl border px-3 py-2 ${inputClass}`}>
+                <div className={`flex flex-1 items-center gap-2 rounded-md border px-3 py-2 ${inputClass}`}>
                   <Search size={14} className={isDark ? "text-slate-500" : "text-slate-400"} />
                   <input
                     value={feedbackSearchInput}
@@ -836,13 +851,13 @@ export default function AdminDashboard() {
                 </div>
                 <button
                   type="submit"
-                  className="rounded-xl bg-slate-900 px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 sm:w-auto"
+                  className="rounded-md bg-slate-900 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-white hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 sm:w-auto"
                 >
                   Find
                 </button>
               </form>
 
-              <div className="space-y-3 max-h-[380px] overflow-auto pr-1 custom-scrollbar">
+              <div className="space-y-3 max-h-[340px] overflow-auto pr-1 custom-scrollbar">
                 {loadingFeedback ? (
                   <FeedbackCardsSkeleton isDark={isDark} />
                 ) : feedbackItems.length === 0 ? (
@@ -851,25 +866,25 @@ export default function AdminDashboard() {
                   feedbackItems.map((item) => {
                     const isBusy = actioningId === item._id;
                     return (
-                      <article key={item._id} className={`rounded-2xl border p-4 ${subtleBgClass}`}>
+                      <article key={item._id} className={`rounded-lg border px-4 py-3 ${subtleBgClass}`}>
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <p className={`text-sm font-black break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>
+                            <p className={`text-sm font-bold break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>
                               {item.userId?.name || "User"} - {item.topic}
                             </p>
-                            <p className={`text-[11px] font-semibold break-all ${mutedTextClass}`}>
+                            <p className={`text-[11px] font-medium break-all ${mutedTextClass}`}>
                               {item.userId?.email || "Unknown email"}
                             </p>
                           </div>
-                          <span className="inline-flex rounded-full bg-amber-100 px-2 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-amber-700">
+                          <span className="inline-flex rounded-md bg-amber-100 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-amber-700">
                             {item.rating}/5
                           </span>
                         </div>
-                        <p className={`mt-2 text-sm leading-relaxed ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+                        <p className={`mt-2 text-[13px] leading-6 ${isDark ? "text-slate-300" : "text-slate-600"}`}>
                           {item.message}
                         </p>
                         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                          <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${statusBadgeClass(item.status)}`}>
+                          <span className={`inline-flex rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${statusBadgeClass(item.status)}`}>
                             {item.status}
                           </span>
                           <div className="flex items-center gap-2">
@@ -877,7 +892,7 @@ export default function AdminDashboard() {
                               value={item.status}
                               disabled={isBusy}
                               onChange={(e) => handleFeedbackStatusUpdate(item._id, e.target.value)}
-                              className={`h-8 rounded-lg border px-2 text-[10px] font-black uppercase tracking-[0.12em] outline-none ${isDark ? "border-slate-600 bg-slate-800 text-slate-200" : "border-slate-200 bg-white text-slate-700"}`}
+                              className={`h-8 rounded-md border px-2 text-[10px] font-bold uppercase tracking-[0.12em] outline-none ${isDark ? "border-slate-600 bg-slate-800 text-slate-200" : "border-slate-200 bg-white text-slate-700"}`}
                             >
                               <option value="new">New</option>
                               <option value="reviewed">Reviewed</option>
@@ -900,16 +915,30 @@ export default function AdminDashboard() {
               />
             </section>
 
-            <section className={`min-w-0 rounded-3xl border p-5 shadow-sm ${surfaceClass}`}>
-              <h3 className={`text-sm font-black uppercase tracking-[0.1em] sm:tracking-[0.18em] ${mutedTextClass}`}>Recent Signups</h3>
+          </div>
+        </section>
+
+        <section>
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className={`text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>Activity</p>
+              <h2 className={`text-xl font-bold tracking-tight ${isDark ? "text-slate-100" : "text-slate-900"}`}>
+                Recent Platform Updates
+              </h2>
+            </div>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-3">
+            <section className={`min-w-0 rounded-lg border p-5 shadow-sm ${surfaceClass}`}>
+              <h3 className={`text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>Recent Signups</h3>
               <div className="mt-4 space-y-3">
                 {loadingOverview ? (
                   <RecentItemsSkeleton isDark={isDark} />
                 ) : (
-                  (overview.recentUsers || []).map((user) => (
-                    <div key={user._id} className={`rounded-xl border p-3 ${subtleBgClass}`}>
-                      <p className={`text-sm font-black break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>{user.name}</p>
-                      <p className={`text-xs font-semibold break-all ${mutedTextClass}`}>{user.email}</p>
+                  (overview.recentUsers || []).slice(0, 5).map((user) => (
+                    <div key={user._id} className={`rounded-lg border px-4 py-3 ${subtleBgClass}`}>
+                      <p className={`text-sm font-bold break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>{user.name}</p>
+                      <p className={`text-xs font-medium break-all ${mutedTextClass}`}>{user.email}</p>
                     </div>
                   ))
                 )}
@@ -919,9 +948,9 @@ export default function AdminDashboard() {
               </div>
             </section>
 
-            <section className={`min-w-0 rounded-3xl border p-5 shadow-sm ${surfaceClass}`}>
-              <h3 className={`text-sm font-black uppercase tracking-[0.1em] sm:tracking-[0.18em] ${mutedTextClass}`}>
-                Recent Moderation Actions
+            <section className={`min-w-0 rounded-lg border p-5 shadow-sm ${surfaceClass}`}>
+              <h3 className={`text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
+                Recent Moderation
               </h3>
               <div className="mt-4 space-y-3">
                 {loadingOverview ? (
@@ -929,20 +958,20 @@ export default function AdminDashboard() {
                 ) : (overview.recentAdminActions || []).length === 0 ? (
                   <p className={`text-xs font-semibold ${mutedTextClass}`}>No moderation actions yet.</p>
                 ) : (
-                  (overview.recentAdminActions || []).map((action) => (
-                    <div key={action._id} className={`rounded-xl border p-3 ${subtleBgClass}`}>
+                  (overview.recentAdminActions || []).slice(0, 5).map((action) => (
+                    <div key={action._id} className={`rounded-lg border px-4 py-3 ${subtleBgClass}`}>
                       <div className="flex items-start justify-between gap-2">
-                        <p className={`text-sm font-black break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>
+                        <p className={`text-sm font-bold break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>
                           {action.action?.replace(/_/g, " ") || "action"}
                         </p>
-                        <span className={`text-[10px] font-black uppercase tracking-[0.14em] ${mutedTextClass}`}>
+                        <span className={`text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
                           {new Date(action.createdAt).toLocaleDateString()}
                         </span>
                       </div>
-                      <p className={`mt-1 text-xs font-semibold break-all ${mutedTextClass}`}>
+                      <p className={`mt-1 text-xs font-medium break-all ${mutedTextClass}`}>
                         Target: {action.targetUserId?.email || action.targetEmailSnapshot || "Unknown user"}
                       </p>
-                      <p className={`mt-1 text-xs leading-relaxed ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+                      <p className={`mt-1 line-clamp-2 text-xs leading-relaxed ${isDark ? "text-slate-300" : "text-slate-600"}`}>
                         Reason: {action.reason}
                       </p>
                     </div>
@@ -951,21 +980,25 @@ export default function AdminDashboard() {
               </div>
             </section>
 
-            <section className={`min-w-0 rounded-3xl border p-5 shadow-sm ${surfaceClass}`}>
-              <h3 className={`text-sm font-black uppercase tracking-[0.1em] sm:tracking-[0.18em] ${mutedTextClass}`}>Recent Invoices</h3>
+            <section className={`min-w-0 rounded-lg border p-5 shadow-sm ${surfaceClass}`}>
+              <h3 className={`text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>Recent Invoices</h3>
               <div className="mt-4 space-y-3">
                 {loadingOverview ? (
                   <RecentItemsSkeleton isDark={isDark} />
                 ) : (
-                  (overview.recentInvoices || []).map((invoice) => (
-                    <div key={invoice._id} className={`rounded-xl border p-3 ${subtleBgClass}`}>
-                      <p className={`text-sm font-black break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>{invoice.invoiceNumber}</p>
-                      <p className={`text-xs font-semibold break-all ${mutedTextClass}`}>
-                        {invoice.userId?.email || "Unknown user"}
-                      </p>
-                      <p className="mt-1 text-xs font-black uppercase tracking-[0.12em] text-emerald-500">
-                        INR {invoice.amount}
-                      </p>
+                  (overview.recentInvoices || []).slice(0, 5).map((invoice) => (
+                    <div key={invoice._id} className={`rounded-lg border px-4 py-3 ${subtleBgClass}`}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className={`text-sm font-bold break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>{invoice.invoiceNumber}</p>
+                          <p className={`text-xs font-medium break-all ${mutedTextClass}`}>
+                            {invoice.userId?.email || "Unknown user"}
+                          </p>
+                        </div>
+                        <p className="shrink-0 text-xs font-bold uppercase tracking-[0.12em] text-emerald-500">
+                          INR {invoice.amount}
+                        </p>
+                      </div>
                     </div>
                   ))
                 )}
@@ -979,11 +1012,11 @@ export default function AdminDashboard() {
       </main>
 
       <footer className={`border-t px-4 py-4 sm:px-6 ${isDark ? "border-slate-700 bg-slate-900/80" : "border-slate-200 bg-white/80"}`}>
-        <div className="mx-auto flex w-full max-w-7xl flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
-          <p className={`text-[10px] font-black uppercase tracking-[0.1em] break-all sm:tracking-[0.16em] ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+        <div className="mx-auto flex w-full max-w-[1500px] flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
+          <p className={`text-[10px] font-bold uppercase tracking-[0.12em] break-all ${isDark ? "text-slate-400" : "text-slate-500"}`}>
             Logged in as {admin?.id || "admin"}
           </p>
-          <p className="text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.16em] text-emerald-500">
+          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-500">
             <CheckCircle2 size={12} className="inline mr-1" />
             Admin session active
           </p>
@@ -1003,16 +1036,35 @@ function StatCard({ title, value, subtitle, icon, accent = "slate", isDark }) {
   };
 
   return (
-    <article className={`rounded-3xl border p-4 shadow-sm sm:p-5 ${isDark ? "bg-slate-900 border-slate-700" : "bg-white border-slate-200"}`}>
+    <article className={`rounded-lg border p-5 shadow-sm ${isDark ? "bg-slate-900 border-slate-700" : "bg-white border-slate-200"}`}>
       <div className="mb-4 flex items-center justify-between">
-        <p className={`text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.16em] ${isDark ? "text-slate-300" : "text-slate-500"}`}>{title}</p>
-        <span className={`rounded-xl p-2 ${accentClassMap[accent] || accentClassMap.slate}`}>
+        <p className={`text-[10px] font-bold uppercase tracking-[0.12em] ${isDark ? "text-slate-300" : "text-slate-500"}`}>{title}</p>
+        <span className={`rounded-md p-2 ${accentClassMap[accent] || accentClassMap.slate}`}>
           {icon ? createElement(icon, { size: 16 }) : null}
         </span>
       </div>
-      <p className={`text-2xl font-black tracking-tight sm:text-3xl ${isDark ? "text-slate-100" : "text-slate-900"}`}>{value}</p>
-      <p className={`mt-1 text-xs font-semibold ${isDark ? "text-slate-300" : "text-slate-500"}`}>{subtitle}</p>
+      <p className={`text-2xl font-bold tracking-tight ${isDark ? "text-slate-100" : "text-slate-900"}`}>{value}</p>
+      <p className={`mt-2 text-[13px] font-medium leading-6 ${isDark ? "text-slate-300" : "text-slate-500"}`}>{subtitle}</p>
     </article>
+  );
+}
+
+function SummaryMetric({ label, value, tone = "slate", isDark }) {
+  const toneClassMap = {
+    slate: isDark ? "text-slate-100" : "text-slate-900",
+    amber: "text-amber-500",
+    rose: "text-rose-500"
+  };
+
+  return (
+    <div className={`rounded-lg border px-4 py-3 ${isDark ? "border-slate-700 bg-slate-800/70" : "border-slate-200 bg-slate-50"}`}>
+      <p className={`text-[10px] font-bold uppercase tracking-[0.12em] ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+        {label}
+      </p>
+      <p className={`mt-1 truncate text-sm font-bold ${toneClassMap[tone] || toneClassMap.slate}`}>
+        {value}
+      </p>
+    </div>
   );
 }
 
@@ -1027,7 +1079,7 @@ function Pager({ currentPage, totalPages, onPrev, onNext, isDark }) {
           type="button"
           disabled={currentPage <= 1}
           onClick={onPrev}
-          className={`w-full rounded-lg border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.08em] disabled:opacity-40 sm:w-auto sm:tracking-[0.14em] ${isDark ? "border-slate-600 text-slate-200" : "border-slate-200 text-slate-700"}`}
+          className={`w-full rounded-md border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] disabled:opacity-40 sm:w-auto ${isDark ? "border-slate-600 text-slate-200" : "border-slate-200 text-slate-700"}`}
         >
           Prev
         </button>
@@ -1035,7 +1087,7 @@ function Pager({ currentPage, totalPages, onPrev, onNext, isDark }) {
           type="button"
           disabled={currentPage >= totalPages}
           onClick={onNext}
-          className={`w-full rounded-lg border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.08em] disabled:opacity-40 sm:w-auto sm:tracking-[0.14em] ${isDark ? "border-slate-600 text-slate-200" : "border-slate-200 text-slate-700"}`}
+          className={`w-full rounded-md border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] disabled:opacity-40 sm:w-auto ${isDark ? "border-slate-600 text-slate-200" : "border-slate-200 text-slate-700"}`}
         >
           Next
         </button>
@@ -1060,7 +1112,7 @@ function severityBadgeClass(severity) {
 function ChartSkeleton({ isDark }) {
   return (
     <div className="h-full w-full animate-pulse">
-      <div className={`h-full rounded-2xl ${isDark ? "bg-slate-800" : "bg-slate-100"}`} />
+      <div className={`h-full rounded-lg ${isDark ? "bg-slate-800" : "bg-slate-100"}`} />
     </div>
   );
 }
@@ -1085,7 +1137,7 @@ function UserCardsSkeleton({ isDark }) {
   return (
     <div className="space-y-3 animate-pulse">
       {[1, 2, 3].map((id) => (
-        <div key={id} className={`rounded-2xl border p-4 ${isDark ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-slate-50"}`}>
+        <div key={id} className={`rounded-lg border px-4 py-3 ${isDark ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-slate-50"}`}>
           <div className={`mb-2 h-4 w-36 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
           <div className={`mb-3 h-3 w-48 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
           <div className={`h-8 w-32 rounded-lg ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
@@ -1133,7 +1185,7 @@ function FeedbackCardsSkeleton({ isDark }) {
   return (
     <div className="space-y-3 animate-pulse">
       {[1, 2, 3].map((id) => (
-        <div key={id} className={`rounded-2xl border p-4 ${isDark ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-slate-50"}`}>
+        <div key={id} className={`rounded-lg border px-4 py-3 ${isDark ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-slate-50"}`}>
           <div className={`mb-2 h-4 w-44 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
           <div className={`mb-3 h-3 w-52 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
           <div className={`h-10 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
@@ -1147,7 +1199,7 @@ function RecentItemsSkeleton({ isDark }) {
   return (
     <div className="space-y-3 animate-pulse">
       {[1, 2, 3].map((id) => (
-        <div key={id} className={`rounded-xl border p-3 ${isDark ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-slate-50"}`}>
+        <div key={id} className={`rounded-lg border px-4 py-3 ${isDark ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-slate-50"}`}>
           <div className={`mb-2 h-4 w-28 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
           <div className={`h-3 w-40 rounded ${isDark ? "bg-slate-700" : "bg-slate-200"}`} />
         </div>
