@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { BookOpen, Check, CheckCircle2, Copy, Terminal } from "lucide-react";
+import { BookOpen, Check, CheckCircle2, Copy, Download, Terminal } from "lucide-react";
+import SQLSyntaxHighlighter from "./SQLSyntaxHighlighter";
+import { buildSQLFilename, downloadSQLFile } from "../../utils/sqlExport";
 
 export default function SQLOutput({ result, mode = "generate" }) {
   const [typingState, setTypingState] = useState({ source: "", text: "" });
@@ -7,6 +9,7 @@ export default function SQLOutput({ result, mode = "generate" }) {
   const output = result || "";
   const isExplainMode = mode === "explain";
   const isValidateMode = mode === "validate";
+  const canExport = !isExplainMode && Boolean(output.trim());
   const displayText = typingState.source === output ? typingState.text : "";
   const isTyping = displayText.length < output.length;
   const copied = copiedSource === output;
@@ -52,6 +55,10 @@ export default function SQLOutput({ result, mode = "generate" }) {
     }
   };
 
+  const handleExport = () => {
+    downloadSQLFile(output, buildSQLFilename(`ai-sql-${mode}`));
+  };
+
   if (!output) {
     return null;
   }
@@ -84,6 +91,17 @@ export default function SQLOutput({ result, mode = "generate" }) {
             {copied ? <Check size={13} /> : <Copy size={13} />}
             {copied ? "Copied" : "Copy"}
           </button>
+
+          {canExport ? (
+            <button
+              type="button"
+              onClick={handleExport}
+              className="button-secondary inline-flex items-center gap-2 rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]"
+            >
+              <Download size={13} />
+              Export .sql
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -102,10 +120,10 @@ export default function SQLOutput({ result, mode = "generate" }) {
             className={`whitespace-pre-wrap break-words ${
               isExplainMode
                 ? "text-sm leading-7 text-slate-200"
-                : "mono-font text-[13px] leading-7 text-emerald-300"
+                : "mono-font text-[13px] leading-7"
             }`}
           >
-            {displayText}
+            {isExplainMode ? displayText : <SQLSyntaxHighlighter sql={displayText} />}
             {isTyping ? <span className="ml-0.5 animate-pulse text-teal-200">|</span> : null}
           </pre>
         </div>

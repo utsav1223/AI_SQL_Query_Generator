@@ -4,18 +4,18 @@ This file lists future improvements that can make AI SQL Studio stronger for int
 
 ## High-Impact Features
 
-| Feature | Why It Helps In Interviews |
-| --- | --- |
-| SQL syntax highlighting editor | Shows frontend polish and developer-tool thinking |
-| Query history pagination | Shows backend performance thinking |
-| AI streaming response | Shows modern AI UX and async handling |
-| Test suite with Vitest/Jest/Supertest | Shows production engineering maturity |
-| Webhook-based Razorpay verification | Shows safer payment architecture |
-| Role-based access control | Shows authorization design |
-| Docker setup | Makes the project easier to run anywhere |
-| API documentation with Swagger/OpenAPI | Shows professional backend documentation |
-| Database schema visualizer | Makes the app more unique |
-| Export query as `.sql` file | Simple but useful product feature |
+| Feature | Why It Helps In Interviews | Status |
+| --- | --- | --- |
+| SQL syntax highlighting editor | Shows frontend polish and developer-tool thinking | Done |
+| Query history pagination | Shows backend performance thinking | Done |
+| AI streaming response | Shows modern AI UX and async handling | Todo |
+| Test suite with Vitest/Jest/Supertest | Shows production engineering maturity | In progress |
+| Webhook-based Razorpay verification | Shows safer payment architecture | Todo |
+| Role-based access control | Shows authorization design | In progress |
+| Docker setup | Makes the project easier to run anywhere | Done |
+| API documentation with Swagger/OpenAPI | Shows professional backend documentation | Todo |
+| Database schema visualizer | Makes the app more unique | Todo |
+| Export query as `.sql` file | Simple but useful product feature | Done |
 
 ## Security Improvements
 
@@ -49,10 +49,9 @@ This file lists future improvements that can make AI SQL Studio stronger for int
 
 ## Best Next Features To Build First
 
-1. Query history pagination.
-2. Rate limiting for auth, OTP, AI, and payment routes.
-3. SQL syntax highlighting editor.
-4. Basic automated tests.
-5. Razorpay webhook verification.
-6. Docker setup.
-
+1. [x] Query history pagination.
+2. [x] Rate limiting for auth, OTP, AI, and payment routes.
+3. [x] SQL syntax highlighting editor.
+4. [x] Basic automated tests.
+5. [ ] Razorpay webhook verification.
+6. [x] Docker setup.

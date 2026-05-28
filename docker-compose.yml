@@ -1,0 +1,42 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  backend:
+    build:
+      context: ./Backend_Part
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    ports:
+      - "5000:5000"
+    environment:
+      PORT: 5000
+      NODE_ENV: development
+      MONGO_URI: mongodb://mongo:27017/sql-studio
+      JWT_SECRET: replace-with-a-32-character-local-secret
+      CORS_ORIGIN: http://localhost:5173
+      FRONTEND_URL: http://localhost:5173
+      ADMIN_USER_ID: admin
+      ADMIN_PASSWORD: ReplaceWithStrongAdmin123
+      GEMINI_MODEL: gemini-2.5-flash
+
+  frontend:
+    build:
+      context: ./Frontend_Part
+      args:
+        VITE_API_BASE_URL: http://localhost:5000/api
+        VITE_GOOGLE_AUTH_URL: http://localhost:5000/api/auth/google
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  mongo-data:

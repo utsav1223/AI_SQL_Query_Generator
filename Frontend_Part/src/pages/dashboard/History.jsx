@@ -6,6 +6,7 @@ import {
   Code2,
   Copy,
   Database,
+  Download,
   Filter,
   History as HistoryIcon,
   Pin,
@@ -27,6 +28,8 @@ import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
 import { useAuth } from "../../hooks/useAuth";
 import { queryService } from "../../services/queryService";
 import { logger } from "../../utils/logger";
+import SQLSyntaxHighlighter from "../../components/ai/SQLSyntaxHighlighter";
+import { buildSQLFilename, downloadSQLFile } from "../../utils/sqlExport";
 
 export default function History() {
   const { user } = useAuth();
@@ -129,6 +132,13 @@ export default function History() {
     }
   };
 
+  const handleExport = (query) => {
+    downloadSQLFile(
+      query.generatedSQL || "",
+      buildSQLFilename(`history-${query.mode || "query"}`)
+    );
+  };
+
   if (loading && queries.length === 0) {
     return <HistorySkeleton />;
   }
@@ -206,16 +216,28 @@ export default function History() {
               </div>
 
               <div className="relative bg-slate-950">
-                <button
-                  type="button"
-                  onClick={() => handleCopy(q._id, q.generatedSQL)}
-                  className="absolute right-3 top-3 z-10 inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white backdrop-blur hover:bg-white/20"
-                >
-                  {copiedId === q._id ? <Check size={13} /> : <Copy size={13} />}
-                  {copiedId === q._id ? "Copied" : "Copy"}
-                </button>
+                <div className="absolute right-3 top-3 z-10 flex flex-wrap justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(q._id, q.generatedSQL)}
+                    className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white backdrop-blur hover:bg-white/20"
+                  >
+                    {copiedId === q._id ? <Check size={13} /> : <Copy size={13} />}
+                    {copiedId === q._id ? "Copied" : "Copy"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleExport(q)}
+                    className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white backdrop-blur hover:bg-white/20"
+                  >
+                    <Download size={13} />
+                    Export
+                  </button>
+                </div>
                 <pre className="mono-font max-h-[360px] overflow-auto p-4 pt-14 text-[12px] leading-6 text-emerald-100">
-                  <code>{q.generatedSQL}</code>
+                  <code>
+                    <SQLSyntaxHighlighter sql={q.generatedSQL || ""} />
+                  </code>
                 </pre>
               </div>
             </Panel>

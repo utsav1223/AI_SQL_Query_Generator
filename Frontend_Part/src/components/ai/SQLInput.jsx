@@ -1,8 +1,15 @@
 import { Command, Terminal } from "lucide-react";
+import SQLHighlightedTextarea from "./SQLHighlightedTextarea";
 
 export default function SQLInput({ value, onChange, mode, loading, placeholder }) {
   const editorTitle =
     mode === "generate" ? "Natural Language Prompt" : "SQL Source";
+  const isSQLMode = mode !== "generate";
+  const resolvedPlaceholder =
+    placeholder ||
+    (mode === "generate"
+      ? "Example: Find users who purchased more than 500 in the last 30 days."
+      : "SELECT * FROM analytics.events WHERE event_type = 'conversion';");
 
   return (
     <div className="w-full">
@@ -16,6 +23,11 @@ export default function SQLInput({ value, onChange, mode, loading, placeholder }
           </div>
 
           <div className="flex items-center gap-3">
+            {isSQLMode ? (
+              <span className="hidden rounded-md bg-[var(--accent-soft)] px-2 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--accent)] sm:inline-flex">
+                Highlighting
+              </span>
+            ) : null}
             <div className="hidden items-center gap-1 rounded-md bg-[var(--surface)] px-2 py-1 sm:flex">
               <Command size={10} className="text-slate-400" />
               <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">
@@ -27,19 +39,23 @@ export default function SQLInput({ value, onChange, mode, loading, placeholder }
         </div>
       </div>
 
-      <textarea
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={
-          placeholder ||
-          (mode === "generate"
-            ? "Example: Find users who purchased more than 500 in the last 30 days."
-            : "SELECT * FROM analytics.events WHERE event_type = 'conversion';")
-        }
-        className={`input-control custom-scrollbar mono-font min-h-[240px] w-full resize-none rounded-b-lg border-t-0 px-4 py-4 text-[13px] leading-7 sm:min-h-[300px] ${
-          loading ? "cursor-wait opacity-60" : ""
-        }`}
-      />
+      {isSQLMode ? (
+        <SQLHighlightedTextarea
+          value={value}
+          onChange={onChange}
+          loading={loading}
+          placeholder={resolvedPlaceholder}
+        />
+      ) : (
+        <textarea
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={resolvedPlaceholder}
+          className={`input-control custom-scrollbar mono-font min-h-[240px] w-full resize-none rounded-b-lg border-t-0 px-4 py-4 text-[13px] leading-7 sm:min-h-[300px] ${
+            loading ? "cursor-wait opacity-60" : ""
+          }`}
+        />
+      )}
 
       <p className="mt-3 px-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
         {mode === "generate"

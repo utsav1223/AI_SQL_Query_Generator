@@ -17,6 +17,7 @@ This is a strong interview project because it demonstrates both frontend and bac
 - [Advanced Code To Highlight In Interviews](#advanced-code-to-highlight-in-interviews)
 - [Beginner-Friendly Explanation](#beginner-friendly-explanation)
 - [Getting Started](#getting-started)
+- [Docker Quick Start](#docker-quick-start)
 - [Environment Variables](#environment-variables)
 - [Available Scripts](#available-scripts)
 - [API Overview](#api-overview)
@@ -53,13 +54,15 @@ The app can generate SQL based on the saved schema, optimize existing SQL, expla
 - Dashboard overview with usage and activity.
 - AI workspace for SQL generation, optimization, validation, formatting, and explanation.
 - Schema context page where users save database structure.
-- Query history with copy, delete, filtering, and Pro-only pinning.
+- Query history with copy, `.sql` export, delete, filtering, and Pro-only pinning.
 - Analytics page for Pro users.
 - Billing, invoices, settings, FAQ, support, and feedback pages.
 
 ### AI SQL Features
 
 - Natural language to SQL generation.
+- Syntax-highlighted SQL editor for SQL-focused modes.
+- Export generated SQL and history entries as `.sql` files.
 - Schema-aware prompt building.
 - Strict JSON response handling from the AI model.
 - AI response repair when the model returns invalid JSON.
@@ -143,6 +146,7 @@ All screenshot assets are stored in `docs/screenshots`.
 |   |   +-- app.js            # Express app setup
 |   |   +-- server.js         # Server startup
 |   +-- tests/                # Backend API and environment tests
+|   +-- Dockerfile
 |   +-- package.json
 |
 +-- Frontend_Part/
@@ -159,12 +163,15 @@ All screenshot assets are stored in `docs/screenshots`.
 |   |   +-- App.jsx
 |   |   +-- main.jsx
 |   +-- package.json
+|   +-- Dockerfile
+|   +-- nginx.conf
 |
 +-- docs/
 |   +-- data-flow.md
 |   +-- screenshots/
 +-- EXTRA_FEATURES.md
 +-- PROJECT_REVIEW_README.md
++-- docker-compose.yml
 +-- render.yaml
 +-- .gitignore
 +-- README.md
@@ -395,6 +402,24 @@ Frontend runs on:
 ```text
 http://localhost:5173
 ```
+
+## Docker Quick Start
+
+The project includes Dockerfiles for the backend and frontend, plus a root `docker-compose.yml` for local full-stack startup with MongoDB.
+
+```bash
+docker compose up --build
+```
+
+Local Docker URLs:
+
+```text
+Frontend: http://localhost:5173
+Backend:  http://localhost:5000
+MongoDB:  mongodb://localhost:27017/sql-studio
+```
+
+Set `GEMINI_API_KEY` or `GOOGLE_API_KEY` in the backend service environment before using AI features. Add Razorpay, Google OAuth, and email secrets the same way when testing those integrations locally.
 
 ## Environment Variables
 

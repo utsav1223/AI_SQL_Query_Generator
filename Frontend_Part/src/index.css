@@ -316,6 +316,114 @@ a[class*="hover:bg-teal-700"]:hover * {
   border-bottom: 1px solid rgba(148, 163, 184, 0.14);
 }
 
+.sql-token-keyword {
+  color: #38bdf8 !important;
+  font-weight: 600;
+}
+
+.sql-token-function {
+  color: #a78bfa !important;
+  font-weight: 600;
+}
+
+.sql-token-string {
+  color: #fbbf24 !important;
+}
+
+.sql-token-number {
+  color: #f472b6 !important;
+}
+
+.sql-token-comment {
+  color: #94a3b8 !important;
+  font-style: italic;
+}
+
+.sql-token-operator,
+.sql-token-punctuation {
+  color: #cbd5e1 !important;
+}
+
+.sql-token-identifier,
+.sql-token-plain {
+  color: #d1fae5 !important;
+}
+
+.sql-editor-shell .sql-token-keyword {
+  color: #0f766e !important;
+}
+
+.sql-editor-shell .sql-token-function {
+  color: #7c3aed !important;
+}
+
+.sql-editor-shell .sql-token-string {
+  color: #b45309 !important;
+}
+
+.sql-editor-shell .sql-token-number {
+  color: #be185d !important;
+}
+
+.sql-editor-shell .sql-token-comment {
+  color: #64748b !important;
+}
+
+.sql-editor-shell .sql-token-operator,
+.sql-editor-shell .sql-token-punctuation {
+  color: #475569 !important;
+}
+
+.sql-editor-shell .sql-token-identifier,
+.sql-editor-shell .sql-token-plain {
+  color: var(--text-main) !important;
+}
+
+.sql-editor-input,
+.sql-editor-input:focus {
+  color: transparent !important;
+  caret-color: var(--accent);
+}
+
+.sql-editor-input::selection {
+  background: rgba(15, 118, 110, 0.22);
+  color: transparent;
+}
+
+.sql-editor-input::placeholder {
+  color: var(--text-soft) !important;
+}
+
+html.dark .sql-editor-shell .sql-token-keyword {
+  color: #5eead4 !important;
+}
+
+html.dark .sql-editor-shell .sql-token-function {
+  color: #c084fc !important;
+}
+
+html.dark .sql-editor-shell .sql-token-string {
+  color: #fbbf24 !important;
+}
+
+html.dark .sql-editor-shell .sql-token-number {
+  color: #f472b6 !important;
+}
+
+html.dark .sql-editor-shell .sql-token-comment {
+  color: #94a3b8 !important;
+}
+
+html.dark .sql-editor-shell .sql-token-operator,
+html.dark .sql-editor-shell .sql-token-punctuation {
+  color: #cbd5e1 !important;
+}
+
+html.dark .sql-editor-shell .sql-token-identifier,
+html.dark .sql-editor-shell .sql-token-plain {
+  color: #e5e7eb !important;
+}
+
 .public-grid {
   background-image:
     linear-gradient(rgba(148, 163, 184, 0.16) 1px, transparent 1px),
