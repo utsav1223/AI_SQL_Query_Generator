@@ -11,6 +11,7 @@ import { aiService } from "../../services/aiService";
 const PLACEHOLDERS = {
   generate: "Describe the SQL you want to generate. Example: revenue by category for 2024.",
   optimize: "Paste SQL to improve performance and readability.",
+  format: "Paste SQL to clean up indentation, clause spacing, and line breaks.",
   validate: "Paste SQL to check for syntax or logic issues.",
   explain: "Paste SQL to get a simple explanation of what it does."
 };
@@ -18,6 +19,7 @@ const PLACEHOLDERS = {
 const ACTION_LABELS = {
   generate: "Generate SQL",
   optimize: "Optimize SQL",
+  format: "Format SQL",
   validate: "Validate SQL",
   explain: "Explain SQL"
 };
@@ -25,6 +27,7 @@ const ACTION_LABELS = {
 const LOADING_LABELS = {
   generate: "Generating...",
   optimize: "Optimizing...",
+  format: "Formatting...",
   validate: "Validating...",
   explain: "Explaining..."
 };
@@ -41,8 +44,19 @@ export default function Generate() {
   const isProFeature = mode !== "generate";
   const isLocked = user?.plan !== "pro" && isProFeature;
 
-  const handleSubmit = async () => {
-    if (!input.trim() || loading || isLocked) {
+  const runTool = async (selectedMode = mode) => {
+    const activeMode = selectedMode;
+    const activeIsLocked = user?.plan !== "pro" && activeMode !== "generate";
+
+    if (loading) {
+      return;
+    }
+
+    if (activeMode !== mode) {
+      setMode(activeMode);
+    }
+
+    if (!input.trim() || activeIsLocked) {
       return;
     }
 
@@ -51,7 +65,10 @@ export default function Generate() {
     setResult("");
 
     try {
-      const payload = mode === "generate" ? { mode, prompt: input } : { mode, sql: input };
+      const payload =
+        activeMode === "generate"
+          ? { mode: activeMode, prompt: input }
+          : { mode: activeMode, sql: input };
       const data = await aiService.runTool(payload);
       setResult(data.result || "");
     } catch (requestError) {
@@ -61,8 +78,16 @@ export default function Generate() {
     }
   };
 
+  const handleSubmit = () => {
+    runTool(mode);
+  };
+
   const submitFromShortcut = useEffectEvent(() => {
-    handleSubmit();
+    runTool(mode);
+  });
+
+  const formatFromShortcut = useEffectEvent(() => {
+    runTool("format");
   });
 
   useEffect(() => {
@@ -70,6 +95,11 @@ export default function Generate() {
       if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
         event.preventDefault();
         submitFromShortcut();
+      }
+
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === "f") {
+        event.preventDefault();
+        formatFromShortcut();
       }
     };
 
@@ -94,7 +124,7 @@ export default function Generate() {
           </div>
 
           <div className="badge-accent rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]">
-            Shortcut: Ctrl/Cmd + Enter
+            5 SQL tools ready
           </div>
         </div>
       </section>
@@ -161,7 +191,7 @@ export default function Generate() {
           {loading ? (
             <AILoadingState mode={mode} />
           ) : result ? (
-            <SQLOutput result={result} mode={mode} />
+            <SQLOutput result={result} mode={mode} onApplyResult={mode === "format" ? setInput : undefined} />
           ) : (
             <div className="flex min-h-[520px] items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50 px-8 text-center text-sm font-medium leading-7 text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
               Run a tool to see the result here.
@@ -180,6 +210,10 @@ function getAiErrorMessage(error) {
 
   if (error?.code === "AI_PROVIDER_AUTH") {
     return "AI is unavailable because the backend Gemini key is missing or invalid. Add a valid GEMINI_API_KEY or GOOGLE_API_KEY in Render, then redeploy.";
+  }
+
+  if (error?.code === "REQUEST_TIMEOUT") {
+    return "AI is taking longer than expected. Please try again, or check History because the server may still finish and save the SQL.";
   }
 
   return error?.message || "Unable to process your request right now.";

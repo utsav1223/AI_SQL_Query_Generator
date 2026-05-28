@@ -84,4 +84,10 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+userSchema.index({ plan: 1 });
+userSchema.index({ plan: 1, billingRenewal: 1 });
+userSchema.index({ createdAt: -1 });
+userSchema.index({ riskScore: -1, updatedAt: -1 });
+userSchema.index({ googleId: 1 }, { sparse: true });
+
 module.exports = mongoose.model("User", userSchema);

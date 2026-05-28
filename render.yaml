@@ -42,6 +42,8 @@ services:
         sync: false
       - key: RAZORPAY_SECRET
         sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
 
   # Frontend Service
   - type: web

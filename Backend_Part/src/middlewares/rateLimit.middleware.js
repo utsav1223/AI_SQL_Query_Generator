@@ -53,10 +53,17 @@ const paymentLimiter = createLimiter({
   message: "Too many payment requests. Please try again later."
 });
 
+const paymentWebhookLimiter = createLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 120,
+  message: "Too many payment webhook requests. Please try again later."
+});
+
 module.exports = {
   authLimiter,
   passwordResetLimiter,
   adminLoginLimiter,
   aiLimiter,
-  paymentLimiter
+  paymentLimiter,
+  paymentWebhookLimiter
 };

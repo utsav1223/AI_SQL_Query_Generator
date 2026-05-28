@@ -44,4 +44,19 @@ describe("httpClient auth events", () => {
 
     window.removeEventListener(API_AUTH_EVENT, listener);
   });
+
+  it("uses the request timeout override when provided", async () => {
+    const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ success: true, data: { result: "select 1;" } })
+    });
+
+    const request = createRequest({ authScope: "user" });
+
+    await request("/ai", "POST", { prompt: "select one" }, { timeoutMs: 120000 });
+
+    expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 120000);
+  });
 });

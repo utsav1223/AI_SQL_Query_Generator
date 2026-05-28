@@ -76,6 +76,7 @@ The app can generate SQL based on the saved schema, optimize existing SQL, expla
 
 - Razorpay payment link and order support.
 - Signature verification for payment safety.
+- Razorpay webhook verification for server-to-server payment confirmation.
 - Pro plan activation after successful payment.
 - Invoice and payment record creation.
 - Email confirmation with invoice attachment.
@@ -110,6 +111,7 @@ The app can generate SQL based on the saved schema, optimize existing SQL, expla
 | Payments | Razorpay |
 | Email | Nodemailer |
 | Scheduled Jobs | node-cron |
+| API Documentation | OpenAPI 3.0 JSON |
 | Deployment | Render blueprint |
 
 ## Screenshots
@@ -138,6 +140,7 @@ All screenshot assets are stored in `docs/screenshots`.
 |   +-- src/
 |   |   +-- config/           # Database, OAuth, and environment validation
 |   |   +-- controllers/      # Request handlers
+|   |   +-- docs/             # OpenAPI document
 |   |   +-- middlewares/      # Auth, validation, plan guards, errors
 |   |   +-- models/           # MongoDB/Mongoose schemas
 |   |   +-- routes/           # API route definitions
@@ -169,8 +172,6 @@ All screenshot assets are stored in `docs/screenshots`.
 +-- docs/
 |   +-- data-flow.md
 |   +-- screenshots/
-+-- EXTRA_FEATURES.md
-+-- PROJECT_REVIEW_README.md
 +-- docker-compose.yml
 +-- render.yaml
 +-- .gitignore
@@ -259,6 +260,7 @@ What makes it advanced:
 
 - Razorpay order and payment-link support.
 - HMAC signature verification.
+- Raw-body webhook verification using Razorpay's webhook signature.
 - Payment status validation.
 - Pro plan activation after verified payment.
 - Invoice and payment record creation.
@@ -420,6 +422,7 @@ MongoDB:  mongodb://localhost:27017/sql-studio
 ```
 
 Set `GEMINI_API_KEY` or `GOOGLE_API_KEY` in the backend service environment before using AI features. Add Razorpay, Google OAuth, and email secrets the same way when testing those integrations locally.
+For Razorpay webhooks, configure the dashboard webhook URL as `https://your-backend-domain/api/payment/webhook` and store the webhook signing secret in `RAZORPAY_WEBHOOK_SECRET`.
 
 ## Environment Variables
 
@@ -447,6 +450,7 @@ GEMINI_MODEL=gemini-2.5-flash
 
 RAZORPAY_KEY_ID=your_razorpay_key_id
 RAZORPAY_SECRET=your_razorpay_secret
+RAZORPAY_WEBHOOK_SECRET=your_razorpay_webhook_secret
 
 EMAIL_USER=your_email
 EMAIL_PASS=your_email_password
@@ -455,7 +459,7 @@ EMAIL_FROM=your_sender_email
 
 Production startup validates required backend environment variables before the app boots.
 For `NODE_ENV=production`, set `JWT_SECRET`, `MONGO_URI`, `ADMIN_USER_ID`, `ADMIN_PASSWORD`, `FRONTEND_URL`, `CORS_ORIGIN`, and either `GEMINI_API_KEY` or `GOOGLE_API_KEY`.
-Optional integrations are validated only when configured, for example Google OAuth requires both Google secrets and Razorpay requires both payment secrets.
+Optional integrations are validated only when configured, for example Google OAuth requires both Google secrets and Razorpay requires both payment secrets. Razorpay webhooks additionally require `RAZORPAY_WEBHOOK_SECRET`.
 Use a strong admin password with at least 12 characters, or store a bcrypt hash in `ADMIN_PASSWORD`.
 
 ### Frontend `.env.local`
@@ -486,6 +490,12 @@ VITE_GOOGLE_AUTH_URL=http://localhost:5000/api/auth/google
 | `npm test` | Run frontend unit tests |
 
 ## API Overview
+
+The machine-readable OpenAPI document is available from the backend at:
+
+```text
+GET /api/docs/openapi.json
+```
 
 ### Auth
 
@@ -529,6 +539,7 @@ VITE_GOOGLE_AUTH_URL=http://localhost:5000/api/auth/google
 | `POST` | `/api/payment/create-payment-link` | Create Razorpay payment link |
 | `POST` | `/api/payment/verify` | Verify order payment |
 | `POST` | `/api/payment/verify-payment-link` | Verify hosted payment link |
+| `POST` | `/api/payment/webhook` | Verify Razorpay webhook |
 | `POST` | `/api/payment/downgrade` | Downgrade to Free |
 | `GET` | `/api/payment/invoices` | Get invoices |
 
@@ -608,7 +619,7 @@ This pass cleaned the production-facing website and project structure.
 - Removed stale Vite template assets and old subproject README files.
 - Removed an unused backend root `server.js` wrapper; `Backend_Part/package.json` starts `src/server.js` directly.
 - Added a root `.gitignore` so generated files, logs, dependencies, local environment files, build output, coverage, cache, and temporary browser files do not enter Git again.
-- The root `README.md` is the canonical documentation. Use `EXTRA_FEATURES.md` for optional future ideas and `PROJECT_REVIEW_README.md` for the issue-by-issue review log.
+- The root `README.md` is the canonical public documentation for GitHub.
 
 ### Verification Commands
 

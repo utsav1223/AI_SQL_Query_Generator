@@ -10,13 +10,16 @@ const queryRoutes = require("./routes/query.routes");
 const aiRoutes = require("./routes/ai.routes");
 const schemaRoutes = require("./routes/schema.routes");
 const paymentRoutes = require("./routes/payment.routes");
+const paymentWebhookRoutes = require("./routes/paymentWebhook.routes");
 const adminRoutes = require("./routes/admin.routes");
 const feedbackRoutes = require("./routes/feedback.routes");
+const docsRoutes = require("./routes/docs.routes");
 const {
   tinyJson,
   standardJson,
   schemaJson,
-  aiJson
+  aiJson,
+  razorpayWebhookRaw
 } = require("./middlewares/bodyLimit.middleware");
 
 require("./utils/subscription.cron");
@@ -49,7 +52,9 @@ app.use(
 );
 app.use(passport.initialize());
 
+app.use("/api/docs", docsRoutes);
 app.use("/api/auth", tinyJson, authRoutes);
+app.use("/api/payment/webhook", razorpayWebhookRaw, paymentWebhookRoutes);
 app.use("/api/payment", tinyJson, paymentRoutes);
 app.use("/api/schema", schemaJson, schemaRoutes);
 app.use("/api/ai", aiJson, aiRoutes);

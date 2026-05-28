@@ -1,15 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useState } from "react";
 import { BookOpen, Check, CheckCircle2, Copy, Download, Terminal } from "lucide-react";
 import SQLSyntaxHighlighter from "./SQLSyntaxHighlighter";
 import { buildSQLFilename, downloadSQLFile } from "../../utils/sqlExport";
 
-export default function SQLOutput({ result, mode = "generate" }) {
+export default function SQLOutput({ result, mode = "generate", onApplyResult }) {
   const [typingState, setTypingState] = useState({ source: "", text: "" });
   const [copiedSource, setCopiedSource] = useState("");
   const output = result || "";
   const isExplainMode = mode === "explain";
   const isValidateMode = mode === "validate";
+  const isFormatMode = mode === "format";
   const canExport = !isExplainMode && Boolean(output.trim());
+  const canApply = isFormatMode && typeof onApplyResult === "function" && Boolean(output.trim());
   const displayText = typingState.source === output ? typingState.text : "";
   const isTyping = displayText.length < output.length;
   const copied = copiedSource === output;
@@ -59,6 +61,24 @@ export default function SQLOutput({ result, mode = "generate" }) {
     downloadSQLFile(output, buildSQLFilename(`ai-sql-${mode}`));
   };
 
+  const copyFromShortcut = useEffectEvent(() => {
+    if (output.trim()) {
+      handleCopy();
+    }
+  });
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === "c") {
+        event.preventDefault();
+        copyFromShortcut();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   if (!output) {
     return null;
   }
@@ -100,6 +120,17 @@ export default function SQLOutput({ result, mode = "generate" }) {
             >
               <Download size={13} />
               Export .sql
+            </button>
+          ) : null}
+
+          {canApply ? (
+            <button
+              type="button"
+              onClick={() => onApplyResult(output)}
+              className="button-secondary inline-flex items-center gap-2 rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]"
+            >
+              <Check size={13} />
+              Apply
             </button>
           ) : null}
         </div>

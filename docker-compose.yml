@@ -25,6 +25,7 @@ services:
       ADMIN_USER_ID: admin
       ADMIN_PASSWORD: ReplaceWithStrongAdmin123
       GEMINI_MODEL: gemini-2.5-flash
+      RAZORPAY_WEBHOOK_SECRET: replace-with-local-webhook-secret
 
   frontend:
     build:

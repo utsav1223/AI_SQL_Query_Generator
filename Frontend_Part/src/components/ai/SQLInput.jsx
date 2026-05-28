@@ -10,6 +10,12 @@ export default function SQLInput({ value, onChange, mode, loading, placeholder }
     (mode === "generate"
       ? "Example: Find users who purchased more than 500 in the last 30 days."
       : "SELECT * FROM analytics.events WHERE event_type = 'conversion';");
+  const tip =
+    mode === "generate"
+      ? "Tip: include filters, date ranges, and table names when possible."
+      : mode === "format"
+      ? "Tip: paste rough SQL to normalize indentation and clause spacing."
+      : "Tip: use clean ANSI-style SQL for easier optimization and validation.";
 
   return (
     <div className="w-full">
@@ -58,9 +64,7 @@ export default function SQLInput({ value, onChange, mode, loading, placeholder }
       )}
 
       <p className="mt-3 px-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
-        {mode === "generate"
-          ? "Tip: include filters, date ranges, and table names when possible."
-          : "Tip: use clean ANSI-style SQL for easier optimization and validation."}
+        {tip}
       </p>
     </div>
   );

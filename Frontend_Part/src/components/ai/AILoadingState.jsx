@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bot, BrainCircuit, SearchCheck, ShieldCheck, Sparkles, WandSparkles, Zap } from "lucide-react";
+import { AlignLeft, Bot, BrainCircuit, SearchCheck, ShieldCheck, Sparkles, WandSparkles, Zap } from "lucide-react";
 
 const icons = [Sparkles, BrainCircuit, WandSparkles, Bot];
 
@@ -15,6 +15,12 @@ const modeSteps = {
     "Finding slow patterns",
     "Rewriting SQL",
     "Polishing the output"
+  ],
+  format: [
+    "Reading SQL shape",
+    "Normalizing indentation",
+    "Aligning clauses",
+    "Preparing formatted SQL"
   ],
   validate: [
     "Checking syntax",
@@ -33,6 +39,7 @@ const modeSteps = {
 const modeMeta = {
   generate: { label: "Generating SQL", icon: Sparkles },
   optimize: { label: "Optimizing SQL", icon: Zap },
+  format: { label: "Formatting SQL", icon: AlignLeft },
   validate: { label: "Validating SQL", icon: ShieldCheck },
   explain: { label: "Explaining SQL", icon: SearchCheck }
 };

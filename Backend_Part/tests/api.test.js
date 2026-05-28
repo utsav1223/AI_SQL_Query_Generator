@@ -4,10 +4,12 @@ process.env.FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 process.env.CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
 process.env.ADMIN_USER_ID = process.env.ADMIN_USER_ID || "test-admin";
 process.env.ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "TestAdmin@123";
+process.env.RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || "test-webhook-secret";
 
 require("dotenv").config();
 
 const assert = require("node:assert/strict");
+const crypto = require("crypto");
 const { after, before, beforeEach, describe, it } = require("node:test");
 const mongoose = require("mongoose");
 const request = require("supertest");
@@ -70,6 +72,44 @@ describe("public user payload", () => {
       publicUser.avatarUrl,
       "https://lh3.googleusercontent.com/a/profile-photo"
     );
+  });
+});
+
+describe("Razorpay webhook security", () => {
+  const signWebhookBody = (body) => {
+    return crypto
+      .createHmac("sha256", process.env.RAZORPAY_WEBHOOK_SECRET)
+      .update(body)
+      .digest("hex");
+  };
+
+  it("rejects webhook requests with an invalid signature", async () => {
+    const body = JSON.stringify({ event: "payment_link.paid" });
+
+    const response = await request(app)
+      .post("/api/payment/webhook")
+      .set("Content-Type", "application/json")
+      .set("x-razorpay-signature", "invalid-signature")
+      .send(body);
+
+    assert.equal(response.status, 400);
+    assert.equal(response.body.success, false);
+    assert.match(response.body.message, /signature/i);
+  });
+
+  it("accepts signed webhook requests and ignores unsupported events safely", async () => {
+    const body = JSON.stringify({ event: "payment.failed" });
+
+    const response = await request(app)
+      .post("/api/payment/webhook")
+      .set("Content-Type", "application/json")
+      .set("x-razorpay-signature", signWebhookBody(body))
+      .send(body);
+
+    assert.equal(response.status, 200);
+    assert.equal(response.body.success, true);
+    assert.equal(response.body.data.ignored, true);
+    assert.equal(response.body.data.event, "payment.failed");
   });
 });
 

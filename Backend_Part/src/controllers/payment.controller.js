@@ -3,7 +3,9 @@ const sendResponse = require("../utils/sendResponse");
 const paymentService = require("../services/payment.service");
 
 exports.createOrder = asyncHandler(async (req, res) => {
-  const order = await paymentService.createOrder();
+  const order = await paymentService.createOrder({
+    userId: req.user.userId
+  });
 
   return sendResponse(res, {
     message: "Payment order created successfully",
@@ -70,6 +72,20 @@ exports.downgradePlan = asyncHandler(async (req, res) => {
     message: result.alreadyFree
       ? "Account is already on the free plan."
       : "Plan downgraded to free.",
+    data: result
+  });
+});
+
+exports.handleRazorpayWebhook = asyncHandler(async (req, res) => {
+  const result = await paymentService.handleRazorpayWebhook({
+    rawBody: req.body,
+    signature: req.get("x-razorpay-signature")
+  });
+
+  return sendResponse(res, {
+    message: result.ignored
+      ? "Razorpay webhook ignored"
+      : "Razorpay webhook processed",
     data: result
   });
 });

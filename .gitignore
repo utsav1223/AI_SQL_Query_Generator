@@ -26,3 +26,7 @@ logs/
 .cache/
 coverage/
 
+# Internal planning/review docs not meant for GitHub showcase
+EXTRA_FEATURES.md
+PROJECT_REVIEW_README.md
+MONETIZATION_README.md

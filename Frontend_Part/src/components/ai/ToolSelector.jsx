@@ -1,8 +1,9 @@
-import { Search, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import { AlignLeft, Search, ShieldCheck, Sparkles, Zap } from "lucide-react";
 
 const tools = [
   { id: "generate", label: "Generate", icon: Sparkles },
   { id: "optimize", label: "Optimize", icon: Zap },
+  { id: "format", label: "Format", icon: AlignLeft },
   { id: "explain", label: "Explain", icon: Search },
   { id: "validate", label: "Validate", icon: ShieldCheck }
 ];
@@ -10,7 +11,7 @@ const tools = [
 export default function ToolSelector({ mode, setMode }) {
   return (
     <div className="surface-card-soft rounded-lg p-1.5">
-      <div className="grid grid-cols-2 gap-1.5 lg:flex">
+      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-5">
         {tools.map((tool) => {
           const isActive = mode === tool.id;
           const Icon = tool.icon;

@@ -2,7 +2,7 @@ const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:500
   /\/+$/,
   ""
 );
-const API_TIMEOUT_MS = 20000;
+const DEFAULT_API_TIMEOUT_MS = 20000;
 export const API_AUTH_EVENT = "api:auth-error";
 
 const PUBLIC_AUTH_ENDPOINTS = new Set([
@@ -75,10 +75,21 @@ const notifyAuthError = ({ endpoint, status, authScope, message }) => {
   );
 };
 
+const resolveTimeoutMs = (requestOptions = {}) => {
+  const timeoutMs = Number(requestOptions.timeoutMs ?? DEFAULT_API_TIMEOUT_MS);
+
+  if (!Number.isFinite(timeoutMs) || timeoutMs < 0) {
+    return DEFAULT_API_TIMEOUT_MS;
+  }
+
+  return timeoutMs;
+};
+
 export const createRequest = ({ getToken, authScope } = {}) => {
   return async (endpoint, method = "GET", body = null, requestOptions = {}) => {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+    const timeoutMs = resolveTimeoutMs(requestOptions);
+    const timeoutId = timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : null;
     const token = typeof getToken === "function" ? getToken() : null;
     const notifyOnAuthError = requestOptions.notifyOnAuthError !== false;
 
@@ -102,12 +113,16 @@ export const createRequest = ({ getToken, authScope } = {}) => {
       response = await fetch(`${API_BASE_URL}${endpoint}`, options);
     } catch (error) {
       if (error?.name === "AbortError") {
-        throw new Error("Request timed out. Please try again.");
+        const timeoutError = new Error("Request timed out while the server was still working.");
+        timeoutError.code = "REQUEST_TIMEOUT";
+        throw timeoutError;
       }
 
       throw error;
     } finally {
-      clearTimeout(timeoutId);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     }
 
     const payload = await parseResponseBody(response);
