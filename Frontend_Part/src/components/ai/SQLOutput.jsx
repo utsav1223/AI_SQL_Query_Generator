@@ -1,16 +1,64 @@
-import { BookOpen, CheckCircle2, Terminal } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { BookOpen, Check, CheckCircle2, Copy, Terminal } from "lucide-react";
 
 export default function SQLOutput({ result, mode = "generate" }) {
-  if (!result) {
+  const [typingState, setTypingState] = useState({ source: "", text: "" });
+  const [copiedSource, setCopiedSource] = useState("");
+  const output = result || "";
+  const isExplainMode = mode === "explain";
+  const isValidateMode = mode === "validate";
+  const displayText = typingState.source === output ? typingState.text : "";
+  const isTyping = displayText.length < output.length;
+  const copied = copiedSource === output;
+
+  const chunkSize = useMemo(() => {
+    if (output.length > 2200) return 44;
+    if (output.length > 900) return 26;
+    if (output.length > 320) return 14;
+    return 6;
+  }, [output.length]);
+
+  useEffect(() => {
+    if (!output) {
+      return undefined;
+    }
+
+    let index = 0;
+
+    const interval = window.setInterval(() => {
+      index = Math.min(index + chunkSize, output.length);
+      setTypingState({
+        source: output,
+        text: output.slice(0, index)
+      });
+
+      if (index >= output.length) {
+        window.clearInterval(interval);
+      }
+    }, 18);
+
+    return () => window.clearInterval(interval);
+  }, [chunkSize, output]);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(output);
+      setCopiedSource(output);
+      window.setTimeout(() => {
+        setCopiedSource((current) => (current === output ? "" : current));
+      }, 1600);
+    } catch {
+      setCopiedSource("");
+    }
+  };
+
+  if (!output) {
     return null;
   }
 
-  const isExplainMode = mode === "explain";
-  const isValidateMode = mode === "validate";
-
   return (
     <div className="w-full">
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent-soft)] text-[var(--accent)]">
             {isExplainMode ? <BookOpen size={14} /> : <Terminal size={14} />}
@@ -20,12 +68,23 @@ export default function SQLOutput({ result, mode = "generate" }) {
           </p>
         </div>
 
-        {isValidateMode ? (
-          <span className="badge-accent rounded-md px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em]">
-            <CheckCircle2 size={12} />
-            Valid Syntax
-          </span>
-        ) : null}
+        <div className="flex flex-wrap items-center gap-2">
+          {isValidateMode ? (
+            <span className="badge-accent rounded-md px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em]">
+              <CheckCircle2 size={12} />
+              Valid Syntax
+            </span>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="button-secondary inline-flex items-center gap-2 rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]"
+          >
+            {copied ? <Check size={13} /> : <Copy size={13} />}
+            {copied ? "Copied" : "Copy"}
+          </button>
+        </div>
       </div>
 
       <div className="code-shell overflow-hidden rounded-lg">
@@ -46,7 +105,8 @@ export default function SQLOutput({ result, mode = "generate" }) {
                 : "mono-font text-[13px] leading-7 text-emerald-300"
             }`}
           >
-            {result}
+            {displayText}
+            {isTyping ? <span className="ml-0.5 animate-pulse text-teal-200">|</span> : null}
           </pre>
         </div>
       </div>

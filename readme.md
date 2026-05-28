@@ -418,7 +418,7 @@ GEMINI_API_KEY=your_gemini_api_key
 # Or use GOOGLE_API_KEY instead of GEMINI_API_KEY.
 # Set only one Gemini key in production.
 GOOGLE_API_KEY=
-GEMINI_MODEL=gemini-2.5-pro
+GEMINI_MODEL=gemini-2.5-flash
 
 RAZORPAY_KEY_ID=your_razorpay_key_id
 RAZORPAY_SECRET=your_razorpay_secret

@@ -2,7 +2,7 @@ const axios = require("axios");
 const AppError = require("./AppError");
 const logger = require("./logger");
 
-const DEFAULT_GEMINI_MODEL = "gemini-2.5-pro";
+const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
 
 const getGeminiModel = () =>
   String(process.env.GEMINI_MODEL || DEFAULT_GEMINI_MODEL)
