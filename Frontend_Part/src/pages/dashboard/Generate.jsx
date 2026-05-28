@@ -1,10 +1,11 @@
 import { useEffect, useEffectEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Lock, Sparkles } from "lucide-react";
+import { Database, Lock, Sparkles } from "lucide-react";
 import ToolSelector from "../../components/ai/ToolSelector";
 import SQLInput from "../../components/ai/SQLInput";
 import SQLOutput from "../../components/ai/SQLOutput";
 import AILoadingState, { AILoadingIcon } from "../../components/ai/AILoadingState";
+import { SQL_DIALECT_OPTIONS } from "../../config/productConfig";
 import { useAuth } from "../../hooks/useAuth";
 import { aiService } from "../../services/aiService";
 
@@ -40,9 +41,11 @@ export default function Generate() {
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [dialect, setDialect] = useState("standard");
 
   const isProFeature = mode !== "generate";
   const isLocked = user?.plan !== "pro" && isProFeature;
+  const canChooseDialect = user?.plan === "pro";
 
   const runTool = async (selectedMode = mode) => {
     const activeMode = selectedMode;
@@ -65,10 +68,11 @@ export default function Generate() {
     setResult("");
 
     try {
+      const selectedDialect = user?.plan === "pro" ? dialect : "standard";
       const payload =
         activeMode === "generate"
-          ? { mode: activeMode, prompt: input }
-          : { mode: activeMode, sql: input };
+          ? { mode: activeMode, prompt: input, dialect: selectedDialect }
+          : { mode: activeMode, sql: input, dialect: selectedDialect };
       const data = await aiService.runTool(payload);
       setResult(data.result || "");
     } catch (requestError) {
@@ -133,6 +137,34 @@ export default function Generate() {
         <section className="space-y-4">
           <div className="dashboard-card rounded-lg p-5 sm:p-6">
             <ToolSelector mode={mode} setMode={setMode} />
+            <div className="mt-4 flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white text-[var(--accent)] dark:bg-slate-800">
+                  <Database size={16} />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+                    SQL dialect
+                  </p>
+                  <p className="truncate text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    {canChooseDialect ? "Dialect-specific SQL output" : "Standard SQL on Free"}
+                  </p>
+                </div>
+              </div>
+
+              <select
+                value={canChooseDialect ? dialect : "standard"}
+                onChange={(event) => setDialect(event.target.value)}
+                disabled={!canChooseDialect || loading}
+                className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm font-bold text-slate-800 outline-none transition focus:border-[var(--accent)] disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:disabled:bg-slate-800"
+              >
+                {SQL_DIALECT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="dashboard-card overflow-hidden rounded-lg">

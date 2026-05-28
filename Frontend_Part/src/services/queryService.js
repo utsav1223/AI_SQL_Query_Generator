@@ -21,6 +21,15 @@ export const queryService = {
   togglePin(id) {
     return apiRequest(`/queries/${id}/pin`, "PATCH");
   },
+  toggleFavorite(id) {
+    return apiRequest(`/queries/${id}/favorite`, "PATCH");
+  },
+  updateTags(id, tags) {
+    return apiRequest(`/queries/${id}/tags`, "PATCH", { tags });
+  },
+  trackAction(id, action) {
+    return apiRequest(`/queries/${id}/action`, "POST", { action }, { notifyOnAuthError: false });
+  },
   getAdvancedAnalytics() {
     return apiRequest("/queries/advanced-analytics", "GET");
   }

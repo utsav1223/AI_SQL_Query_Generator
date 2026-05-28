@@ -1,8 +1,7 @@
 import { useMemo } from "react";
 import { LifeBuoy, Mail, MessageSquare, ExternalLink, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-const SUPPORT_EMAIL = "support@sqlstudio.ai";
+import { SUPPORT_EMAIL } from "../../config/productConfig";
 
 export default function Support() {
   const navigate = useNavigate();

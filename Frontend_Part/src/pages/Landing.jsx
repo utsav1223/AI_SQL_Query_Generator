@@ -23,6 +23,7 @@ import {
 import AuthModal from "../components/public/AuthModal";
 import ForgotPasswordModal from "../components/public/ForgotPasswordModal";
 import ResetPasswordModal from "../components/public/ResetPasswordModal";
+import { PRICING_PLANS } from "../config/productConfig";
 
 const navItems = [
   { label: "Home", sectionId: null },
@@ -59,44 +60,6 @@ const workflowSteps = [
   { title: "Connect context", description: "Add the tables, columns, and relationships your SQL depends on.", icon: Layers3 },
   { title: "Write the request", description: "Explain the report, dashboard, or backend query in natural language.", icon: BrainCircuit },
   { title: "Refine the result", description: "Review the generated SQL, save the query, and continue from history.", icon: FileText }
-];
-
-const plans = [
-  {
-    name: "Starter",
-    price: "INR 0",
-    note: "/ month",
-    badge: "Current",
-    description: "For students, prototypes, and personal projects.",
-    features: [
-      { label: "5 one-time credits", included: true },
-      { label: "Text-to-SQL generation", included: true },
-      { label: "7-day history", included: true },
-      { label: "Schema workspace", included: true },
-      { label: "Optimization tools", included: false },
-      { label: "Analytics dashboard", included: false }
-    ],
-    action: "Start Free",
-    mode: "register"
-  },
-  {
-    name: "Professional",
-    price: "INR 499",
-    note: "/ month",
-    badge: "Best value",
-    description: "For serious usage with billing, support, and stronger workflow tools.",
-    features: [
-      { label: "Unlimited monthly queries", included: true },
-      { label: "Advanced SQL optimizer", included: true },
-      { label: "Explain mode", included: true },
-      { label: "Full history archive", included: true },
-      { label: "Priority processing", included: true },
-      { label: "Invoices and plan management", included: true }
-    ],
-    action: "Go Pro",
-    mode: "login",
-    highlighted: true
-  }
 ];
 
 const stats = [
@@ -547,19 +510,19 @@ ORDER BY monthly_revenue DESC;`}
             <motion.div className="mb-8 text-center" variants={fadeUp}>
               <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal-700">Pricing</p>
               <h2 className="display-font mt-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-4xl">
-                Clear plans for learning and scaling.
+                Clear plans for testing, then working seriously.
               </h2>
               <p className="mx-auto mt-3 max-w-xl text-sm font-medium leading-7 text-slate-600">
-                Start free, then move into the full workflow when you need more generation, validation, and billing tools.
+                Free proves that schema-aware generation works. Pro unlocks confidence tools, full history, dialect-aware output, and analytics that show the value of your SQL workflow.
               </p>
             </motion.div>
 
             <motion.div className="mx-auto grid max-w-4xl gap-5 md:grid-cols-2" variants={stagger}>
-              {plans.map((plan) => (
+              {PRICING_PLANS.map((plan) => (
                 <motion.article
                   key={plan.name}
                   variants={cardReveal}
-                  className={`relative flex min-h-[430px] flex-col overflow-hidden rounded-xl border p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg ${
+                  className={`relative flex min-h-[500px] flex-col overflow-hidden rounded-xl border p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg ${
                     plan.highlighted ? "border-[#10232d] bg-white text-slate-950 ring-1 ring-[#10232d]" : "border-slate-200 bg-white text-slate-950"
                   }`}
                 >
@@ -589,6 +552,17 @@ ORDER BY monthly_revenue DESC;`}
                   <p className="mt-3 text-[13px] font-medium leading-6 text-slate-600">
                     {plan.description}
                   </p>
+
+                  <div className="mt-5 grid gap-2 sm:grid-cols-3">
+                    {plan.metrics.map((metric) => (
+                      <span
+                        key={metric}
+                        className="rounded-md border border-slate-200 bg-slate-50 px-2 py-2 text-center text-[10px] font-bold uppercase tracking-[0.1em] text-slate-600"
+                      >
+                        {metric}
+                      </span>
+                    ))}
+                  </div>
 
                   <div className="my-6 h-px bg-slate-200" />
 

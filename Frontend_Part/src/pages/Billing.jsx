@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   BadgeCheck,
+  BarChart3,
   CalendarDays,
   CheckCircle2,
   CreditCard,
+  Database,
   FileText,
   HelpCircle,
   Loader2,
@@ -22,23 +24,33 @@ import { logger } from "../utils/logger";
 
 const proFeatures = [
   {
-    title: "Unlimited monthly queries",
-    description: "Generate, optimize, validate, format, and explain SQL without free credit limits.",
+    title: "High monthly generation allowance",
+    description: "Generate SQL without the 5-credit Starter limit interrupting real work.",
     icon: Zap
   },
   {
-    title: "Advanced SQL optimizer",
-    description: "Improve query shape and readability before you move it into real work.",
+    title: "Validate, optimize, explain",
+    description: "Review SQL before running it, improve query shape, and understand complex statements.",
     icon: BadgeCheck
   },
   {
-    title: "Full history archive",
-    description: "Keep a reliable record of generated SQL and return to previous work quickly.",
+    title: "Full searchable history",
+    description: "Keep every query, then organize important work with pins, favorites, and tags.",
     icon: FileText
   },
   {
+    title: "Dialect-specific output",
+    description: "Choose PostgreSQL, MySQL, SQLite, SQL Server, Oracle, or standard SQL.",
+    icon: Database
+  },
+  {
+    title: "Value analytics",
+    description: "Track time saved, query quality, schema coverage, optimizer use, and workflow trends.",
+    icon: BarChart3
+  },
+  {
     title: "Invoices and support",
-    description: "Review billing records and use the dashboard support flow when you need help.",
+    description: "Review billing records and get priority help for account or SQL workflow issues.",
     icon: Receipt
   }
 ];
@@ -196,7 +208,7 @@ export default function Billing() {
               <p className="mt-3 max-w-3xl text-sm font-medium leading-7 text-slate-600">
                 {isProUser
                   ? "Your subscription is active. Review billing details, open invoices, or move back to the free plan from one focused page."
-                  : "Unlock unlimited generation, optimizer tools, explain mode, billing records, and priority workflow support with a secure checkout."}
+                  : "Unlock validation, optimization, dialect-aware output, full history, value analytics, billing records, and priority workflow support with a secure checkout."}
               </p>
             </div>
 
@@ -236,7 +248,7 @@ export default function Billing() {
                     </h3>
                   </div>
                   <p className="max-w-sm text-sm font-medium leading-6 text-slate-600">
-                    Built for frequent generation, review, and optimization workflows.
+                    Built for frequent generation, review, optimization, reuse, and measurable SQL productivity.
                   </p>
                 </div>
 

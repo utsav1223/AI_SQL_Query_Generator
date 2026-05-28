@@ -8,6 +8,9 @@ const {
   getAnalytics,
   getAdvancedAnalytics,
   togglePin,
+  toggleFavorite,
+  updateTags,
+  trackAction,
   getOverview
 } = require("../controllers/query.controller");
 
@@ -17,5 +20,8 @@ router.get("/overview", auth, getOverview);
 router.get("/", auth, getUserQueries);
 router.delete("/:id", auth, deleteQuery);
 router.patch("/:id/pin", auth, requirePro, togglePin);
+router.patch("/:id/favorite", auth, requirePro, toggleFavorite);
+router.patch("/:id/tags", auth, requirePro, updateTags);
+router.post("/:id/action", auth, trackAction);
 
 module.exports = router;

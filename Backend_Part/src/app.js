@@ -25,7 +25,10 @@ const {
 require("./utils/subscription.cron");
 
 const app = express();
-const defaultOrigins = ["http://localhost:5173", "http://127.0.0.1:5173"];
+const isProduction = process.env.NODE_ENV === "production";
+const localDevelopmentOrigins = isProduction
+  ? []
+  : ["http://localhost:5173", "http://127.0.0.1:5173"];
 const configuredOrigins = [
   process.env.CORS_ORIGIN,
   process.env.FRONTEND_URL
@@ -33,7 +36,7 @@ const configuredOrigins = [
   .flatMap((value) => (value ? value.split(",") : []))
   .map((value) => value.trim())
   .filter(Boolean);
-const allowedOrigins = [...new Set([...defaultOrigins, ...configuredOrigins])];
+const allowedOrigins = [...new Set([...localDevelopmentOrigins, ...configuredOrigins])];
 
 app.set("trust proxy", 1);
 
@@ -60,7 +63,7 @@ app.use("/api/schema", schemaJson, schemaRoutes);
 app.use("/api/ai", aiJson, aiRoutes);
 app.use("/api/admin", standardJson, adminRoutes);
 app.use("/api/feedback", standardJson, feedbackRoutes);
-app.use("/api/queries", queryRoutes);
+app.use("/api/queries", standardJson, queryRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

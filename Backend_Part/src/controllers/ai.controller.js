@@ -9,6 +9,7 @@ exports.handleAI = asyncHandler(async (req, res) => {
     mode: req.body.mode,
     prompt: req.body.prompt,
     sql: req.body.sql,
+    dialect: req.body.dialect,
     requestMeta: getRequestMeta(req)
   });
 

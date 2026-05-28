@@ -433,11 +433,11 @@ PORT=5000
 NODE_ENV=development
 MONGO_URI=your_mongodb_connection_string
 MONGO_URI_TEST=your_test_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
+JWT_SECRET=generate-a-random-32-plus-character-secret
 CORS_ORIGIN=http://localhost:5173
 FRONTEND_URL=http://localhost:5173
-ADMIN_USER_ID=admin
-ADMIN_PASSWORD=change_this_password
+ADMIN_USER_ID=replace-with-production-admin-id
+ADMIN_PASSWORD=use-a-strong-12-plus-character-password-or-bcrypt-hash
 
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret

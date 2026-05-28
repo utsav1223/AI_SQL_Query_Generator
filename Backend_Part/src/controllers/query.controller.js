@@ -46,6 +46,33 @@ exports.togglePin = asyncHandler(async (req, res) => {
   });
 });
 
+exports.toggleFavorite = asyncHandler(async (req, res) => {
+  const result = await queryService.toggleFavoriteQuery(req.user.userId, req.params.id);
+
+  return sendResponse(res, {
+    message: "Favorite status updated successfully",
+    data: result
+  });
+});
+
+exports.updateTags = asyncHandler(async (req, res) => {
+  const result = await queryService.updateQueryTags(req.user.userId, req.params.id, req.body.tags);
+
+  return sendResponse(res, {
+    message: "Query tags updated successfully",
+    data: result
+  });
+});
+
+exports.trackAction = asyncHandler(async (req, res) => {
+  const result = await queryService.trackQueryAction(req.user.userId, req.params.id, req.body.action);
+
+  return sendResponse(res, {
+    message: "Query action tracked successfully",
+    data: result
+  });
+});
+
 exports.getOverview = asyncHandler(async (req, res) => {
   const overview = await queryService.getUserOverview(req.user.userId);
 

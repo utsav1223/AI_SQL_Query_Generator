@@ -60,7 +60,11 @@ const openApiDocument = {
             enum: ["generate", "optimize", "validate", "explain", "format"]
           },
           prompt: { type: "string" },
-          sql: { type: "string" }
+          sql: { type: "string" },
+          dialect: {
+            type: "string",
+            enum: ["standard", "postgresql", "mysql", "sqlite", "sqlserver", "oracle"]
+          }
         }
       },
       Pagination: {
@@ -254,6 +258,42 @@ const openApiDocument = {
         responses: {
           200: { description: "Pin state updated" },
           403: { $ref: "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/queries/{id}/favorite": {
+      patch: {
+        tags: ["Queries"],
+        summary: "Toggle a Pro user's favorite query",
+        security: [{ userCookie: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: {
+          200: { description: "Favorite state updated" },
+          403: { $ref: "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/queries/{id}/tags": {
+      patch: {
+        tags: ["Queries"],
+        summary: "Update a Pro user's query tags",
+        security: [{ userCookie: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: {
+          200: { description: "Tags updated" },
+          403: { $ref: "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/queries/{id}/action": {
+      post: {
+        tags: ["Queries"],
+        summary: "Track copy or export activity for analytics",
+        security: [{ userCookie: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: {
+          200: { description: "Query action tracked" },
+          400: { description: "Invalid action" }
         }
       }
     },

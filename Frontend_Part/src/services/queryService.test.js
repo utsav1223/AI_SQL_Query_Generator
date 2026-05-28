@@ -32,4 +32,22 @@ describe("queryService", () => {
       "GET"
     );
   });
+
+  it("updates Pro query organization metadata", () => {
+    queryService.toggleFavorite("query-1");
+    queryService.updateTags("query-1", ["billing", "reporting"]);
+    queryService.trackAction("query-1", "copy");
+
+    expect(apiRequest).toHaveBeenNthCalledWith(1, "/queries/query-1/favorite", "PATCH");
+    expect(apiRequest).toHaveBeenNthCalledWith(2, "/queries/query-1/tags", "PATCH", {
+      tags: ["billing", "reporting"]
+    });
+    expect(apiRequest).toHaveBeenNthCalledWith(
+      3,
+      "/queries/query-1/action",
+      "POST",
+      { action: "copy" },
+      { notifyOnAuthError: false }
+    );
+  });
 });

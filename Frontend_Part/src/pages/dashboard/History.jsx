@@ -9,8 +9,12 @@ import {
   Download,
   Filter,
   History as HistoryIcon,
+  Lock,
   Pin,
   PinOff,
+  Save,
+  Star,
+  Tags,
   Trash
 } from "lucide-react";
 import {
@@ -47,7 +51,11 @@ export default function History() {
     limit: 10,
     pages: 1
   });
+  const [accessPolicy, setAccessPolicy] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
+  const [favoriteLoadingId, setFavoriteLoadingId] = useState(null);
+  const [tagDrafts, setTagDrafts] = useState({});
+  const [tagSavingId, setTagSavingId] = useState(null);
 
   const fetchHistory = useCallback(async () => {
     setLoading(true);
@@ -61,6 +69,7 @@ export default function History() {
       });
 
       setQueries(data.queries || []);
+      setAccessPolicy(data.accessPolicy || null);
       setPagination(data.pagination || {
         total: 0,
         page: 1,
@@ -122,9 +131,51 @@ export default function History() {
     }
   };
 
+  const toggleFavorite = async (id) => {
+    setFavoriteLoadingId(id);
+    try {
+      await queryService.toggleFavorite(id);
+      await fetchHistory();
+    } catch (error) {
+      logger.error("Query favorite update failed", error, { queryId: id });
+    } finally {
+      setFavoriteLoadingId(null);
+    }
+  };
+
+  const handleTagDraftChange = (id, value) => {
+    setTagDrafts((current) => ({
+      ...current,
+      [id]: value
+    }));
+  };
+
+  const saveTags = async (event, query) => {
+    event.preventDefault();
+    setTagSavingId(query._id);
+
+    try {
+      const draftValue = tagDrafts[query._id] ?? (query.tags || []).join(", ");
+      const tags = draftValue
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean);
+
+      await queryService.updateTags(query._id, tags);
+      await fetchHistory();
+    } catch (error) {
+      logger.error("Query tag update failed", error, { queryId: query._id });
+    } finally {
+      setTagSavingId(null);
+    }
+  };
+
   const handleCopy = async (id, text) => {
     try {
       await navigator.clipboard.writeText(text || "");
+      queryService.trackAction(id, "copy").catch((error) => {
+        logger.warn("Query copy tracking failed", { error, queryId: id });
+      });
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 2000);
     } catch (error) {
@@ -133,6 +184,9 @@ export default function History() {
   };
 
   const handleExport = (query) => {
+    queryService.trackAction(query._id, "export").catch((error) => {
+      logger.warn("Query export tracking failed", { error, queryId: query._id });
+    });
     downloadSQLFile(
       query.generatedSQL || "",
       buildSQLFilename(`history-${query.mode || "query"}`)
@@ -149,8 +203,20 @@ export default function History() {
         eyebrow="History"
         icon={Database}
         title="SQL History"
-        description="Search, copy, pin, and manage generated SQL from a readable workspace history."
+        description="Search, copy, pin, favorite, tag, and manage generated SQL from a readable workspace history."
       />
+
+      {accessPolicy && !accessPolicy.fullHistory ? (
+        <section className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+          <div className="flex items-start gap-3">
+            <Lock size={16} className="mt-0.5 shrink-0" />
+            <p>
+              Starter shows your latest {accessPolicy.visibleLimit} history entries.
+              {accessPolicy.hiddenCount > 0 ? ` ${accessPolicy.hiddenCount} older entries are kept for Pro archive access.` : " Pro unlocks the full searchable archive with pins, favorites, and tags."}
+            </p>
+          </div>
+        </section>
+      ) : null}
 
       <section className="sticky top-[76px] z-20 rounded-lg border border-slate-200 bg-white/95 p-3 shadow-sm backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/95">
         <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto] lg:items-center">
@@ -162,6 +228,7 @@ export default function History() {
             <option value="optimize">Optimize</option>
             <option value="validate">Validate</option>
             <option value="explain">Explain</option>
+            <option value="format">Format</option>
           </SelectControl>
 
           <SelectControl icon={<ArrowUpDown size={14} />} value={sortOrder} onChange={setSortOrder}>
@@ -197,23 +264,80 @@ export default function History() {
                         Pinned
                       </StatusBadge>
                     ) : null}
+                    {q.favorite ? (
+                      <StatusBadge tone="amber" icon={<Star size={11} fill="currentColor" />}>
+                        Favorite
+                      </StatusBadge>
+                    ) : null}
+                    {q.dialect && q.dialect !== "standard" ? (
+                      <StatusBadge icon={<Database size={12} />}>
+                        {q.dialect}
+                      </StatusBadge>
+                    ) : null}
                   </div>
                   <h2 className="break-words text-base font-bold leading-7 text-slate-900 dark:text-slate-100">
                     {q.prompt}
                   </h2>
+                  {q.tags?.length ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {q.tags.map((tag) => (
+                        <span
+                          key={`${q._id}-${tag}`}
+                          className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                        >
+                          <Tags size={11} />
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">
                   {user?.plan === "pro" ? (
-                    <IconButton onClick={() => togglePin(q._id)} label={q.pinned ? "Unpin" : "Pin"}>
-                      {q.pinned ? <PinOff size={16} /> : <Pin size={16} />}
-                    </IconButton>
+                    <>
+                      <IconButton
+                        onClick={() => toggleFavorite(q._id)}
+                        label={q.favorite ? "Remove favorite" : "Favorite"}
+                        disabled={favoriteLoadingId === q._id}
+                      >
+                        <Star size={16} fill={q.favorite ? "currentColor" : "none"} />
+                      </IconButton>
+                      <IconButton onClick={() => togglePin(q._id)} label={q.pinned ? "Unpin" : "Pin"}>
+                        {q.pinned ? <PinOff size={16} /> : <Pin size={16} />}
+                      </IconButton>
+                    </>
                   ) : null}
                   <IconButton onClick={() => handleDelete(q._id)} label="Delete" danger>
                     <Trash size={16} />
                   </IconButton>
                 </div>
               </div>
+
+              {user?.plan === "pro" ? (
+                <form
+                  onSubmit={(event) => saveTags(event, q)}
+                  className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950 sm:flex-row sm:items-center"
+                >
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                    <Tags size={15} className="shrink-0 text-[var(--accent)]" />
+                    <input
+                      value={tagDrafts[q._id] ?? (q.tags || []).join(", ")}
+                      onChange={(event) => handleTagDraftChange(q._id, event.target.value)}
+                      placeholder="reporting, billing, reusable"
+                      className="h-10 min-w-0 flex-1 rounded-md border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-[var(--accent)] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={tagSavingId === q._id}
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-slate-900 px-3 text-[10px] font-bold uppercase tracking-[0.12em] text-white hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-teal-600 dark:hover:bg-teal-500"
+                  >
+                    <Save size={13} />
+                    {tagSavingId === q._id ? "Saving" : "Save Tags"}
+                  </button>
+                </form>
+              ) : null}
 
               <div className="relative bg-slate-950">
                 <div className="absolute right-3 top-3 z-10 flex flex-wrap justify-end gap-2">

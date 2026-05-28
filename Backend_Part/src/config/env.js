@@ -1,6 +1,11 @@
 const PLACEHOLDER_VALUES = new Set([
   "replace-with-a-secure-secret",
   "replace-with-a-strong-admin-password-or-bcrypt-hash",
+  "generate-a-random-32-plus-character-secret",
+  "replace-with-production-admin-id",
+  "use-a-strong-12-plus-character-password-or-bcrypt-hash",
+  "change_this_password",
+  "your_jwt_secret",
   "admin",
   "Admin@123",
   "changeme",

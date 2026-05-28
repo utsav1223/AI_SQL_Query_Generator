@@ -55,6 +55,24 @@ test("production env validation rejects weak admin password", () => {
   );
 });
 
+test("production env validation rejects documented placeholder secrets", () => {
+  process.env = {
+    NODE_ENV: "production",
+    JWT_SECRET: "generate-a-random-32-plus-character-secret",
+    MONGO_URI: "mongodb://127.0.0.1:27017/sql-studio",
+    ADMIN_USER_ID: "replace-with-production-admin-id",
+    ADMIN_PASSWORD: "use-a-strong-12-plus-character-password-or-bcrypt-hash",
+    FRONTEND_URL: "https://example.com",
+    CORS_ORIGIN: "https://example.com",
+    GEMINI_API_KEY: "gemini-test-key"
+  };
+
+  assert.throws(
+    () => validateEnv(),
+    /JWT_SECRET must be replaced[\s\S]*ADMIN_USER_ID must be replaced[\s\S]*ADMIN_PASSWORD must be replaced/
+  );
+});
+
 test("integration validation catches partial secrets", () => {
   process.env = {
     NODE_ENV: "development",

@@ -1,39 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Check, CreditCard, Loader2, Shield, Sparkles, X, Zap } from "lucide-react";
+import { ArrowRight, BarChart3, Check, CreditCard, Loader2, Shield, Sparkles, X, Zap } from "lucide-react";
+import { PRICING_PLANS } from "../../config/productConfig";
 import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
 import { useAuth } from "../../hooks/useAuth";
 import { paymentService } from "../../services/paymentService";
-
-const plans = [
-  {
-    name: "Starter",
-    price: "INR 0",
-    note: "/ month",
-    badge: "Current",
-    features: [
-      { label: "5 one-time credits", included: true },
-      { label: "Text-to-SQL generation", included: true },
-      { label: "7-day history", included: true },
-      { label: "Optimization tools", included: false },
-      { label: "Analytics dashboard", included: false }
-    ]
-  },
-  {
-    name: "Professional",
-    price: "INR 499",
-    note: "/ month",
-    badge: "Best value",
-    highlighted: true,
-    features: [
-      { label: "Unlimited monthly queries", included: true },
-      { label: "Advanced SQL optimizer", included: true },
-      { label: "Explain mode", included: true },
-      { label: "Full history archive", included: true },
-      { label: "Priority processing", included: true }
-    ]
-  }
-];
 
 export default function Pricing() {
   const { user, login } = useAuth();
@@ -91,9 +62,15 @@ export default function Pricing() {
           Choose the workspace plan that fits your SQL workflow.
         </h1>
         <p className="mt-3 text-sm font-medium leading-7 text-slate-600 dark:text-slate-400">
-          Start free, then upgrade when you need unlimited generations, optimization tools, and a full history archive.
+          Start free to prove the generator works, then upgrade when you need validation, optimization, full history, and analytics that show the value of your SQL workflow.
         </p>
       </header>
+
+      <section className="grid gap-4 md:grid-cols-3">
+        <ValueStrip icon={Zap} label="Faster work" value="Generate and review SQL from one place" />
+        <ValueStrip icon={Shield} label="Lower risk" value="Validate queries before running them" />
+        <ValueStrip icon={BarChart3} label="Visible value" value="Track time saved and query quality" />
+      </section>
 
       {message ? (
         <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
@@ -107,8 +84,8 @@ export default function Pricing() {
         </div>
       ) : null}
 
-      <section className="mx-auto grid max-w-4xl gap-5 md:grid-cols-2">
-        {plans.map((plan) => {
+      <section className="mx-auto grid max-w-5xl gap-5 md:grid-cols-2">
+        {PRICING_PLANS.map((plan) => {
           const isProPlan = Boolean(plan.highlighted);
           const isFreePlan = !isProPlan;
           const isUserPro = user?.plan === "pro";
@@ -133,7 +110,7 @@ export default function Pricing() {
           return (
             <article
               key={plan.name}
-              className={`relative flex min-h-[430px] flex-col rounded-xl border bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg dark:bg-slate-900 ${
+              className={`relative flex min-h-[560px] flex-col rounded-xl border bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg dark:bg-slate-900 ${
                 plan.highlighted
                   ? "border-slate-900 ring-1 ring-slate-900 dark:border-teal-400 dark:ring-teal-400"
                   : "border-slate-200 dark:border-slate-700"
@@ -162,6 +139,24 @@ export default function Pricing() {
                   {plan.price}
                 </p>
                 <p className="pb-1 text-xs font-semibold text-slate-500">{plan.note}</p>
+              </div>
+
+              <p className="mt-3 text-sm font-bold leading-6 text-slate-800 dark:text-slate-200">
+                {plan.promise}
+              </p>
+              <p className="mt-2 text-sm font-medium leading-6 text-slate-500 dark:text-slate-400">
+                {plan.dashboardDescription || plan.description}
+              </p>
+
+              <div className="mt-5 grid gap-2 sm:grid-cols-3">
+                {plan.metrics.map((metric) => (
+                  <span
+                    key={metric}
+                    className="rounded-md border border-slate-200 bg-slate-50 px-2 py-2 text-center text-[10px] font-bold uppercase tracking-[0.1em] text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300"
+                  >
+                    {metric}
+                  </span>
+                ))}
               </div>
 
               <div className="my-6 h-px bg-slate-200 dark:bg-slate-700" />
@@ -235,5 +230,27 @@ export default function Pricing() {
       </section>
       <ConfirmationDialog />
     </div>
+  );
+}
+
+function ValueStrip({ icon, label, value }) {
+  const Icon = icon;
+
+  return (
+    <article className="dashboard-card rounded-lg p-4">
+      <div className="flex items-start gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[var(--accent-soft)] text-[var(--accent)]">
+          <Icon size={17} />
+        </span>
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+            {label}
+          </p>
+          <p className="mt-1 text-sm font-bold leading-6 text-slate-900 dark:text-slate-100">
+            {value}
+          </p>
+        </div>
+      </div>
+    </article>
   );
 }

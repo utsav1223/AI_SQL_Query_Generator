@@ -11,6 +11,15 @@ const { createSecurityEvent } = require("../utils/securityMonitor");
 
 const GEMINI_MAX_OUTPUT_TOKENS = 1024;
 
+const DIALECT_LABELS = {
+  standard: "Standard SQL",
+  postgresql: "PostgreSQL",
+  mysql: "MySQL",
+  sqlite: "SQLite",
+  sqlserver: "SQL Server",
+  oracle: "Oracle"
+};
+
 let sqlFormatterLoaded = false;
 let sqlFormatterFn = null;
 
@@ -219,6 +228,11 @@ const toArray = (value) => {
   return [];
 };
 
+const normalizeDialect = (dialect) => {
+  const normalized = String(dialect || "standard").trim().toLowerCase();
+  return DIALECT_LABELS[normalized] ? normalized : "standard";
+};
+
 const normalizeExplainPayload = (parsed, fallbackText) => {
   if (!parsed || typeof parsed !== "object") {
     return {
@@ -281,17 +295,28 @@ const buildExplainOutput = (payload) => {
   ].join("\n");
 };
 
-const buildUserPrompt = ({ mode, schemaText, hasSchema, prompt, sql }) => {
+const buildUserPrompt = ({ mode, schemaText, hasSchema, prompt, sql, dialect }) => {
+  const dialectLabel = DIALECT_LABELS[normalizeDialect(dialect)];
+  const dialectBlock = `
+Target SQL Dialect:
+${dialectLabel}
+
+Use syntax, quoting, date functions, and pagination patterns that fit this dialect.
+`;
   const schemaBlock = hasSchema
     ? `
 Schema Context (authoritative):
 <<<SCHEMA_START>>>
 ${schemaText}
 <<<SCHEMA_END>>>
+
+${dialectBlock}
 `
     : `
 Schema Context:
 No schema provided by user.
+
+${dialectBlock}
 `;
 
   if (mode === "generate") {
@@ -501,9 +526,10 @@ const validateAiRequest = ({ mode, prompt, sql, user }) => {
   }
 };
 
-const runAiRequest = async ({ userId, mode, prompt, sql, requestMeta = {} }) => {
+const runAiRequest = async ({ userId, mode, prompt, sql, dialect, requestMeta = {} }) => {
   const user = await User.findById(userId);
   validateAiRequest({ mode, prompt, sql, user });
+  const normalizedDialect = normalizeDialect(dialect);
 
   if (mode !== "generate" && user.plan !== "pro") {
     await createSecurityEvent({
@@ -518,6 +544,10 @@ const runAiRequest = async ({ userId, mode, prompt, sql, requestMeta = {} }) => 
     });
 
     throw new AppError(403, "Upgrade to Pro to use this feature.");
+  }
+
+  if (normalizedDialect !== "standard" && user.plan !== "pro") {
+    throw new AppError(403, "Upgrade to Pro to choose a SQL dialect.");
   }
 
   let cleanResult = "";
@@ -542,7 +572,8 @@ const runAiRequest = async ({ userId, mode, prompt, sql, requestMeta = {} }) => 
     schemaText,
     hasSchema,
     prompt,
-    sql
+    sql,
+    dialect: normalizedDialect
   });
 
   if (mode !== "format" && (!userPrompt || !SYSTEM_PROMPTS[mode])) {
@@ -644,7 +675,8 @@ const runAiRequest = async ({ userId, mode, prompt, sql, requestMeta = {} }) => 
     userId: user._id,
     prompt: prompt || sql,
     generatedSQL: cleanResult,
-    mode
+    mode,
+    dialect: normalizedDialect
   });
 
   if (mode !== "format") {
