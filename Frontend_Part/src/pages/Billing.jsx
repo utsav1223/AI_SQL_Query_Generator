@@ -49,6 +49,13 @@ const trustItems = [
   { label: "Instant verification", icon: CheckCircle2 }
 ];
 
+const paymentMethods = [
+  { name: "Visa", variant: "visa", description: "Credit and debit cards" },
+  { name: "Mastercard", variant: "mastercard", description: "Credit and debit cards" },
+  { name: "RuPay", variant: "rupay", description: "Domestic cards" },
+  { name: "UPI", variant: "upi", description: "UPI, QR, and apps" }
+];
+
 export default function Billing() {
   const { user, login } = useAuth();
   const navigate = useNavigate();
@@ -260,6 +267,32 @@ export default function Billing() {
                 <SummaryRow label="Current plan" value={user?.plan || "free"} uppercase />
               </div>
 
+              <div className="mt-6">
+                <div className="flex items-end justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                      Order summary
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-slate-600">
+                      Secure monthly billing
+                    </p>
+                  </div>
+                  <span className="rounded-md bg-teal-50 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-teal-700">
+                    Razorpay
+                  </span>
+                </div>
+
+                <div className="mt-4 divide-y divide-slate-200 border-y border-slate-200">
+                  <SummaryRow label="Product" value="AI SQL Studio Pro" />
+                  <SummaryRow label="Billing cycle" value="Monthly" />
+                  <SummaryRow
+                    label={isProUser ? "Status" : "Due today"}
+                    value={isProUser ? "Paid" : "INR 499"}
+                    uppercase={isProUser}
+                  />
+                </div>
+              </div>
+
               <div className="mt-5 border-l-4 border-teal-500 bg-white px-4 py-3">
                 <div className="flex gap-3">
                   <LockKeyhole size={17} className="mt-0.5 shrink-0 text-teal-700" />
@@ -268,6 +301,23 @@ export default function Billing() {
                       ? "Pro access includes unlimited usage, optimizer tools, analytics, invoices, and support."
                       : "Payment is handled through Razorpay. Your card, UPI, or net banking details are not stored by this app."}
                   </p>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <div className="flex items-center justify-between gap-4">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                    Accepted payments
+                  </p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                    Cards and UPI
+                  </p>
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                  {paymentMethods.map((method) => (
+                    <PaymentMethodCard key={method.name} method={method} />
+                  ))}
                 </div>
               </div>
 
@@ -384,6 +434,59 @@ function SummaryRow({ label, value, breakWords = false, uppercase = false }) {
       </span>
     </div>
   );
+}
+
+function PaymentMethodCard({ method }) {
+  return (
+    <div className="min-h-[88px] border border-slate-200 bg-white p-3 shadow-sm">
+      <div className="flex h-9 items-center">
+        <PaymentBrand variant={method.variant} />
+      </div>
+      <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">
+        {method.description}
+      </p>
+    </div>
+  );
+}
+
+function PaymentBrand({ variant }) {
+  if (variant === "mastercard") {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="relative flex h-7 w-12 items-center">
+          <span className="absolute left-0 h-7 w-7 rounded-full bg-[#eb001b]" />
+          <span className="absolute left-5 h-7 w-7 rounded-full bg-[#f79e1b] mix-blend-multiply" />
+        </span>
+        <span className="text-sm font-extrabold tracking-tight text-slate-950">mastercard</span>
+      </div>
+    );
+  }
+
+  if (variant === "rupay") {
+    return (
+      <div className="flex items-center gap-1.5">
+        <span className="text-xl font-black italic tracking-tight text-[#1b4d89]">RuPay</span>
+        <span className="flex items-center gap-0.5">
+          <span className="h-4 w-2 skew-x-[-18deg] bg-[#f58220]" />
+          <span className="h-4 w-2 skew-x-[-18deg] bg-[#2ca44f]" />
+        </span>
+      </div>
+    );
+  }
+
+  if (variant === "upi") {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="flex items-center gap-0.5">
+          <span className="h-6 w-2 skew-x-[-20deg] bg-[#1f9d55]" />
+          <span className="h-6 w-2 skew-x-[-20deg] bg-[#f59e0b]" />
+        </span>
+        <span className="text-2xl font-black tracking-tight text-slate-950">UPI</span>
+      </div>
+    );
+  }
+
+  return <span className="text-2xl font-black italic tracking-tight text-[#1434cb]">VISA</span>;
 }
 
 function TrustRow({ item }) {
