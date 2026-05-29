@@ -140,10 +140,10 @@ export default function Landing() {
         : null;
 
   useEffect(() => {
-    if (authMode && user) {
+    if (authMode && clerkLoaded && (user || isSignedIn)) {
       navigate("/dashboard", { replace: true });
     }
-  }, [authMode, navigate, user]);
+  }, [authMode, clerkLoaded, isSignedIn, navigate, user]);
 
   const shouldShowAccountSync =
     authMode && clerkLoaded && isSignedIn && !appAuthLoading && !user;
@@ -199,12 +199,12 @@ export default function Landing() {
   return (
     <div className="public-page bg-[#f6f8fb] text-slate-950">
       <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-[60px] w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link to="/" className="inline-flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#10232d] text-teal-300">
+        <div className="mx-auto flex min-h-[60px] w-full max-w-7xl items-center justify-between gap-3 px-4 py-2 sm:px-6 lg:px-8">
+          <Link to="/" className="inline-flex min-w-0 items-center gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#10232d] text-teal-300">
               <Database size={16} />
             </span>
-            <div>
+            <div className="min-w-0">
               <p className="display-font text-[12px] font-extrabold uppercase tracking-[0.18em] text-slate-950">
                 AI SQL Studio
               </p>
@@ -341,7 +341,7 @@ export default function Landing() {
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,6,23,0.93)_0%,rgba(15,23,42,0.82)_48%,rgba(15,23,42,0.52)_100%)]" />
 
           <motion.div
-            className="relative mx-auto grid w-full max-w-7xl gap-8 px-4 py-12 sm:px-6 sm:py-14 lg:grid-cols-[1fr_420px] lg:items-center lg:px-8"
+            className="relative mx-auto grid w-full max-w-7xl gap-8 px-4 py-12 sm:px-6 sm:py-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:items-center lg:px-8"
             variants={stagger}
             initial="hidden"
             animate="visible"
@@ -418,7 +418,7 @@ export default function Landing() {
                     <span>Generated SQL</span>
                     <span>Schema aware</span>
                   </div>
-                  <pre className="mono-font overflow-x-auto p-3 text-[11px] leading-5 text-slate-200">
+                  <pre className="mono-font whitespace-pre-wrap break-words p-3 text-[11px] leading-5 text-slate-200">
 {`SELECT plan,
        COUNT(user_id) AS active_users,
        SUM(amount) AS monthly_revenue
@@ -470,7 +470,7 @@ ORDER BY monthly_revenue DESC;`}
           whileInView="visible"
           viewport={revealViewport}
         >
-          <div className="mx-auto grid w-full max-w-7xl gap-7 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
+          <div className="mx-auto grid w-full max-w-7xl gap-7 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-start">
             <motion.div variants={fadeUp}>
               <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal-700">Workflow</p>
               <h2 className="display-font mt-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-4xl">
@@ -619,7 +619,7 @@ ORDER BY monthly_revenue DESC;`}
               </p>
             </motion.div>
 
-            <motion.div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr] lg:items-stretch" variants={stagger}>
+            <motion.div className="grid gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-stretch" variants={stagger}>
               <motion.div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-950 shadow-sm" variants={cardReveal}>
                 <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
                   <div className="flex items-center gap-2">
@@ -632,7 +632,7 @@ ORDER BY monthly_revenue DESC;`}
                   </span>
                 </div>
 
-                <div className="grid min-h-[420px] bg-slate-900 text-white md:grid-cols-[180px_1fr]">
+                <div className="grid min-h-[420px] bg-slate-900 text-white md:grid-cols-[180px_minmax(0,1fr)]">
                   <aside className="hidden border-r border-white/10 bg-slate-950/80 p-4 md:block">
                     <div className="mb-5 flex items-center gap-2">
                       <span className="flex h-8 w-8 items-center justify-center rounded-md bg-teal-400 text-slate-950">
@@ -665,7 +665,7 @@ ORDER BY monthly_revenue DESC;`}
                       </span>
                     </div>
 
-                    <div className="grid gap-3 xl:grid-cols-[1fr_0.9fr]">
+                    <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
                       <div className="rounded-md border border-white/10 bg-white/8 p-4">
                         <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400">Prompt</p>
                         <p className="mt-3 text-sm font-semibold leading-6 text-slate-100">
@@ -682,7 +682,7 @@ ORDER BY monthly_revenue DESC;`}
 
                       <div className="rounded-md border border-white/10 bg-slate-950 p-4">
                         <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-400">Generated SQL</p>
-                        <pre className="mono-font mt-3 overflow-x-auto text-[10px] leading-5 text-teal-100">
+                        <pre className="mono-font mt-3 whitespace-pre-wrap break-words text-[10px] leading-5 text-teal-100">
 {`SELECT plan,
        COUNT(*) AS customers,
        SUM(amount) AS mrr
@@ -733,7 +733,7 @@ GROUP BY plan;`}
           whileInView="visible"
           viewport={revealViewport}
         >
-          <motion.div className="mx-auto grid w-full max-w-6xl gap-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm lg:grid-cols-[1fr_auto] lg:items-center" variants={fadeUp}>
+          <motion.div className="mx-auto grid w-full max-w-6xl gap-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center" variants={fadeUp}>
             <div className="max-w-2xl">
               <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal-700">Contact</p>
               <h2 className="display-font mt-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-4xl">
@@ -773,7 +773,7 @@ GROUP BY plan;`}
       </main>
 
       <footer className="border-t border-slate-200 bg-[#10232d] px-4 py-10 text-white sm:px-6 lg:px-8">
-        <div className="mx-auto grid w-full max-w-7xl gap-8 lg:grid-cols-[1.2fr_1fr_1fr]">
+        <div className="mx-auto grid w-full max-w-7xl gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)]">
           <div className="max-w-md">
             <div className="inline-flex items-center gap-3">
               <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-300 text-slate-950">

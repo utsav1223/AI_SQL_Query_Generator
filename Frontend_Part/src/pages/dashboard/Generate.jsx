@@ -194,14 +194,14 @@ export default function Generate() {
   }, []);
 
   return (
-    <div className="dashboard-page space-y-6">
+    <div className="dashboard-page max-w-full space-y-5 overflow-x-hidden sm:space-y-6">
       <section className="dashboard-card rounded-lg p-5 sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
+          <div className="min-w-0">
             <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]">
               AI Workspace
             </p>
-            <h1 className="dashboard-heading mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
+            <h1 className="dashboard-heading mt-3 text-2xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
               Generate, improve, and understand SQL
             </h1>
             <p className="mt-3 max-w-2xl text-sm font-medium leading-7 text-slate-600 dark:text-slate-400">
@@ -209,14 +209,14 @@ export default function Generate() {
             </p>
           </div>
 
-          <div className="badge-accent rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]">
+          <div className="badge-accent w-fit rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]">
             6 AI tools ready
           </div>
         </div>
       </section>
 
-      <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <section className="space-y-4">
+      <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+        <section className="min-w-0 space-y-4">
           <div className="dashboard-card rounded-lg p-5 sm:p-6">
             <ToolSelector mode={mode} setMode={setMode} paidPlan={paidPlan} />
             <div className="mt-4 flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
@@ -238,7 +238,7 @@ export default function Generate() {
                 value={canChooseDialect ? dialect : "standard"}
                 onChange={(event) => setDialect(event.target.value)}
                 disabled={!canChooseDialect || loading}
-                className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm font-bold text-slate-800 outline-none transition focus:border-[var(--accent)] disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:disabled:bg-slate-800"
+                className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm font-bold text-slate-800 outline-none transition focus:border-[var(--accent)] disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:disabled:bg-slate-800 sm:w-auto"
               >
                 {SQL_DIALECT_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -283,8 +283,8 @@ export default function Generate() {
                 type="button"
                 onClick={() => navigate("/dashboard/schema")}
                 className={hasSavedSchema
-                  ? "button-secondary inline-flex items-center justify-center rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]"
-                  : "button-primary inline-flex items-center justify-center rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]"}
+                  ? "button-secondary inline-flex w-full items-center justify-center rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] sm:w-auto"
+                  : "button-primary inline-flex w-full items-center justify-center rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] sm:w-auto"}
               >
                 Schema Context
               </button>
@@ -337,7 +337,7 @@ export default function Generate() {
                     type="button"
                     onClick={handleSubmit}
                     disabled={loading || !input.trim()}
-                    className="button-primary inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="button-primary inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.12em] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                   >
                     {loading ? <AILoadingIcon compact className="h-6 w-6" /> : <Sparkles size={16} />}
                     {loading ? LOADING_LABELS[mode] : ACTION_LABELS[mode]}
@@ -348,7 +348,7 @@ export default function Generate() {
           </div>
         </section>
 
-        <section className="dashboard-card rounded-lg p-5 sm:p-6">
+        <section className="dashboard-card min-w-0 rounded-lg p-5 sm:p-6">
           {loading ? (
             <AILoadingState mode={mode} />
           ) : result ? (

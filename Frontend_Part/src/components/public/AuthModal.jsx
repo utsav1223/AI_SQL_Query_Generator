@@ -58,7 +58,7 @@ export default function AuthModal({ mode, onClose }) {
     <AnimatePresence>
       {isOpen ? (
         <motion.div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+          className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto p-3 py-6 sm:items-center sm:p-6"
           variants={overlayMotion}
           initial="hidden"
           animate="visible"
@@ -74,7 +74,7 @@ export default function AuthModal({ mode, onClose }) {
           <motion.div
             role="dialog"
             aria-modal="true"
-            className="relative w-full max-w-[430px]"
+            className="relative w-full max-w-[430px] pb-4"
             variants={clerkCardMotion}
             onClick={(event) => event.stopPropagation()}
           >

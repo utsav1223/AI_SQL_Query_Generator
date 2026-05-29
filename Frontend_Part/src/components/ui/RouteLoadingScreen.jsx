@@ -88,7 +88,7 @@ export default function RouteLoadingScreen({ label = "Preparing workspace..." })
           </div>
         </header>
 
-        <main className="grid flex-1 items-center gap-10 py-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(420px,1fr)] lg:py-12">
+        <main className="grid flex-1 items-center gap-10 py-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)] lg:py-12">
           <section className="min-w-0">
             <div className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
               <ActiveIcon key={activeState.label} size={14} className="text-[var(--accent)]" />
@@ -100,7 +100,7 @@ export default function RouteLoadingScreen({ label = "Preparing workspace..." })
             <p className="mt-7 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--accent)]">
               {copy.eyebrow}
             </p>
-            <h1 className="mt-3 max-w-xl text-4xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-5xl">
+            <h1 className="mt-3 max-w-xl text-3xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-5xl">
               {copy.title}
             </h1>
             <p className="mt-4 max-w-lg text-sm font-medium leading-7 text-slate-600 dark:text-slate-400">

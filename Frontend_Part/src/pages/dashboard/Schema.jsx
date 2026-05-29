@@ -127,12 +127,12 @@ export default function Schema() {
     <div className="dashboard-page space-y-6">
       <section className="dashboard-card rounded-lg p-5 sm:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div>
+          <div className="min-w-0">
             <div className="inline-flex items-center gap-2 rounded-md border border-[var(--accent-soft-strong)] bg-[var(--accent-soft)] px-3 py-1.5 text-[var(--accent)]">
               <Database size={13} />
               <span className="text-[10px] font-bold uppercase tracking-[0.12em]">Schema Context</span>
             </div>
-            <h1 className="dashboard-heading mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
+            <h1 className="dashboard-heading mt-3 text-2xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
               Database schema
             </h1>
             <p className="mt-3 max-w-2xl text-sm font-medium leading-7 text-slate-600 dark:text-slate-400">
@@ -144,7 +144,7 @@ export default function Schema() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="grid w-full gap-3 sm:flex sm:w-auto sm:flex-wrap">
             <button
               type="button"
               onClick={handleClear}

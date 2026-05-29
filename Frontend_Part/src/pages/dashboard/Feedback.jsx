@@ -66,7 +66,7 @@ export default function Feedback() {
           <MessageSquareQuote size={14} className="text-emerald-600" />
           <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">Feedback</span>
         </div>
-        <h1 className="dashboard-heading text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 md:text-4xl">
+        <h1 className="dashboard-heading text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl md:text-4xl">
           Product Feedback
         </h1>
         <p className="mt-3 max-w-3xl text-sm font-medium leading-7 text-slate-500 dark:text-slate-400">
@@ -74,7 +74,7 @@ export default function Feedback() {
         </p>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
         <form onSubmit={handleSubmit} className="space-y-5 rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-6">
           <div className="space-y-2">
             <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Satisfaction</p>
@@ -130,7 +130,7 @@ export default function Feedback() {
             <button
               type="submit"
               disabled={!canSubmit}
-              className="button-primary inline-flex h-11 items-center justify-center gap-2 rounded-md px-5 text-[11px] font-extrabold uppercase tracking-[0.12em] disabled:cursor-not-allowed"
+              className="button-primary inline-flex h-11 w-full items-center justify-center gap-2 rounded-md px-5 text-[11px] font-extrabold uppercase tracking-[0.12em] disabled:cursor-not-allowed sm:w-auto"
             >
               <Send size={14} />
               {submitting ? "Sending..." : "Submit"}
@@ -150,7 +150,7 @@ export default function Feedback() {
         </form>
 
         <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6 flex items-center justify-between gap-3">
             <h2 className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500">Your Feedback History</h2>
             <Clock3 size={16} className="text-slate-300" />
           </div>

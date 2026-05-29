@@ -41,7 +41,7 @@ export default function FAQ() {
           <HelpCircle size={14} className="text-emerald-600" />
           <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">FAQ</span>
         </div>
-        <h1 className="dashboard-heading text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 md:text-4xl">
+        <h1 className="dashboard-heading text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl md:text-4xl">
           Frequently Asked Questions
         </h1>
         <p className="mt-3 max-w-3xl text-sm font-medium leading-7 text-slate-500 dark:text-slate-400">

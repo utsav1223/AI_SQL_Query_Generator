@@ -67,12 +67,20 @@ export default function AppRoutes() {
 
         <Route
           path="/login"
-          element={<Landing />}
+          element={
+            <PublicRoute>
+              <Landing />
+            </PublicRoute>
+          }
         />
 
         <Route
           path="/register"
-          element={<Landing />}
+          element={
+            <PublicRoute>
+              <Landing />
+            </PublicRoute>
+          }
         />
 
         <Route

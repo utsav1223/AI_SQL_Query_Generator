@@ -57,7 +57,7 @@ export default function ToolSelector({ mode, setMode, paidPlan = false }) {
   const selectedLocked = selectedTool.plan === "Pro" && !paidPlan;
 
   return (
-    <div className="surface-card-soft rounded-lg p-3">
+    <div className="surface-card-soft min-w-0 rounded-lg p-3">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]">
@@ -84,14 +84,14 @@ export default function ToolSelector({ mode, setMode, paidPlan = false }) {
         ))}
       </select>
 
-      <div className="mt-3 rounded-md border border-slate-200 bg-white p-3 text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200">
+      <div className="mt-3 min-w-0 rounded-md border border-slate-200 bg-white p-3 text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200">
         <div className="flex items-start gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-teal-50 text-teal-700 dark:bg-teal-400/10 dark:text-teal-300">
             <SelectedIcon size={17} />
           </span>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-950 dark:text-slate-100">
+              <p className="min-w-0 text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-950 dark:text-slate-100">
                 {selectedTool.label}
               </p>
               {selectedLocked ? <Lock size={12} className="text-amber-500" /> : null}

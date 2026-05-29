@@ -31,9 +31,9 @@ export default function DashboardLayout() {
       <div className="flex min-w-0 flex-1 flex-col lg:pl-[260px]">
         <Navbar onMenuClick={() => setIsSidebarOpen(true)} />
 
-        <main className="flex-1 overflow-y-auto custom-scrollbar">
-          <div className="relative flex min-h-full flex-col">
-            <section className="flex-1 py-1">
+        <main className="custom-scrollbar min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
+          <div className="relative flex min-h-full min-w-0 flex-col">
+            <section className="min-w-0 flex-1 py-1">
               <Outlet key={workspaceKey} />
             </section>
 

@@ -27,6 +27,8 @@ logs/
 coverage/
 
 # Internal planning/review docs not meant for GitHub showcase
+*_README.md
+*_FEATURES.md
 EXTRA_FEATURES.md
 PROJECT_REVIEW_README.md
 MONETIZATION_README.md

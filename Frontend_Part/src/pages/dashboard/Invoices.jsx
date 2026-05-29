@@ -68,7 +68,7 @@ export default function Invoices() {
               Billing records
             </span>
           </div>
-          <h1 className="dashboard-heading mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
+          <h1 className="dashboard-heading mt-3 text-2xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
             Invoices and payment history
           </h1>
           <p className="mt-3 max-w-2xl text-sm font-medium leading-7 text-slate-600 dark:text-slate-400">

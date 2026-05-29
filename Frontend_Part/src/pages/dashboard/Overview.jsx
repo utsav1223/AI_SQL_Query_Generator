@@ -58,7 +58,7 @@ export default function Overview() {
               <span className="text-[10px] font-bold uppercase tracking-[0.12em]">Workspace Overview</span>
             </div>
 
-            <h1 className="dashboard-heading mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
+            <h1 className="dashboard-heading mt-3 text-2xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
               Welcome back, {user?.name?.split(" ")[0] || "Developer"}
             </h1>
             <p className="mt-3 max-w-2xl text-sm font-medium leading-7 text-slate-600 dark:text-slate-400">
@@ -111,8 +111,8 @@ export default function Overview() {
         />
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-        <article className="dashboard-card rounded-lg p-5 sm:p-6">
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+        <article className="dashboard-card min-w-0 rounded-lg p-5 sm:p-6">
           <div className="mb-5 flex items-center justify-between gap-4">
             <div>
               <h2 className="dashboard-heading text-xl font-bold tracking-tight text-slate-950 dark:text-slate-100">
@@ -165,7 +165,7 @@ export default function Overview() {
           )}
         </article>
 
-        <article className="dashboard-card rounded-lg p-5 sm:p-6">
+        <article className="dashboard-card min-w-0 rounded-lg p-5 sm:p-6">
           <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]">Quick Actions</p>
           <h2 className="dashboard-heading mt-2 text-xl font-bold tracking-tight text-slate-950 dark:text-slate-100">
             Move faster from here

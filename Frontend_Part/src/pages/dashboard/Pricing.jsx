@@ -283,7 +283,7 @@ export default function Pricing() {
                 Billing
               </span>
             </div>
-            <h1 className="dashboard-heading mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
+            <h1 className="dashboard-heading mt-3 text-2xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
               Plans, payment, and workspace billing
             </h1>
             <p className="mt-3 text-sm font-medium leading-7 text-slate-600 dark:text-slate-400">
@@ -302,7 +302,7 @@ export default function Pricing() {
         </div>
       </header>
 
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,360px)]">
         <div className="dashboard-card rounded-lg p-5">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-start gap-3">
@@ -326,7 +326,7 @@ export default function Pricing() {
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[440px]">
+            <div className="grid w-full max-w-full gap-3 sm:grid-cols-3 lg:w-[440px] lg:shrink-0">
               <StatusTile label="Current plan" value={getPlanLabel(currentPlan)} />
               <StatusTile label="Status" value={billing?.status || currentPlan} />
               <StatusTile
@@ -427,7 +427,7 @@ export default function Pricing() {
 
       {selectedPlan && selectedPlan.id !== "free" ? (
         <section ref={reviewRef} className="dashboard-card rounded-lg p-5 sm:p-6">
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)]">
             <div>
               <div className="inline-flex items-center gap-2 rounded-md border border-[var(--accent-soft-strong)] bg-[var(--accent-soft)] px-3 py-1.5 text-[var(--accent)]">
                 <CreditCard size={13} />
@@ -628,7 +628,7 @@ function PlanCard({ plan, action, isBusy, isCurrent, disabled }) {
       </p>
 
       <div className="mt-5 flex items-end gap-2">
-        <p className="text-3xl font-bold tracking-tight text-slate-950 dark:text-slate-100">
+        <p className="break-words text-2xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-3xl">
           {plan.price}
         </p>
         <span className="pb-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
@@ -636,7 +636,7 @@ function PlanCard({ plan, action, isBusy, isCurrent, disabled }) {
         </span>
       </div>
 
-      <div className="mt-5 grid grid-cols-3 gap-2">
+      <div className="mt-5 grid gap-2 sm:grid-cols-3">
         {plan.metrics.map((metric) => (
           <span
             key={metric}

@@ -56,7 +56,7 @@ export default function Settings() {
                 Account center
               </span>
             </div>
-            <h1 className="dashboard-heading mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
+            <h1 className="dashboard-heading mt-3 text-2xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
               Profile, security, workspace, and API access
             </h1>
             <p className="mt-3 max-w-2xl text-sm font-medium leading-7 text-slate-600 dark:text-slate-400">
@@ -64,7 +64,7 @@ export default function Settings() {
             </p>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:w-[420px]">
+          <div className="grid w-full max-w-full gap-3 sm:grid-cols-2 lg:w-[420px] lg:shrink-0">
             <SummaryTile label="Plan" value={getPlanLabel(user?.plan)} />
             <SummaryTile
               label="Workspace"
@@ -74,7 +74,7 @@ export default function Settings() {
         </div>
       </header>
 
-      <nav className="flex gap-2 overflow-x-auto rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-900">
+      <nav className="custom-scrollbar flex gap-2 overflow-x-auto rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-900">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const active = tab.id === activeTab;

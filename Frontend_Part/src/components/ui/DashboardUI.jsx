@@ -18,7 +18,7 @@ export function PageHeader({ eyebrow, icon: Icon, title, description, action }) 
         </StatusBadge>
       ) : null}
       <div className={eyebrow ? "mt-3" : ""}>
-        <h1 className="dashboard-heading text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 md:text-4xl">
+        <h1 className="dashboard-heading text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl md:text-4xl">
           {title}
         </h1>
         {description ? (
@@ -60,7 +60,7 @@ export function MetricCard({ icon: Icon, label, value, helper, tone = "emerald" 
 export function StatusBadge({ tone = "default", icon, children, className = "" }) {
   return (
     <span
-      className={`inline-flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] ${
+      className={`inline-flex max-w-full items-center gap-2 rounded-md border px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] ${
         badgeToneClass[tone] || badgeToneClass.default
       } ${className}`}
     >
@@ -113,7 +113,7 @@ export function EmptyState({ icon: Icon, title, description, eyebrow }) {
 export function Pager({ page, pages, total, loading, onPrevious, onNext }) {
   return (
     <Panel className="flex flex-col gap-3 p-4 text-sm font-semibold text-slate-600 dark:text-slate-300 sm:flex-row sm:items-center sm:justify-between">
-      <span>
+      <span className="break-words">
         Showing page {page} of {pages} ({total} total)
       </span>
       <div className="flex items-center gap-2">
@@ -140,7 +140,7 @@ export function Pager({ page, pages, total, loading, onPrevious, onNext }) {
 
 export function SearchInput({ value, onChange, placeholder = "Search..." }) {
   return (
-    <div className="relative">
+    <div className="relative min-w-0">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
       <input
         type="text"
@@ -155,12 +155,12 @@ export function SearchInput({ value, onChange, placeholder = "Search..." }) {
 
 export function SelectControl({ icon, value, onChange, children }) {
   return (
-    <label className="flex h-10 items-center gap-2 rounded-md border border-slate-200 bg-white px-3 dark:border-slate-700 dark:bg-slate-950">
+    <label className="flex h-10 min-w-0 items-center gap-2 rounded-md border border-slate-200 bg-white px-3 dark:border-slate-700 dark:bg-slate-950">
       <span className="text-slate-400">{icon}</span>
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="bg-transparent text-[11px] font-bold uppercase tracking-[0.12em] text-slate-700 outline-none dark:text-slate-200"
+        className="min-w-0 bg-transparent text-[11px] font-bold uppercase tracking-[0.12em] text-slate-700 outline-none dark:text-slate-200"
       >
         {children}
       </select>

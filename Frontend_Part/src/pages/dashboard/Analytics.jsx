@@ -109,7 +109,7 @@ export default function Analytics() {
         <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]">
           Pro Analytics
         </p>
-        <h1 className="dashboard-heading mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
+        <h1 className="dashboard-heading mt-3 text-2xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-4xl">
           Measure the value of your SQL workflow
         </h1>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-500 dark:text-slate-400">
@@ -145,8 +145,8 @@ export default function Analytics() {
         />
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <article className="dashboard-card rounded-lg p-5 sm:p-6">
+      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+        <article className="dashboard-card min-w-0 rounded-lg p-5 sm:p-6">
           <div className="mb-5 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-extrabold">Activity trend</h2>
@@ -187,7 +187,7 @@ export default function Analytics() {
           </div>
         </article>
 
-        <article className="dashboard-card rounded-lg p-5 sm:p-6">
+        <article className="dashboard-card min-w-0 rounded-lg p-5 sm:p-6">
           <div className="mb-5">
             <h2 className="text-lg font-extrabold">Tool usage</h2>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
@@ -221,10 +221,10 @@ export default function Analytics() {
               <p className="text-sm text-slate-500 dark:text-slate-400">No usage data available yet.</p>
             ) : (
               pieData.map((item, index) => (
-                <div key={`${item.name}-${index}`} className="surface-card-soft flex items-center justify-between rounded-xl px-4 py-3">
-                  <div className="flex items-center gap-3">
+                <div key={`${item.name}-${index}`} className="surface-card-soft flex items-center justify-between gap-3 rounded-xl px-4 py-3">
+                  <div className="flex min-w-0 items-center gap-3">
                     <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                    <span className="text-sm font-semibold capitalize">{item.name}</span>
+                    <span className="truncate text-sm font-semibold capitalize">{item.name}</span>
                   </div>
                   <span className="text-sm font-bold">{item.value}</span>
                 </div>
@@ -241,8 +241,8 @@ export default function Analytics() {
         <InsightCard title="Saved Signals" value={`${data?.productivity?.favoriteQueries || 0} favorites`} icon={<Star size={16} />} />
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-        <article className="dashboard-card rounded-lg p-5 sm:p-6">
+      <section className="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <article className="dashboard-card min-w-0 rounded-lg p-5 sm:p-6">
           <h2 className="text-lg font-extrabold">Workflow signals</h2>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <MiniMetric icon={Download} label="Exported" value={data?.productivity?.exportedQueries || 0} />
@@ -252,7 +252,7 @@ export default function Analytics() {
           </div>
         </article>
 
-        <article className="dashboard-card rounded-lg p-5 sm:p-6">
+        <article className="dashboard-card min-w-0 rounded-lg p-5 sm:p-6">
           <h2 className="text-lg font-extrabold">Actionable insights</h2>
           <div className="mt-4 grid gap-3">
             {[...(data?.insights || []), ...(data?.schemaCoverage?.hints || [])].slice(0, 6).map((item) => (
@@ -279,7 +279,7 @@ function FreeAnalyticsPreview({ overview, onUpgrade }) {
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg bg-[var(--accent-soft)] text-[var(--accent)]">
           <Lock size={28} />
         </div>
-        <h1 className="dashboard-heading mt-6 text-center text-3xl font-extrabold tracking-tight">
+        <h1 className="dashboard-heading mt-6 text-center text-2xl font-extrabold tracking-tight sm:text-3xl">
           Pro analytics turns usage into value
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-center text-sm leading-7 text-slate-500 dark:text-slate-400">
@@ -338,7 +338,7 @@ function StatCard({ title, value, helper, icon, accent = false }) {
         </p>
         {Icon ? <Icon size={16} className="text-[var(--accent)]" /> : null}
       </div>
-      <p className={`dashboard-heading mt-3 text-3xl font-bold tracking-tight ${accent ? "text-[var(--accent)]" : "text-slate-950 dark:text-slate-100"}`}>
+      <p className={`dashboard-heading mt-3 break-words text-2xl font-bold tracking-tight sm:text-3xl ${accent ? "text-[var(--accent)]" : "text-slate-950 dark:text-slate-100"}`}>
         {value}
       </p>
       <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{helper}</p>
@@ -389,7 +389,7 @@ function AnalyticsSkeleton() {
           <div key={id} className="dashboard-card h-36 rounded-lg" />
         ))}
       </div>
-      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
         <div className="dashboard-card h-[380px] rounded-lg" />
         <div className="dashboard-card h-[380px] rounded-lg" />
       </div>

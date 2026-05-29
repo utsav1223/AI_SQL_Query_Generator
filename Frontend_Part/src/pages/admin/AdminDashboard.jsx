@@ -150,7 +150,7 @@ export default function AdminDashboard() {
           surfaceClass={surfaceClass}
         />
 
-        <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
+        <section className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)]">
           <article className={`min-w-0 rounded-lg border p-5 shadow-sm ${surfaceClass}`}>
             <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -275,7 +275,7 @@ export default function AdminDashboard() {
           </article>
         </section>
 
-        <section className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(340px,0.75fr)]">
+        <section className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(0,0.75fr)]">
           <section className={`min-w-0 rounded-lg border p-5 shadow-sm ${surfaceClass}`}>
             <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -336,7 +336,7 @@ export default function AdminDashboard() {
                       <p className={`mt-2 text-[11px] font-medium ${mutedTextClass}`}>
                         Joined: {new Date(user.createdAt).toLocaleDateString()}
                       </p>
-                      <div className="mt-3 flex items-center gap-2">
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
                         <button
                           type="button"
                           disabled={isBusy}

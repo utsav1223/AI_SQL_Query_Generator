@@ -121,7 +121,7 @@ export default function SQLOutput({
   }
 
   return (
-    <div className="w-full">
+    <div className="min-w-0 w-full">
       <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent-soft)] text-[var(--accent)]">
@@ -132,7 +132,7 @@ export default function SQLOutput({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
           {isValidateMode ? (
             <span className="badge-accent rounded-md px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em]">
               <CheckCircle2 size={12} />
@@ -143,7 +143,7 @@ export default function SQLOutput({
           <button
             type="button"
             onClick={handleCopy}
-            className="button-secondary inline-flex items-center gap-2 rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]"
+            className="button-secondary inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]"
           >
             {copied ? <Check size={13} /> : <Copy size={13} />}
             {copied ? "Copied" : "Copy"}
@@ -153,7 +153,7 @@ export default function SQLOutput({
             <button
               type="button"
               onClick={handleExport}
-              className="button-secondary inline-flex items-center gap-2 rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]"
+              className="button-secondary inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]"
             >
               <Download size={13} />
               Export .sql
@@ -165,7 +165,7 @@ export default function SQLOutput({
               type="button"
               onClick={() => onSaveSchemaResult(output)}
               disabled={savingSchema}
-              className="button-primary inline-flex items-center gap-2 rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] disabled:cursor-not-allowed"
+              className="button-primary inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] disabled:cursor-not-allowed"
             >
               <Database size={13} />
               {savingSchema ? "Saving" : "Save Schema"}
@@ -176,7 +176,7 @@ export default function SQLOutput({
             <button
               type="button"
               onClick={() => onApplyResult(output)}
-              className="button-secondary inline-flex items-center gap-2 rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]"
+              className="button-secondary inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]"
             >
               <Check size={13} />
               Apply
@@ -186,8 +186,8 @@ export default function SQLOutput({
       </div>
 
       {canSendToTool ? (
-        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-900">
-          <span className="px-2 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+        <div className="mb-3 grid grid-cols-2 gap-2 rounded-lg border border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-900 sm:flex sm:flex-wrap sm:items-center">
+          <span className="col-span-2 px-2 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400 sm:col-span-1">
             Continue with
           </span>
           {reviewActions.map((action) => {
@@ -198,7 +198,7 @@ export default function SQLOutput({
                 key={action.id}
                 type="button"
                 onClick={() => onSendToTool(action.id, output)}
-                className="button-secondary inline-flex items-center gap-2 rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]"
+                className="button-secondary inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]"
               >
                 <Icon size={13} />
                 {action.label}
@@ -208,19 +208,19 @@ export default function SQLOutput({
         </div>
       ) : null}
 
-      <div className="code-shell overflow-hidden rounded-lg">
-        <div className="code-toolbar flex items-center gap-2 px-4 py-3">
+      <div className="code-shell min-w-0 overflow-hidden rounded-lg">
+        <div className="code-toolbar flex min-w-0 items-center gap-2 px-4 py-3">
           <span className="h-2.5 w-2.5 rounded-full bg-slate-500/40" />
           <span className="h-2.5 w-2.5 rounded-full bg-slate-500/40" />
           <span className="h-2.5 w-2.5 rounded-full bg-slate-500/40" />
-          <span className="mono-font ml-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+          <span className="mono-font ml-2 min-w-0 truncate text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
             {isExplainMode ? "analysis.txt" : isSchemaMode ? "schema.sql" : "result.sql"}
           </span>
         </div>
 
-        <div className="custom-scrollbar max-h-[560px] overflow-auto px-5 py-5 sm:px-6 sm:py-6">
+        <div className="custom-scrollbar max-h-[560px] min-w-0 overflow-auto px-4 py-4 sm:px-6 sm:py-6">
           <pre
-            className={`whitespace-pre-wrap break-words ${
+            className={`min-w-0 max-w-full whitespace-pre-wrap break-words ${
               isExplainMode
                 ? "text-sm leading-7 text-slate-200"
                 : "mono-font text-[13px] leading-7"

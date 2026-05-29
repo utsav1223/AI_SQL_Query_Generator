@@ -83,7 +83,7 @@ export default function AdminLogin() {
         </button>
       </div>
 
-      <div className="mx-auto grid w-full max-w-6xl gap-4 lg:grid-cols-[1.08fr_0.92fr]">
+      <div className="mx-auto grid w-full max-w-6xl gap-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)]">
         <section className="relative overflow-hidden rounded-lg bg-[#112129] p-6 text-white shadow-[0_40px_90px_-48px_rgba(17,33,41,0.98)] sm:p-8">
           <div className="public-grid absolute inset-0 opacity-15" />
 

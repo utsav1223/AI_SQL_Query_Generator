@@ -221,7 +221,7 @@ export default function History() {
       ) : null}
 
       <section className="sticky top-[76px] z-20 rounded-lg border border-slate-200 bg-white/95 p-3 shadow-sm backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/95">
-        <div className="grid gap-3 lg:grid-cols-[1fr_auto_auto] lg:items-center">
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
           <SearchInput value={search} onChange={setSearch} placeholder="Search prompts or SQL..." />
 
           <SelectControl icon={<Filter size={14} />} value={modeFilter} onChange={setModeFilter}>

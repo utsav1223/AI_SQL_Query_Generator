@@ -17,7 +17,7 @@ export default function Developers() {
   return (
     <div className="public-page">
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/82 backdrop-blur-xl">
-        <div className="mx-auto flex h-[60px] w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex min-h-[60px] w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-2 sm:px-6 lg:px-8">
           <Link
             to="/"
             className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white/90 px-3 py-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-700 transition-all hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800"
