@@ -6,27 +6,18 @@ import {
   ArrowRight,
   BarChart3,
   Bell,
-  BrainCircuit,
   CheckCircle2,
-  Clock3,
   Code2,
-  CreditCard,
   Database,
   FileText,
   Gauge,
   History,
   Layers3,
   LifeBuoy,
-  LockKeyhole,
   Menu,
-  MessageSquareMore,
   ReceiptText,
-  Settings,
-  ShieldAlert,
   ShieldCheck,
   Sparkles,
-  UserCheck,
-  Users,
   X,
   Zap
 } from "lucide-react";
@@ -39,8 +30,6 @@ const navItems = [
   { label: "Home", sectionId: null },
   { label: "Workspace", sectionId: "workspace" },
   { label: "Features", sectionId: "features" },
-  { label: "Admin", sectionId: "admin" },
-  { label: "Security", sectionId: "security" },
   { label: "Pricing", sectionId: "pricing" },
   { label: "FAQ", sectionId: "faq" }
 ];
@@ -48,7 +37,7 @@ const navItems = [
 const heroStats = [
   { label: "AI modes", value: "6+" },
   { label: "Plans", value: "Free, Pro, Team" },
-  { label: "Admin tools", value: "Full console" }
+  { label: "Workflow", value: "Prompt to SQL" }
 ];
 
 const workspaceModules = [
@@ -108,7 +97,7 @@ const featureCards = [
   },
   {
     title: "Notifications",
-    description: "Admins can publish announcements, maintenance notes, and important messages directly to users.",
+    description: "Important product updates, maintenance notes, and account messages appear directly in the dashboard.",
     icon: Bell
   },
   {
@@ -123,48 +112,6 @@ const featureCards = [
   }
 ];
 
-const adminFeatures = [
-  {
-    title: "User management",
-    description: "Search users, filter by plan/status/access, export visible rows, and update plans safely.",
-    icon: Users
-  },
-  {
-    title: "Access decisions",
-    description: "Approve, reject, suspend, unsuspend, delete, and capture moderation reasons for audit trails.",
-    icon: UserCheck
-  },
-  {
-    title: "Restricted user requests",
-    description: "Blocked or suspended users can contact admin, and admins can triage requests by status.",
-    icon: MessageSquareMore
-  },
-  {
-    title: "Announcements",
-    description: "Create professional dashboard messages for all users, free users, or paid users.",
-    icon: Bell
-  },
-  {
-    title: "Security events",
-    description: "Review suspicious auth, billing, AI, and admin events from a dedicated queue.",
-    icon: ShieldAlert
-  },
-  {
-    title: "Business overview",
-    description: "Monitor revenue, invoices, feedback, plan distribution, recent signups, and risk watchlists.",
-    icon: BarChart3
-  }
-];
-
-const securityDetails = [
-  "Clerk-powered sign in, registration, organization support, and protected routes.",
-  "Admin console protected by admin auth, secure cookies, bearer tokens, and role checks.",
-  "CORS, CSRF protection, Helmet headers, request limits, and validated API payloads.",
-  "Account restriction messages for rejected, suspended, pending, and deleted users.",
-  "MongoDB indexes for dashboard, history, notification, feedback, and security reads.",
-  "Audit-oriented moderation records and security event monitoring for production review."
-];
-
 const faqItems = [
   {
     question: "What does AI SQL Studio generate?",
@@ -175,8 +122,8 @@ const faqItems = [
     answer: "Yes. Users can save schema details so the AI has table and column context when creating SQL."
   },
   {
-    question: "What can admins control?",
-    answer: "Admins can manage users, access status, feedback, security events, announcements, access appeals, and platform metrics."
+    question: "Can I receive product updates inside the dashboard?",
+    answer: "Yes. Important announcements, account notices, and product updates can appear in the notification section."
   },
   {
     question: "Is billing included?",
@@ -194,10 +141,8 @@ const footerGroups = [
     ]
   },
   {
-    title: "Platform",
+    title: "Resources",
     links: [
-      { label: "Admin", sectionId: "admin" },
-      { label: "Security", sectionId: "security" },
       { label: "FAQ", sectionId: "faq" }
     ]
   },
@@ -373,8 +318,6 @@ export default function Landing() {
         <Hero onAuth={openAuthModal} onExplore={() => scrollToSection("workspace")} />
         <WorkspaceSection />
         <FeaturesSection />
-        <AdminSection />
-        <SecuritySection />
         <PricingSection onAuth={openAuthModal} />
         <FAQSection />
         <ContactSection onAuth={openAuthModal} onPricing={() => scrollToSection("pricing")} />
@@ -496,7 +439,7 @@ function Hero({ onAuth, onExplore }) {
           </h1>
 
           <p className="mt-4 max-w-2xl text-sm font-medium leading-7 text-slate-200 sm:text-base">
-            Generate, optimize, validate, explain, format, and manage SQL from a professional SaaS workspace with schema context, history, analytics, billing, notifications, and admin controls.
+            Generate, optimize, validate, explain, format, and manage SQL from a professional SaaS workspace with schema context, history, analytics, billing, notifications, and support.
           </p>
 
           <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
@@ -651,96 +594,6 @@ function FeaturesSection() {
                 </div>
               </div>
             </motion.article>
-          ))}
-        </motion.div>
-      </div>
-    </motion.section>
-  );
-}
-
-function AdminSection() {
-  return (
-    <motion.section
-      id="admin"
-      className="px-4 py-12 sm:px-6 lg:px-8"
-      variants={stagger}
-      initial="hidden"
-      whileInView="visible"
-      viewport={revealViewport}
-    >
-      <div className="mx-auto grid w-full max-w-7xl gap-7 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-start">
-        <motion.div variants={fadeUp}>
-          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal-700">Admin dashboard</p>
-          <h2 className="display-font mt-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-4xl">
-            Operational controls for users, access, security, and announcements.
-          </h2>
-          <p className="mt-3 text-sm font-medium leading-7 text-slate-600">
-            The admin console is built for a real platform owner: review users, act on account issues, publish messages, and monitor health without digging through the database.
-          </p>
-
-          <div className="mt-6 overflow-hidden rounded-lg border border-slate-200 bg-slate-950 shadow-sm">
-            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-              <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-teal-200">Platform Control Center</span>
-              <span className="rounded-md bg-emerald-400/15 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-emerald-200">Admin</span>
-            </div>
-            <div className="grid gap-3 p-4 sm:grid-cols-2">
-              {["Users", "Access requests", "Notifications", "Security events"].map((item, index) => (
-                <div key={item} className="rounded-md border border-white/10 bg-white/8 p-3">
-                  <p className="text-[11px] font-bold text-white">{item}</p>
-                  <div className="mt-3 h-2 rounded-full bg-slate-800">
-                    <div className={`h-2 rounded-full ${index % 2 === 0 ? "bg-teal-300" : "bg-amber-300"}`} style={{ width: `${72 - index * 9}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div className="grid gap-4 sm:grid-cols-2" variants={stagger}>
-          {adminFeatures.map((item) => (
-            <motion.article key={item.title} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-1 hover:border-teal-200 hover:shadow-md" variants={cardReveal}>
-              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-teal-50 text-teal-700">
-                <item.icon size={17} />
-              </div>
-              <h3 className="display-font mt-4 text-base font-bold tracking-tight text-slate-950">{item.title}</h3>
-              <p className="mt-2 text-[13px] font-medium leading-6 text-slate-600">{item.description}</p>
-            </motion.article>
-          ))}
-        </motion.div>
-      </div>
-    </motion.section>
-  );
-}
-
-function SecuritySection() {
-  return (
-    <motion.section
-      id="security"
-      className="border-y border-slate-200 bg-[#10232d] px-4 py-12 text-white sm:px-6 lg:px-8"
-      variants={stagger}
-      initial="hidden"
-      whileInView="visible"
-      viewport={revealViewport}
-    >
-      <div className="mx-auto grid w-full max-w-7xl gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-start">
-        <motion.div variants={fadeUp}>
-          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal-200">Security and production</p>
-          <h2 className="display-font mt-2 text-2xl font-bold tracking-tight text-white sm:text-4xl">
-            Built with serious authentication and platform safeguards.
-          </h2>
-          <p className="mt-3 text-sm font-medium leading-7 text-slate-300">
-            The app is not just a demo screen. It includes account protection, admin moderation, API validation, security monitoring, and production readiness checks.
-          </p>
-        </motion.div>
-
-        <motion.div className="grid gap-3 md:grid-cols-2" variants={stagger}>
-          {securityDetails.map((item) => (
-            <motion.div key={item} variants={cardReveal} className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/8 p-4">
-              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-teal-300 text-slate-950">
-                <CheckCircle2 size={14} />
-              </span>
-              <p className="text-[13px] font-medium leading-6 text-slate-200">{item}</p>
-            </motion.div>
           ))}
         </motion.div>
       </div>
@@ -940,7 +793,7 @@ function Footer({ onLink }) {
             </div>
           </div>
           <p className="mt-4 text-sm font-medium leading-7 text-slate-300">
-            Generate, optimize, explain, and manage SQL from a polished SaaS workspace with schema context, billing, notifications, and admin operations.
+            Generate, optimize, explain, and manage SQL from a polished SaaS workspace with schema context, billing, notifications, and support tools.
           </p>
         </div>
 
