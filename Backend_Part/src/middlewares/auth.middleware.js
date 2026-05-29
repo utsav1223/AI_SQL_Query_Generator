@@ -9,6 +9,7 @@ const { getEffectivePlanForActor } = require("../utils/effectivePlan");
 const { createSecurityEvent } = require("../utils/securityMonitor");
 const { USER_AUTH_COOKIE, getCookieValue } = require("../utils/sessionCookies");
 const { getOrCreateUserFromClerkId } = require("../services/clerkSync.service");
+const { getAccountRestrictionForUser } = require("../services/accountRestriction.service");
 
 const toArray = (value) => {
   if (Array.isArray(value)) {
@@ -37,6 +38,8 @@ const attachUser = async (req, user, authDetails = {}) => {
   }
 
   if (user.status === "suspended") {
+    const accountRestriction = await getAccountRestrictionForUser(user);
+
     await createSecurityEvent({
       userId: user._id,
       emailSnapshot: user.email,
@@ -50,7 +53,12 @@ const attachUser = async (req, user, authDetails = {}) => {
       riskFlag: "suspended_access_attempt"
     });
 
-    throw new AppError(403, "Account suspended. Contact support.");
+    throw new AppError(
+      403,
+      accountRestriction?.message || "Your account has been suspended.",
+      accountRestriction?.code || "ACCOUNT_SUSPENDED",
+      { accountRestriction }
+    );
   }
 
   req.user = {

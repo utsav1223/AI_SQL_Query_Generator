@@ -1,5 +1,6 @@
 const asyncHandler = require("./asyncHandler");
 const AppError = require("../utils/AppError");
+const { getAccountRestrictionForUserId } = require("../services/accountRestriction.service");
 
 const WAITLIST_ENABLED = String(process.env.CLERK_WAITLIST_MODE || "").toLowerCase() === "true";
 
@@ -27,18 +28,27 @@ const hasWorkspacePermission = (req, permission) => {
 };
 
 const requireApprovedAccess = asyncHandler(async (req, res, next) => {
-  if (!WAITLIST_ENABLED || req.user?.role === "admin") {
+  if (req.user?.role === "admin") {
     return next();
   }
 
-  if ((req.user?.accessStatus || "approved") === "approved") {
+  const accessStatus = req.user?.accessStatus || "approved";
+
+  if (accessStatus === "approved") {
     return next();
   }
+
+  if (accessStatus === "pending" && !WAITLIST_ENABLED) {
+    return next();
+  }
+
+  const accountRestriction = await getAccountRestrictionForUserId(req.user?.userId);
 
   throw new AppError(
     403,
-    "Your account is waiting for approval.",
-    "WAITLIST_PENDING"
+    accountRestriction?.message || "Your account is waiting for approval.",
+    accountRestriction?.code || "WAITLIST_PENDING",
+    { accountRestriction }
   );
 });
 

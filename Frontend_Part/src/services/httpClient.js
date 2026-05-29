@@ -9,6 +9,13 @@ const PUBLIC_AUTH_ENDPOINTS = new Set([
   "/admin/login"
 ]);
 
+const ACCOUNT_RESTRICTION_CODES = new Set([
+  "ACCOUNT_DELETED",
+  "ACCOUNT_REJECTED",
+  "ACCOUNT_SUSPENDED",
+  "WAITLIST_PENDING"
+]);
+
 const parseResponseBody = async (response) => {
   try {
     return await response.json();
@@ -46,14 +53,14 @@ const shouldNotifyAuthError = ({ endpoint, status, authScope, code }) => {
     return false;
   }
 
-  if (status === 403 && code !== "AUTH_FORBIDDEN") {
+  if (status === 403 && code !== "AUTH_FORBIDDEN" && !ACCOUNT_RESTRICTION_CODES.has(code)) {
     return false;
   }
 
   return !PUBLIC_AUTH_ENDPOINTS.has(endpoint.split("?")[0]);
 };
 
-const notifyAuthError = ({ endpoint, status, authScope, message }) => {
+const notifyAuthError = ({ endpoint, status, authScope, message, code, data }) => {
   if (typeof window === "undefined") {
     return;
   }
@@ -65,6 +72,9 @@ const notifyAuthError = ({ endpoint, status, authScope, message }) => {
         status,
         authScope,
         message,
+        code,
+        data,
+        accountRestriction: data?.accountRestriction || null,
         returnTo: window.location.pathname + window.location.search
       }
     })
@@ -149,7 +159,9 @@ export const createRequest = ({ getToken, authScope } = {}) => {
           endpoint,
           status: response.status,
           authScope,
-          message: details.message
+          message: details.message,
+          code: details.code,
+          data: error.data
         });
       }
 

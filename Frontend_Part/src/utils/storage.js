@@ -1,6 +1,7 @@
 export const STORAGE_KEYS = {
   token: "token",
   user: "user",
+  accountRestriction: "account_restriction",
   adminToken: "admin_token",
   admin: "admin_user"
 };

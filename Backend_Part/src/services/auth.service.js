@@ -2,6 +2,7 @@ const User = require("../models/User");
 const AppError = require("../utils/AppError");
 const { getPublicUser } = require("../utils/auth");
 const { downgradeExpiredUserIfNeeded } = require("./subscription.service");
+const { getAccountRestrictionForUser } = require("./accountRestriction.service");
 
 const getCurrentUserProfile = async (userId) => {
   const user = await User.findById(userId);
@@ -10,7 +11,14 @@ const getCurrentUserProfile = async (userId) => {
   }
 
   await downgradeExpiredUserIfNeeded(user);
-  return getPublicUser(user);
+  const publicUser = getPublicUser(user);
+  const accountRestriction = await getAccountRestrictionForUser(user);
+
+  if (accountRestriction) {
+    publicUser.accountRestriction = accountRestriction;
+  }
+
+  return publicUser;
 };
 
 module.exports = {

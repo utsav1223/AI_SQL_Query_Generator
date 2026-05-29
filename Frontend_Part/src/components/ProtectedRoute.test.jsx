@@ -12,9 +12,9 @@ vi.mock("@clerk/clerk-react", () => ({
   })
 }));
 
-const renderProtectedRoute = ({ user = null, loading = false, roles } = {}) => {
+const renderProtectedRoute = ({ user = null, accountRestriction = null, loading = false, roles } = {}) => {
   return render(
-    <AuthContext.Provider value={{ user, loading, login: vi.fn(), logout: vi.fn() }}>
+    <AuthContext.Provider value={{ user, accountRestriction, loading, login: vi.fn(), logout: vi.fn() }}>
       <MemoryRouter initialEntries={["/dashboard"]}>
         <Routes>
           <Route
@@ -59,5 +59,20 @@ describe("ProtectedRoute", () => {
     });
 
     expect(screen.getByText("Public home")).toBeInTheDocument();
+  });
+
+  it("shows the admin moderation message for restricted accounts", () => {
+    renderProtectedRoute({
+      accountRestriction: {
+        status: "suspended",
+        title: "Account suspended",
+        message: "Your account has been suspended. Reason: Payment abuse",
+        reason: "Payment abuse"
+      }
+    });
+
+    expect(screen.getByText("Account suspended")).toBeInTheDocument();
+    expect(screen.getByText("Admin Message")).toBeInTheDocument();
+    expect(screen.getByText("Payment abuse")).toBeInTheDocument();
   });
 });

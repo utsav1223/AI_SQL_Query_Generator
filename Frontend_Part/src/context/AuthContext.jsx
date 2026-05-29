@@ -22,12 +22,64 @@ const normalizeUser = (user) => {
   };
 };
 
+const ACCOUNT_RESTRICTION_CODES = new Set([
+  "ACCOUNT_DELETED",
+  "ACCOUNT_REJECTED",
+  "ACCOUNT_SUSPENDED",
+  "WAITLIST_PENDING"
+]);
+
+const normalizeAccountRestriction = (restriction) => {
+  if (!restriction) {
+    return null;
+  }
+
+  return {
+    code: restriction.code || "",
+    status: restriction.status || "blocked",
+    title: restriction.title || "Account access blocked",
+    message: restriction.message || "This account cannot open the workspace.",
+    reason: restriction.reason || "",
+    action: restriction.action || "",
+    createdAt: restriction.createdAt || null
+  };
+};
+
+const getRestrictionFromError = (error) => {
+  const restriction = normalizeAccountRestriction(error?.data?.accountRestriction);
+
+  if (restriction) {
+    return restriction;
+  }
+
+  if (ACCOUNT_RESTRICTION_CODES.has(error?.code)) {
+    return normalizeAccountRestriction({
+      code: error.code,
+      message: error.message
+    });
+  }
+
+  return null;
+};
+
 const saveUserSession = (user) => {
   writeJson(STORAGE_KEYS.user, user);
 };
 
 const clearUserSession = () => {
   removeItems(STORAGE_KEYS.token, STORAGE_KEYS.user);
+};
+
+const saveAccountRestriction = (restriction) => {
+  writeJson(STORAGE_KEYS.accountRestriction, restriction);
+};
+
+const clearAccountRestriction = () => {
+  removeItems(STORAGE_KEYS.accountRestriction);
+};
+
+const clearAuthSession = () => {
+  removeItems(STORAGE_KEYS.token, STORAGE_KEYS.user, STORAGE_KEYS.accountRestriction);
 };
 
 const delay = (durationMs) => new Promise((resolve) => setTimeout(resolve, durationMs));
@@ -55,6 +107,9 @@ export function AuthProvider({ children }) {
     signOut
   } = useClerkAuth();
   const [user, setUser] = useState(() => normalizeUser(readJson(STORAGE_KEYS.user)));
+  const [accountRestriction, setAccountRestriction] = useState(() =>
+    normalizeAccountRestriction(readJson(STORAGE_KEYS.accountRestriction))
+  );
   const [loading, setLoading] = useState(true);
   const activeWorkspaceKey = orgId || "personal";
 
@@ -70,15 +125,28 @@ export function AuthProvider({ children }) {
         const freshUser = normalizeUser(await authService.getCurrentUser(clerkToken));
         const workspaceUser = freshUser ? { ...freshUser, activeWorkspaceKey } : freshUser;
         saveUserSession(workspaceUser);
+        clearAccountRestriction();
         setUser(workspaceUser);
+        setAccountRestriction(null);
         return workspaceUser;
       } catch (error) {
+        const restriction = getRestrictionFromError(error);
+
+        if (restriction) {
+          clearUserSession();
+          saveAccountRestriction(restriction);
+          setUser(null);
+          setAccountRestriction(restriction);
+          return null;
+        }
+
         if (fallbackUser) {
           return fallbackUser;
         }
 
-        clearUserSession();
+        clearAuthSession();
         setUser(null);
+        setAccountRestriction(null);
         throw error;
       }
     },
@@ -91,8 +159,25 @@ export function AuthProvider({ children }) {
         return;
       }
 
+      const restriction =
+        normalizeAccountRestriction(event.detail?.accountRestriction || event.detail?.data?.accountRestriction) ||
+        (ACCOUNT_RESTRICTION_CODES.has(event.detail?.code)
+          ? normalizeAccountRestriction({
+              code: event.detail.code,
+              message: event.detail.message
+            })
+          : null);
+
       clearUserSession();
       setUser(null);
+
+      if (restriction) {
+        saveAccountRestriction(restriction);
+        setAccountRestriction(restriction);
+      } else {
+        clearAccountRestriction();
+        setAccountRestriction(null);
+      }
     };
 
     window.addEventListener(API_AUTH_EVENT, handleAuthError);
@@ -105,8 +190,9 @@ export function AuthProvider({ children }) {
 
     const loadUser = async () => {
       if (!isSignedIn) {
-        clearUserSession();
+        clearAuthSession();
         setUser(null);
+        setAccountRestriction(null);
         setLoading(false);
         return;
       }
@@ -114,8 +200,9 @@ export function AuthProvider({ children }) {
       try {
         await refreshCurrentUser();
       } catch {
-        clearUserSession();
+        clearAuthSession();
         setUser(null);
+        setAccountRestriction(null);
       } finally {
         setLoading(false);
       }
@@ -134,7 +221,9 @@ export function AuthProvider({ children }) {
 
       if (incomingUser) {
         saveUserSession(incomingUser);
+        clearAccountRestriction();
         setUser(incomingUser);
+        setAccountRestriction(null);
         setLoading(false);
         return incomingUser;
       }
@@ -151,8 +240,9 @@ export function AuthProvider({ children }) {
   );
 
   const logout = useCallback(async () => {
-    clearUserSession();
+    clearAuthSession();
     setUser(null);
+    setAccountRestriction(null);
     setLoading(false);
 
     try {
@@ -169,8 +259,8 @@ export function AuthProvider({ children }) {
   }, [signOut]);
 
   const value = useMemo(
-    () => ({ user, loading, login, logout, refreshCurrentUser }),
-    [user, loading, login, logout, refreshCurrentUser]
+    () => ({ user, accountRestriction, loading, login, logout, refreshCurrentUser }),
+    [user, accountRestriction, loading, login, logout, refreshCurrentUser]
   );
 
   return (

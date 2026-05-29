@@ -5,6 +5,7 @@ const Query = require("../models/Query");
 const Schema = require("../models/Schema");
 const Feedback = require("../models/Feedback");
 const AppError = require("../utils/AppError");
+const { getDeletedAccountRestrictionByEmail } = require("./accountRestriction.service");
 
 const getPrimaryEmail = (clerkUser) => {
   const primaryEmailId = clerkUser.primaryEmailAddressId || clerkUser.primary_email_address_id;
@@ -67,6 +68,17 @@ const upsertUserFromClerkUser = async (clerkUser) => {
   }
 
   if (!user) {
+    const deletedRestriction = await getDeletedAccountRestrictionByEmail(mappedUser.email);
+
+    if (deletedRestriction) {
+      throw new AppError(
+        403,
+        deletedRestriction.message,
+        deletedRestriction.code,
+        { accountRestriction: deletedRestriction }
+      );
+    }
+
     user = await User.create({
       ...mappedUser,
       email: mappedUser.email.toLowerCase(),

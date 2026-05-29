@@ -45,6 +45,41 @@ describe("httpClient auth events", () => {
     window.removeEventListener(API_AUTH_EVENT, listener);
   });
 
+  it("dispatches account restriction details for blocked users", async () => {
+    const listener = vi.fn();
+    window.addEventListener(API_AUTH_EVENT, listener);
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: false,
+      status: 403,
+      json: async () => ({
+        success: false,
+        message: "Your account has been suspended. Reason: Policy violation",
+        data: {
+          code: "ACCOUNT_SUSPENDED",
+          accountRestriction: {
+            status: "suspended",
+            reason: "Policy violation"
+          }
+        }
+      })
+    });
+
+    const request = createRequest({ authScope: "user" });
+
+    await expect(request("/auth/me", "GET")).rejects.toMatchObject({ status: 403 });
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(listener.mock.calls[0][0].detail).toMatchObject({
+      authScope: "user",
+      code: "ACCOUNT_SUSPENDED",
+      accountRestriction: {
+        status: "suspended",
+        reason: "Policy violation"
+      }
+    });
+
+    window.removeEventListener(API_AUTH_EVENT, listener);
+  });
+
   it("uses the request timeout override when provided", async () => {
     const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
     vi.spyOn(globalThis, "fetch").mockResolvedValue({
