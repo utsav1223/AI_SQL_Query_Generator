@@ -14,7 +14,8 @@ const initialOverview = {
     avgFeedbackRating: 0,
     pendingFeedback: 0,
     pendingSecurityEvents: 0,
-    recentHighSeverityEvents: 0
+    recentHighSeverityEvents: 0,
+    pendingAccessAppeals: 0
   },
   charts: {
     monthlyBusiness: [],
@@ -25,11 +26,13 @@ const initialOverview = {
   recentInvoices: [],
   recentFeedback: [],
   recentSecurityEvents: [],
+  recentAccessAppeals: [],
   riskyUsers: [],
   recentAdminActions: []
 };
 
 export const FEEDBACK_STATUSES = ["all", "new", "reviewed", "resolved"];
+export const ACCESS_APPEAL_STATUSES = ["new", "in_review", "resolved", "closed", "all"];
 
 const escapeCsvValue = (value) => {
   const text = String(value ?? "");
@@ -65,10 +68,14 @@ export function useAdminDashboardData() {
   const [feedbackSearchInput, setFeedbackSearchInput] = useState("");
   const [feedbackSearchQuery, setFeedbackSearchQuery] = useState("");
   const [securityEvents, setSecurityEvents] = useState([]);
+  const [accessAppeals, setAccessAppeals] = useState([]);
+  const [accessAppealsPagination, setAccessAppealsPagination] = useState({ total: 0, page: 1, limit: 5, pages: 1 });
+  const [accessAppealStatus, setAccessAppealStatus] = useState("new");
 
   const [loadingOverview, setLoadingOverview] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingFeedback, setLoadingFeedback] = useState(true);
+  const [loadingAccessAppeals, setLoadingAccessAppeals] = useState(true);
   const [actioningId, setActioningId] = useState("");
   const [error, setError] = useState("");
 
@@ -132,10 +139,30 @@ export function useAdminDashboardData() {
     }
   }, []);
 
+  const loadAccessAppeals = useCallback(async (page = 1, status = "new") => {
+    setLoadingAccessAppeals(true);
+    try {
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: "5",
+        status
+      });
+
+      const data = await adminService.getAccessAppeals(params.toString());
+      setAccessAppeals(data.appeals || []);
+      setAccessAppealsPagination(data.pagination || { total: 0, page: 1, limit: 5, pages: 1 });
+    } catch (err) {
+      setError(err.message || "Failed to load access requests");
+    } finally {
+      setLoadingAccessAppeals(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadOverview();
     loadFeedback(1, "all", "");
-  }, [loadFeedback, loadOverview]);
+    loadAccessAppeals(1, "new");
+  }, [loadAccessAppeals, loadFeedback, loadOverview]);
 
   useEffect(() => {
     loadUsers(1, usersSearchQuery);
@@ -152,7 +179,8 @@ export function useAdminDashboardData() {
     await Promise.all([
       loadOverview(),
       loadUsers(usersPagination.page, usersSearchQuery),
-      loadFeedback(feedbackPagination.page, feedbackStatus, feedbackSearchQuery)
+      loadFeedback(feedbackPagination.page, feedbackStatus, feedbackSearchQuery),
+      loadAccessAppeals(accessAppealsPagination.page, accessAppealStatus)
     ]);
   };
 
@@ -210,6 +238,11 @@ export function useAdminDashboardData() {
   const handleFeedbackStatusFilter = async (status) => {
     setFeedbackStatus(status);
     await loadFeedback(1, status, feedbackSearchQuery);
+  };
+
+  const handleAccessAppealStatusFilter = async (status) => {
+    setAccessAppealStatus(status);
+    await loadAccessAppeals(1, status);
   };
 
   const getModerationReason = async ({ title, description, confirmLabel = "Submit" }) => {
@@ -366,7 +399,26 @@ export function useAdminDashboardData() {
     }
   };
 
+  const handleAccessAppealStatusUpdate = async (appealId, status) => {
+    setActioningId(appealId);
+    setError("");
+    try {
+      await adminService.updateAccessAppealStatus(appealId, { status });
+      await Promise.all([
+        loadOverview(),
+        loadAccessAppeals(accessAppealsPagination.page, accessAppealStatus)
+      ]);
+    } catch (err) {
+      setError(err.message || "Failed to update access request");
+    } finally {
+      setActioningId("");
+    }
+  };
+
   return {
+    accessAppeals,
+    accessAppealsPagination,
+    accessAppealStatus,
     actioningId,
     ConfirmationDialog,
     error,
@@ -381,6 +433,8 @@ export function useAdminDashboardData() {
     handleFeedbackSearch,
     handleFeedbackStatusFilter,
     handleFeedbackStatusUpdate,
+    handleAccessAppealStatusFilter,
+    handleAccessAppealStatusUpdate,
     handleSecurityEventStatusUpdate,
     handleAccessDecision,
     handleSuspendToggle,
@@ -388,7 +442,9 @@ export function useAdminDashboardData() {
     handleUsersSearch,
     handleUsersFilterChange,
     loadFeedback,
+    loadAccessAppeals,
     loadUsers,
+    loadingAccessAppeals,
     loadingFeedback,
     loadingOverview,
     loadingUsers,

@@ -1,7 +1,9 @@
 const asyncHandler = require("../middlewares/asyncHandler");
 const sendResponse = require("../utils/sendResponse");
 const authService = require("../services/auth.service");
+const accessAppealService = require("../services/accessAppeal.service");
 const paymentService = require("../services/payment.service");
+const { getRequestMeta } = require("../utils/request");
 const {
   clearUserAuthCookie
 } = require("../utils/sessionCookies");
@@ -33,6 +35,21 @@ exports.getMe = asyncHandler(async (req, res) => {
         plan: billing.plan,
         billing
       }
+    }
+  });
+});
+
+exports.submitAccessAppeal = asyncHandler(async (req, res) => {
+  const appeal = await accessAppealService.createAccessAppeal({
+    req,
+    message: req.body?.message,
+    requestMeta: getRequestMeta(req)
+  });
+
+  return sendResponse(res, {
+    message: "Your request has been sent to the admin team.",
+    data: {
+      appeal
     }
   });
 });

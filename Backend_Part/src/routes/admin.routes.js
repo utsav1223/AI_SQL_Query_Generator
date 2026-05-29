@@ -9,6 +9,8 @@ const {
   getAdminOverview,
   getAdminUsers,
   moderateUserByAdmin,
+  getAdminAccessAppeals,
+  updateAccessAppealStatusByAdmin,
   getAdminFeedback,
   updateFeedbackStatusByAdmin,
   getAdminSecurityEvents,
@@ -17,10 +19,12 @@ const {
 const {
   adminLoginRules,
   adminFeedbackQueryRules,
+  adminAccessAppealsQueryRules,
   adminSecurityEventsQueryRules,
   adminUsersQueryRules,
   feedbackStatusRules,
   moderationRules,
+  accessAppealStatusRules,
   securityEventStatusRules
 } = require("../validators/api.validator");
 
@@ -30,6 +34,8 @@ router.get("/me", adminAuth, getAdminMe);
 router.get("/overview", adminAuth, getAdminOverview);
 router.get("/users", adminAuth, adminUsersQueryRules, validate, getAdminUsers);
 router.post("/users/:userId/moderate", adminAuth, moderationRules, validate, moderateUserByAdmin);
+router.get("/access-appeals", adminAuth, adminAccessAppealsQueryRules, validate, getAdminAccessAppeals);
+router.patch("/access-appeals/:appealId/status", adminAuth, accessAppealStatusRules, validate, updateAccessAppealStatusByAdmin);
 router.get("/feedback", adminAuth, adminFeedbackQueryRules, validate, getAdminFeedback);
 router.patch("/feedback/:feedbackId/status", adminAuth, feedbackStatusRules, validate, updateFeedbackStatusByAdmin);
 router.get("/security-events", adminAuth, adminSecurityEventsQueryRules, validate, getAdminSecurityEvents);

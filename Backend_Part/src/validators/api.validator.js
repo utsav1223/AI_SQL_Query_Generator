@@ -12,6 +12,7 @@ const MODERATION_ACTIONS = [
   "unsuspend",
   "delete"
 ];
+const ACCESS_APPEAL_STATUSES = ["all", "new", "in_review", "resolved", "closed"];
 
 const mongoIdParam = (name) =>
   param(name).isMongoId().withMessage(`${name} must be a valid MongoDB id`);
@@ -69,6 +70,14 @@ const feedbackCreateRules = [
   body("message").isString().trim().isLength({ min: 10, max: 3000 }).withMessage("message must be 10 to 3000 characters")
 ];
 
+const accessAppealCreateRules = [
+  body("message")
+    .isString()
+    .trim()
+    .isLength({ min: 10, max: 2000 })
+    .withMessage("message must be 10 to 2000 characters")
+];
+
 const adminLoginRules = [
   body("userId").isString().trim().isLength({ min: 1, max: 120 }).withMessage("userId is required"),
   body("password").isString().isLength({ min: 1, max: 200 }).withMessage("password is required")
@@ -95,6 +104,12 @@ const adminSecurityEventsQueryRules = [
   query("search").optional().isString().trim().isLength({ max: 120 }).withMessage("search is too long")
 ];
 
+const adminAccessAppealsQueryRules = [
+  ...paginationQuery,
+  query("status").optional().isIn(ACCESS_APPEAL_STATUSES).withMessage("status is invalid"),
+  query("search").optional().isString().trim().isLength({ max: 120 }).withMessage("search is too long")
+];
+
 const moderationRules = [
   mongoIdParam("userId"),
   body("action").isIn(MODERATION_ACTIONS).withMessage("moderation action is invalid"),
@@ -112,6 +127,12 @@ const securityEventStatusRules = [
   body("status").isIn(["new", "reviewed", "resolved"]).withMessage("status is invalid")
 ];
 
+const accessAppealStatusRules = [
+  mongoIdParam("appealId"),
+  body("status").isIn(ACCESS_APPEAL_STATUSES.filter((status) => status !== "all")).withMessage("status is invalid"),
+  body("adminNote").optional().isString().trim().isLength({ max: 1000 }).withMessage("adminNote is too long")
+];
+
 const paymentVerifyRules = [
   body("razorpay_order_id").isString().trim().isLength({ min: 1, max: 120 }).withMessage("razorpay_order_id is required"),
   body("razorpay_payment_id").isString().trim().isLength({ min: 1, max: 120 }).withMessage("razorpay_payment_id is required"),
@@ -127,6 +148,9 @@ const paymentLinkVerifyRules = [
 ];
 
 module.exports = {
+  accessAppealCreateRules,
+  accessAppealStatusRules,
+  adminAccessAppealsQueryRules,
   adminLoginRules,
   adminFeedbackQueryRules,
   adminSecurityEventsQueryRules,

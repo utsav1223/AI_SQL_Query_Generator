@@ -12,9 +12,9 @@ vi.mock("@clerk/clerk-react", () => ({
   })
 }));
 
-const renderProtectedRoute = ({ user = null, accountRestriction = null, loading = false, roles } = {}) => {
+const renderProtectedRoute = ({ user = null, accountRestriction = null, loading = false, loggingOut = false, roles } = {}) => {
   return render(
-    <AuthContext.Provider value={{ user, accountRestriction, loading, login: vi.fn(), logout: vi.fn() }}>
+    <AuthContext.Provider value={{ user, accountRestriction, loading, loggingOut, login: vi.fn(), logout: vi.fn() }}>
       <MemoryRouter initialEntries={["/dashboard"]}>
         <Routes>
           <Route
@@ -38,6 +38,12 @@ describe("ProtectedRoute", () => {
     renderProtectedRoute({ loading: true });
 
     expect(screen.getByText("Securing your workspace...")).toBeInTheDocument();
+  });
+
+  it("shows a signing out screen while logout is in progress", () => {
+    renderProtectedRoute({ loggingOut: true });
+
+    expect(screen.getByText("Signing out...")).toBeInTheDocument();
   });
 
   it("redirects unauthenticated users to login", () => {
@@ -74,5 +80,7 @@ describe("ProtectedRoute", () => {
     expect(screen.getByText("Account suspended")).toBeInTheDocument();
     expect(screen.getByText("Admin Message")).toBeInTheDocument();
     expect(screen.getByText("Payment abuse")).toBeInTheDocument();
+    expect(screen.getByText("Contact Admin")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /send review request/i })).toBeInTheDocument();
   });
 });

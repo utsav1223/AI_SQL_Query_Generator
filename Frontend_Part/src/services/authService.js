@@ -9,5 +9,10 @@ export const authService = {
       token,
       notifyOnAuthError: false
     });
+  },
+  submitAccessAppeal(payload) {
+    return apiRequest("/auth/access-appeal", "POST", payload, {
+      notifyOnAuthError: false
+    });
   }
 };

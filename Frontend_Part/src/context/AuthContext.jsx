@@ -111,6 +111,7 @@ export function AuthProvider({ children }) {
     normalizeAccountRestriction(readJson(STORAGE_KEYS.accountRestriction))
   );
   const [loading, setLoading] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
   const activeWorkspaceKey = orgId || "personal";
 
   const refreshCurrentUser = useCallback(
@@ -193,6 +194,7 @@ export function AuthProvider({ children }) {
         clearAuthSession();
         setUser(null);
         setAccountRestriction(null);
+        setLoggingOut(false);
         setLoading(false);
         return;
       }
@@ -224,6 +226,7 @@ export function AuthProvider({ children }) {
         clearAccountRestriction();
         setUser(incomingUser);
         setAccountRestriction(null);
+        setLoggingOut(false);
         setLoading(false);
         return incomingUser;
       }
@@ -240,10 +243,11 @@ export function AuthProvider({ children }) {
   );
 
   const logout = useCallback(async () => {
+    setLoggingOut(true);
     clearAuthSession();
     setUser(null);
     setAccountRestriction(null);
-    setLoading(false);
+    setLoading(true);
 
     try {
       await authService.logout();
@@ -259,8 +263,8 @@ export function AuthProvider({ children }) {
   }, [signOut]);
 
   const value = useMemo(
-    () => ({ user, accountRestriction, loading, login, logout, refreshCurrentUser }),
-    [user, accountRestriction, loading, login, logout, refreshCurrentUser]
+    () => ({ user, accountRestriction, loading, loggingOut, login, logout, refreshCurrentUser }),
+    [user, accountRestriction, loading, loggingOut, login, logout, refreshCurrentUser]
   );
 
   return (

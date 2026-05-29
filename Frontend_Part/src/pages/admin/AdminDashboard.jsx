@@ -26,13 +26,16 @@ import {
 import { ThemeContext } from "../../context/ThemeContext";
 import { AdminSummary } from "../../components/admin/AdminSummary";
 import { useAdminAuth } from "../../hooks/useAdminAuth";
-import { FEEDBACK_STATUSES, useAdminDashboardData } from "../../hooks/useAdminDashboardData";
+import { ACCESS_APPEAL_STATUSES, FEEDBACK_STATUSES, useAdminDashboardData } from "../../hooks/useAdminDashboardData";
 
 export default function AdminDashboard() {
   const { admin, logout } = useAdminAuth();
   const { isDark, toggleTheme } = useContext(ThemeContext);
   const {
     actioningId,
+    accessAppeals,
+    accessAppealsPagination,
+    accessAppealStatus,
     ConfirmationDialog,
     error,
     exportVisibleUsers,
@@ -44,6 +47,8 @@ export default function AdminDashboard() {
     feedbackStatusData,
     handleDeleteUser,
     handleAccessDecision,
+    handleAccessAppealStatusFilter,
+    handleAccessAppealStatusUpdate,
     handleFeedbackSearch,
     handleFeedbackStatusFilter,
     handleFeedbackStatusUpdate,
@@ -52,8 +57,10 @@ export default function AdminDashboard() {
     handleTogglePlan,
     handleUsersFilterChange,
     handleUsersSearch,
+    loadAccessAppeals,
     loadFeedback,
     loadUsers,
+    loadingAccessAppeals,
     loadingFeedback,
     loadingOverview,
     loadingUsers,
@@ -590,6 +597,113 @@ export default function AdminDashboard() {
           <div className="min-w-0 space-y-4">
             <section className={`min-w-0 rounded-lg border p-5 shadow-sm ${surfaceClass}`}>
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 className={`text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
+                    Access Requests
+                  </h3>
+                  <p className={`mt-1 text-xs font-medium ${mutedTextClass}`}>
+                    Messages from restricted users asking for account review.
+                  </p>
+                </div>
+                <span className="inline-flex rounded-md bg-amber-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-amber-700">
+                  New: {overview.stats.pendingAccessAppeals || 0}
+                </span>
+              </div>
+
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                {ACCESS_APPEAL_STATUSES.map((status) => (
+                  <button
+                    key={status}
+                    type="button"
+                    onClick={() => handleAccessAppealStatusFilter(status)}
+                    className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] ${
+                      accessAppealStatus === status
+                        ? "border-emerald-300 bg-emerald-100 text-emerald-700"
+                        : isDark
+                        ? "border-slate-700 bg-slate-800 text-slate-300"
+                        : "border-slate-200 bg-white text-slate-500"
+                    }`}
+                  >
+                    <Filter size={11} />
+                    {status.replace(/_/g, " ")}
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-3 max-h-[380px] overflow-auto pr-1 custom-scrollbar">
+                {loadingAccessAppeals ? (
+                  <FeedbackCardsSkeleton isDark={isDark} />
+                ) : accessAppeals.length === 0 ? (
+                  <p className={`text-sm font-semibold ${mutedTextClass}`}>No access requests found.</p>
+                ) : (
+                  accessAppeals.map((appeal) => {
+                    const isBusy = actioningId === appeal._id;
+                    return (
+                      <article key={appeal._id} className={`rounded-lg border px-4 py-3 ${subtleBgClass}`}>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className={`text-sm font-bold break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>
+                              {appeal.name || "Restricted user"}
+                            </p>
+                            <p className={`text-[11px] font-medium break-all ${mutedTextClass}`}>
+                              {appeal.email || "Unknown email"}
+                            </p>
+                          </div>
+                          <span className={`shrink-0 rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${restrictionBadgeClass(appeal.restrictionStatus, isDark)}`}>
+                            {appeal.restrictionStatus || "blocked"}
+                          </span>
+                        </div>
+
+                        {appeal.restrictionReason ? (
+                          <p className={`mt-2 text-[12px] leading-5 ${mutedTextClass}`}>
+                            Admin reason: {appeal.restrictionReason}
+                          </p>
+                        ) : null}
+
+                        <p className={`mt-2 text-[13px] leading-6 ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+                          {appeal.message}
+                        </p>
+
+                        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className={`inline-flex rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${appealStatusBadgeClass(appeal.status, isDark)}`}>
+                              {String(appeal.status || "new").replace(/_/g, " ")}
+                            </span>
+                            <span className={`text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
+                              <Clock3 size={12} className="mr-1 inline" />
+                              {appeal.createdAt ? new Date(appeal.createdAt).toLocaleString() : "New request"}
+                            </span>
+                          </div>
+                          <select
+                            value={appeal.status || "new"}
+                            disabled={isBusy}
+                            onChange={(e) => handleAccessAppealStatusUpdate(appeal._id, e.target.value)}
+                            className={`h-8 rounded-md border px-2 text-[10px] font-bold uppercase tracking-[0.12em] outline-none ${isDark ? "border-slate-600 bg-slate-800 text-slate-200" : "border-slate-200 bg-white text-slate-700"}`}
+                          >
+                            {ACCESS_APPEAL_STATUSES.filter((status) => status !== "all").map((status) => (
+                              <option key={status} value={status}>
+                                {status.replace(/_/g, " ")}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </article>
+                    );
+                  })
+                )}
+              </div>
+
+              <Pager
+                currentPage={accessAppealsPagination.page}
+                totalPages={accessAppealsPagination.pages}
+                onPrev={() => loadAccessAppeals(accessAppealsPagination.page - 1, accessAppealStatus)}
+                onNext={() => loadAccessAppeals(accessAppealsPagination.page + 1, accessAppealStatus)}
+                isDark={isDark}
+              />
+            </section>
+
+            <section className={`min-w-0 rounded-lg border p-5 shadow-sm ${surfaceClass}`}>
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <h3 className={`text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
                   Security Alerts
                 </h3>
@@ -939,10 +1053,23 @@ function statusBadgeClass(status) {
   return "bg-amber-100 text-amber-700";
 }
 
+function appealStatusBadgeClass(status, isDark) {
+  if (status === "resolved") return "bg-emerald-100 text-emerald-700";
+  if (status === "in_review") return "bg-sky-100 text-sky-700";
+  if (status === "closed") return isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700";
+  return "bg-amber-100 text-amber-700";
+}
+
 function accessBadgeClass(accessStatus, isDark) {
   if (accessStatus === "approved") return "bg-emerald-100 text-emerald-700";
   if (accessStatus === "rejected") return "bg-rose-100 text-rose-700";
   return isDark ? "bg-amber-500/15 text-amber-200" : "bg-amber-100 text-amber-700";
+}
+
+function restrictionBadgeClass(status, isDark) {
+  if (["blocked", "deleted", "rejected"].includes(status)) return "bg-rose-100 text-rose-700";
+  if (status === "suspended" || status === "pending") return "bg-amber-100 text-amber-700";
+  return isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700";
 }
 
 function severityBadgeClass(severity) {

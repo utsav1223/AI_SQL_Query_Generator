@@ -19,8 +19,14 @@ export const adminService = {
   getFeedback(queryString = "") {
     return adminApiRequest(`/admin/feedback${queryString ? `?${queryString}` : ""}`, "GET");
   },
+  getAccessAppeals(queryString = "") {
+    return adminApiRequest(`/admin/access-appeals${queryString ? `?${queryString}` : ""}`, "GET");
+  },
   moderateUser(userId, payload) {
     return adminApiRequest(`/admin/users/${userId}/moderate`, "POST", payload);
+  },
+  updateAccessAppealStatus(appealId, payload) {
+    return adminApiRequest(`/admin/access-appeals/${appealId}/status`, "PATCH", payload);
   },
   updateFeedbackStatus(feedbackId, payload) {
     return adminApiRequest(`/admin/feedback/${feedbackId}/status`, "PATCH", payload);

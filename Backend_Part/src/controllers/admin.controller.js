@@ -85,6 +85,31 @@ exports.getAdminFeedback = asyncHandler(async (req, res) => {
   });
 });
 
+exports.getAdminAccessAppeals = asyncHandler(async (req, res) => {
+  const appeals = await adminService.getAdminAccessAppeals(req.query);
+
+  return sendResponse(res, {
+    message: "Access requests fetched successfully",
+    data: appeals
+  });
+});
+
+exports.updateAccessAppealStatusByAdmin = asyncHandler(async (req, res) => {
+  const appeal = await adminService.updateAccessAppealStatus({
+    adminId: req.admin?.adminId,
+    appealId: req.params.appealId,
+    status: req.body?.status,
+    adminNote: req.body?.adminNote
+  });
+
+  return sendResponse(res, {
+    message: "Access request updated successfully",
+    data: {
+      appeal
+    }
+  });
+});
+
 exports.updateFeedbackStatusByAdmin = asyncHandler(async (req, res) => {
   const feedback = await adminService.updateFeedbackStatus({
     feedbackId: req.params.feedbackId,

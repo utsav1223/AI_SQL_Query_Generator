@@ -129,7 +129,7 @@ export default function Landing() {
   const location = useLocation();
   const navigate = useNavigate();
   const { isLoaded: clerkLoaded, isSignedIn } = useClerkAuth();
-  const { user, loading: appAuthLoading, logout } = useAuth();
+  const { user, loading: appAuthLoading, loggingOut, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const authMode =
@@ -146,7 +146,7 @@ export default function Landing() {
   }, [authMode, clerkLoaded, isSignedIn, navigate, user]);
 
   const shouldShowAccountSync =
-    authMode && clerkLoaded && isSignedIn && !appAuthLoading && !user;
+    authMode && clerkLoaded && isSignedIn && !appAuthLoading && !loggingOut && !user;
 
   const openAuthModal = (mode) => {
     setMobileMenuOpen(false);

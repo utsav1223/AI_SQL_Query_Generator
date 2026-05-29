@@ -11,8 +11,10 @@ const Invoice = require("../models/Invoice");
 const Feedback = require("../models/Feedback");
 const SecurityEvent = require("../models/SecurityEvent");
 const AdminAuditLog = require("../models/AdminAuditLog");
+const AccessAppeal = require("../models/AccessAppeal");
 const AppError = require("../utils/AppError");
 const { createSecurityEvent } = require("../utils/securityMonitor");
+const accessAppealService = require("./accessAppeal.service");
 const { getNextRenewalDate } = require("./subscription.service");
 
 const SYSTEM_ADMIN_PROFILE = {
@@ -362,7 +364,9 @@ const getAdminOverview = async () => {
     recentHighSeverityEvents,
     recentSecurityEvents,
     riskyUsers,
-    recentAdminActions
+    recentAdminActions,
+    pendingAccessAppeals,
+    recentAccessAppeals
   ] = await Promise.all([
     User.countDocuments({}),
     User.countDocuments({ plan: { $in: ["pro", "team", "business"] } }),
@@ -474,7 +478,12 @@ const getAdminOverview = async () => {
       .sort({ createdAt: -1 })
       .limit(8)
       .select("action reason targetUserId targetEmailSnapshot adminId createdAt")
-      .populate("targetUserId", "name email status")
+      .populate("targetUserId", "name email status"),
+    AccessAppeal.countDocuments({ status: "new" }),
+    AccessAppeal.find({})
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate("userId", "name email status accessStatus plan")
   ]);
 
   const totalRevenue = revenueSummary[0]?.totalRevenue || 0;
@@ -530,7 +539,8 @@ const getAdminOverview = async () => {
       avgFeedbackRating: Number(averageRating.toFixed(2)),
       pendingFeedback,
       pendingSecurityEvents,
-      recentHighSeverityEvents
+      recentHighSeverityEvents,
+      pendingAccessAppeals
     },
     charts: {
       monthlyBusiness,
@@ -549,7 +559,8 @@ const getAdminOverview = async () => {
     recentFeedback,
     recentSecurityEvents,
     riskyUsers,
-    recentAdminActions
+    recentAdminActions,
+    recentAccessAppeals
   };
 };
 
@@ -676,6 +687,14 @@ const updateFeedbackStatus = async ({ feedbackId, status, adminNote }) => {
   return feedback;
 };
 
+const getAdminAccessAppeals = async (query) => {
+  return accessAppealService.getAdminAccessAppeals(query);
+};
+
+const updateAccessAppealStatus = async (payload) => {
+  return accessAppealService.updateAccessAppealStatus(payload);
+};
+
 const getAdminSecurityEvents = async ({ page, limit, severity, status, search }) => {
   const safePage = Math.max(parseInt(page || "1", 10), 1);
   const safeLimit = Math.min(Math.max(parseInt(limit || "10", 10), 1), 50);
@@ -749,6 +768,8 @@ module.exports = {
   moderateUserByAdmin,
   getAdminFeedback,
   updateFeedbackStatus,
+  getAdminAccessAppeals,
+  updateAccessAppealStatus,
   getAdminSecurityEvents,
   updateSecurityEventStatus
 };
