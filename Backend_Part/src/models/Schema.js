@@ -5,13 +5,11 @@ const schemaSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
-      index: true
+      required: true
     },
     clerkOrgId: {
       type: String,
-      default: null,
-      index: true
+      default: null
     },
 
     schemaText: {

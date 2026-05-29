@@ -1,7 +1,7 @@
 services:
   # Backend Service
   - type: web
-    name: ai-sql-query-generator-b
+    name: ai-sql-query-generator-bd
     runtime: node
     plan: free
     buildCommand: npm ci
@@ -34,9 +34,9 @@ services:
       - key: RUN_SUBSCRIPTION_CRON
         value: "true"
       - key: CORS_ORIGIN
-        value: https://ai-sql-frontend.onrender.com
+        value: https://ai-sql-query-generator-fp.onrender.com
       - key: FRONTEND_URL
-        value: https://ai-sql-frontend.onrender.com
+        value: https://ai-sql-query-generator-fp.onrender.com
       - key: GEMINI_API_KEY
         sync: false
       - key: GOOGLE_API_KEY
@@ -56,7 +56,7 @@ services:
 
   # Frontend Service
   - type: web
-    name: ai-sql-frontend
+    name: ai-sql-query-generator-fp
     runtime: static
     plan: free
     buildCommand: npm ci && npm run build
@@ -84,9 +84,9 @@ services:
         value: camera=(), microphone=(), geolocation=()
       - path: /*
         name: Content-Security-Policy
-        value: "default-src 'self'; script-src 'self' https://*.clerk.accounts.dev https://*.clerk.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://ai-sql-query-generator-b.onrender.com; frame-src https://*.clerk.accounts.dev https://*.clerk.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none';"
+        value: "default-src 'self'; script-src 'self' https://*.clerk.accounts.dev https://*.clerk.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://ai-sql-query-generator-bd.onrender.com; frame-src https://*.clerk.accounts.dev https://*.clerk.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none';"
     envVars:
       - key: VITE_API_BASE_URL
-        value: https://ai-sql-query-generator-b.onrender.com/api
+        value: https://ai-sql-query-generator-bd.onrender.com/api
       - key: VITE_CLERK_PUBLISHABLE_KEY
         sync: false

@@ -15,10 +15,7 @@ const userSchema = new mongoose.Schema(
     },
     clerkId: {
       type: String,
-      default: null,
-      unique: true,
-      sparse: true,
-      index: true
+      default: null
     },
     clerkOrgId: {
       type: String,
@@ -104,7 +101,7 @@ userSchema.index({ plan: 1 });
 userSchema.index({ plan: 1, billingRenewal: 1 });
 userSchema.index({ createdAt: -1 });
 userSchema.index({ riskScore: -1, updatedAt: -1 });
-userSchema.index({ clerkId: 1 }, { sparse: true });
+userSchema.index({ clerkId: 1 }, { unique: true, sparse: true });
 userSchema.index({ accessStatus: 1, createdAt: -1 });
 
 module.exports = mongoose.model("User", userSchema);
