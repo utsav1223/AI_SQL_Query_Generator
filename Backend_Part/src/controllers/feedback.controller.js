@@ -3,7 +3,7 @@ const sendResponse = require("../utils/sendResponse");
 const feedbackService = require("../services/feedback.service");
 
 exports.createFeedback = asyncHandler(async (req, res) => {
-  const feedback = await feedbackService.createFeedbackForUser(req.user.userId, req.body);
+  const feedback = await feedbackService.createFeedbackForUser(req.user, req.body);
 
   return sendResponse(res, {
     statusCode: 201,
@@ -13,7 +13,7 @@ exports.createFeedback = asyncHandler(async (req, res) => {
 });
 
 exports.getMyFeedback = asyncHandler(async (req, res) => {
-  const feedback = await feedbackService.getUserFeedbackHistory(req.user.userId);
+  const feedback = await feedbackService.getUserFeedbackHistory(req.user);
 
   return sendResponse(res, {
     message: "Feedback history fetched successfully",

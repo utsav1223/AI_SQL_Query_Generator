@@ -20,10 +20,14 @@ services:
       NODE_ENV: development
       MONGO_URI: mongodb://mongo:27017/sql-studio
       JWT_SECRET: replace-with-a-32-character-local-secret
+      ADMIN_JWT_SECRET: replace-with-a-separate-32-character-admin-secret
       CORS_ORIGIN: http://localhost:5173
       FRONTEND_URL: http://localhost:5173
       ADMIN_USER_ID: admin
       ADMIN_PASSWORD: ReplaceWithStrongAdmin123
+      CLERK_PUBLISHABLE_KEY: ${CLERK_PUBLISHABLE_KEY:-}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY:-}
+      CLERK_WEBHOOK_SECRET: ${CLERK_WEBHOOK_SECRET:-}
       GEMINI_MODEL: gemini-2.5-flash
       RAZORPAY_WEBHOOK_SECRET: replace-with-local-webhook-secret
 
@@ -32,7 +36,7 @@ services:
       context: ./Frontend_Part
       args:
         VITE_API_BASE_URL: http://localhost:5000/api
-        VITE_GOOGLE_AUTH_URL: http://localhost:5000/api/auth/google
+        VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY:-}
     restart: unless-stopped
     depends_on:
       - backend

@@ -179,37 +179,6 @@ const buildEmailLayout = ({ title, subtitle, bodyHtml, metaRows = [], notice = "
   `;
 };
 
-exports.buildPasswordResetOtpEmail = ({ name, otp }) =>
-  buildEmailLayout({
-    title: "Verify your password reset request",
-    subtitle: `Hello ${escapeHtml(name || "there")}, we received a request to reset your SQL Studio password.`,
-    bodyHtml: `
-      <div style="margin: 4px 0 0; border: 1px solid #dbe3ef; border-radius: 14px; background: #f8fafc; padding: 18px;">
-        <p style="margin: 0 0 12px; color: #334155; font-size: 14px; line-height: 1.65; font-weight: 700;">
-          Enter this one-time passcode to continue.
-        </p>
-        <div style="margin: 0; border-radius: 12px; background: #0f172a; padding: 16px 18px; text-align: center;">
-          <span style="display: inline-block; color: #5eead4; font-family: 'Courier New', monospace; font-size: 30px; letter-spacing: 0.24em; font-weight: 900;">
-            ${escapeHtml(otp)}
-          </span>
-        </div>
-        <p style="margin: 14px 0 0; color: #475569; font-size: 13px; line-height: 1.7; font-weight: 600;">
-          This OTP expires in <strong>10 minutes</strong> and can only be used once.
-        </p>
-      </div>
-      <div style="margin-top: 14px; border: 1px solid #fde68a; border-left: 4px solid #f59e0b; border-radius: 12px; padding: 13px 15px; background: #fffbeb;">
-        <p style="margin: 0; color: #92400e; font-size: 13px; line-height: 1.65; font-weight: 700;">
-          If you did not request this reset, you can safely ignore this email. Your password will remain unchanged.
-        </p>
-      </div>
-    `,
-    metaRows: [
-      { label: "Security Code", value: "Password Reset OTP" },
-      { label: "Validity", value: "10 minutes" }
-    ],
-    notice: "SQL Studio support will never ask you for your OTP."
-  });
-
 exports.buildSubscriptionActivatedEmail = ({ name, invoiceNumber, amount, renewalDate }) =>
   buildEmailLayout({
     title: "Subscription activated successfully",

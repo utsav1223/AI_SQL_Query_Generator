@@ -30,6 +30,7 @@ import { ThemeContext } from "../../context/ThemeContext";
 import { useAuth } from "../../hooks/useAuth";
 import { queryService } from "../../services/queryService";
 import { logger } from "../../utils/logger";
+import { isPaidPlan } from "../../utils/planAccess";
 
 const COLORS = ["#0f766e", "#0891b2", "#f59e0b", "#8b5cf6", "#e11d48"];
 
@@ -51,7 +52,7 @@ export default function Analytics() {
       setIsLoading(true);
 
       try {
-        if (user.plan === "pro") {
+        if (isPaidPlan(user.plan)) {
           const analyticsData = await queryService.getAdvancedAnalytics();
           setData(analyticsData);
           return;
@@ -92,13 +93,14 @@ export default function Analytics() {
   const chartTooltipBg = isDark ? "#0f172a" : "#ffffff";
   const chartTooltipText = isDark ? "#e5e7eb" : "#0f172a";
   const topTable = data?.schemaCoverage?.topTables?.[0];
+  const paidPlan = isPaidPlan(user?.plan);
 
   if (loading || isLoading) {
     return <AnalyticsSkeleton />;
   }
 
-  if (!user || user.plan !== "pro") {
-    return <FreeAnalyticsPreview overview={overview} onUpgrade={() => navigate("/dashboard/pricing")} />;
+  if (!user || !paidPlan) {
+    return <FreeAnalyticsPreview overview={overview} onUpgrade={() => navigate("/dashboard/billing")} />;
   }
 
   return (
@@ -189,7 +191,7 @@ export default function Analytics() {
           <div className="mb-5">
             <h2 className="text-lg font-extrabold">Tool usage</h2>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Distribution across generate, optimize, validate, explain, and format
+              Distribution across generate, schema, optimize, validate, explain, and format
             </p>
           </div>
 

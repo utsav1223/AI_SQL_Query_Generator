@@ -6,10 +6,6 @@ const DEFAULT_API_TIMEOUT_MS = 20000;
 export const API_AUTH_EVENT = "api:auth-error";
 
 const PUBLIC_AUTH_ENDPOINTS = new Set([
-  "/auth/login",
-  "/auth/register",
-  "/auth/forgot-password",
-  "/auth/verify-otp",
   "/admin/login"
 ]);
 
@@ -90,7 +86,12 @@ export const createRequest = ({ getToken, authScope } = {}) => {
     const controller = new AbortController();
     const timeoutMs = resolveTimeoutMs(requestOptions);
     const timeoutId = timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : null;
-    const token = typeof getToken === "function" ? getToken() : null;
+    const token =
+      requestOptions.token !== undefined
+        ? requestOptions.token
+        : typeof getToken === "function"
+          ? await getToken()
+          : null;
     const notifyOnAuthError = requestOptions.notifyOnAuthError !== false;
 
     const options = {

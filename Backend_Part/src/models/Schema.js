@@ -6,7 +6,11 @@ const schemaSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      unique: true,
+      index: true
+    },
+    clerkOrgId: {
+      type: String,
+      default: null,
       index: true
     },
 
@@ -18,5 +22,25 @@ const schemaSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+schemaSchema.index(
+  { userId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      clerkOrgId: null
+    }
+  }
+);
+schemaSchema.index(
+  { clerkOrgId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      clerkOrgId: { $type: "string" }
+    }
+  }
+);
+schemaSchema.index({ clerkOrgId: 1, updatedAt: -1 });
 
 module.exports = mongoose.model("Schema", schemaSchema);

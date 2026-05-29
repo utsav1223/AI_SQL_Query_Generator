@@ -1,10 +1,13 @@
 import { useState } from "react";
+import { useAuth as useClerkAuth } from "@clerk/clerk-react";
 import { NavLink, Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 
 export default function DashboardLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { isLoaded, orgId } = useClerkAuth();
+  const workspaceKey = isLoaded ? orgId || "personal" : "loading";
 
   return (
     <div className="dashboard-shell flex min-h-dvh overflow-hidden">
@@ -31,7 +34,7 @@ export default function DashboardLayout() {
         <main className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="relative flex min-h-full flex-col">
             <section className="flex-1 py-1">
-              <Outlet />
+              <Outlet key={workspaceKey} />
             </section>
 
             <footer className="px-4 pb-4 sm:px-6 lg:px-8">

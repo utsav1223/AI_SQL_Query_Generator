@@ -3,6 +3,23 @@ const mongoose = require("mongoose");
 const paymentSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    scope: {
+      type: String,
+      enum: ["personal", "organization"],
+      default: "personal",
+      index: true
+    },
+    plan: {
+      type: String,
+      enum: ["pro", "team"],
+      default: "pro",
+      index: true
+    },
+    clerkOrgId: {
+      type: String,
+      default: null,
+      index: true
+    },
     paymentId: String,
     orderId: String,
     paymentLinkId: String,
@@ -16,9 +33,11 @@ const paymentSchema = new mongoose.Schema(
 );
 
 paymentSchema.index({ userId: 1, paymentLinkId: 1, referenceId: 1 });
-paymentSchema.index({ paymentId: 1 });
-paymentSchema.index({ orderId: 1 });
-paymentSchema.index({ paymentLinkId: 1, referenceId: 1 });
+paymentSchema.index({ scope: 1, plan: 1, createdAt: -1 });
+paymentSchema.index({ clerkOrgId: 1, status: 1, createdAt: -1 });
+paymentSchema.index({ paymentId: 1 }, { unique: true, sparse: true });
+paymentSchema.index({ orderId: 1 }, { unique: true, sparse: true });
+paymentSchema.index({ paymentLinkId: 1, referenceId: 1 }, { unique: true, sparse: true });
 paymentSchema.index({ userId: 1, status: 1, createdAt: -1 });
 
 module.exports = mongoose.model("Payment", paymentSchema);

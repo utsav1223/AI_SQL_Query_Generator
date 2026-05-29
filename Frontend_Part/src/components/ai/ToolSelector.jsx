@@ -1,37 +1,113 @@
-import { AlignLeft, Search, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import { AlignLeft, Database, Lock, Search, ShieldCheck, Sparkles, Zap } from "lucide-react";
 
 const tools = [
-  { id: "generate", label: "Generate", icon: Sparkles },
-  { id: "optimize", label: "Optimize", icon: Zap },
-  { id: "format", label: "Format", icon: AlignLeft },
-  { id: "explain", label: "Explain", icon: Search },
-  { id: "validate", label: "Validate", icon: ShieldCheck }
+  {
+    id: "generate",
+    label: "Generate Query",
+    shortLabel: "Generate",
+    description: "English + saved schema to SQL.",
+    plan: "Free",
+    icon: Sparkles
+  },
+  {
+    id: "schema",
+    label: "Generate Schema",
+    shortLabel: "Schema",
+    description: "English product brief to DDL.",
+    plan: "Pro",
+    icon: Database
+  },
+  {
+    id: "optimize",
+    label: "Optimize",
+    shortLabel: "Optimize",
+    description: "Rewrite SQL for performance.",
+    plan: "Pro",
+    icon: Zap
+  },
+  {
+    id: "format",
+    label: "Format",
+    shortLabel: "Format",
+    description: "Clean indentation and clauses.",
+    plan: "Pro",
+    icon: AlignLeft
+  },
+  {
+    id: "validate",
+    label: "Validate",
+    shortLabel: "Validate",
+    description: "Fix syntax and obvious issues.",
+    plan: "Pro",
+    icon: ShieldCheck
+  },
+  {
+    id: "explain",
+    label: "Explain",
+    shortLabel: "Explain",
+    description: "Explain query behavior clearly.",
+    plan: "Pro",
+    icon: Search
+  }
 ];
 
-export default function ToolSelector({ mode, setMode }) {
-  return (
-    <div className="surface-card-soft rounded-lg p-1.5">
-      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-5">
-        {tools.map((tool) => {
-          const isActive = mode === tool.id;
-          const Icon = tool.icon;
+export default function ToolSelector({ mode, setMode, paidPlan = false }) {
+  const selectedTool = tools.find((tool) => tool.id === mode) || tools[0];
+  const SelectedIcon = selectedTool.icon;
+  const selectedLocked = selectedTool.plan === "Pro" && !paidPlan;
 
-          return (
-            <button
-              key={tool.id}
-              type="button"
-              onClick={() => setMode(tool.id)}
-              className={`flex items-center justify-center gap-2 rounded-md border px-3 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] transition-colors ${
-                isActive
-                  ? "border-teal-200 bg-white text-teal-800 shadow-sm dark:border-teal-400/20 dark:bg-slate-950 dark:text-teal-200"
-                  : "border-transparent text-slate-600 hover:border-slate-200 hover:bg-white hover:text-slate-950 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:bg-slate-950 dark:hover:text-slate-100"
-              }`}
-            >
-              <Icon size={14} />
-              <span>{tool.label}</span>
-            </button>
-          );
-        })}
+  return (
+    <div className="surface-card-soft rounded-lg p-3">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]">
+            Tool
+          </p>
+          <h2 className="mt-1 text-sm font-bold text-slate-950 dark:text-slate-100">
+            Choose workflow
+          </h2>
+        </div>
+        <span className="rounded-md border border-[var(--accent-soft-strong)] bg-[var(--accent-soft)] px-2 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]">
+          {paidPlan ? "Pro" : "Free"}
+        </span>
+      </div>
+
+      <select
+        value={mode}
+        onChange={(event) => setMode(event.target.value)}
+        className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm font-bold text-slate-900 outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent-soft)] dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+      >
+        {tools.map((tool) => (
+          <option key={tool.id} value={tool.id}>
+            {tool.label} {tool.plan === "Pro" ? "(Pro)" : "(Free)"}
+          </option>
+        ))}
+      </select>
+
+      <div className="mt-3 rounded-md border border-slate-200 bg-white p-3 text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200">
+        <div className="flex items-start gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-teal-50 text-teal-700 dark:bg-teal-400/10 dark:text-teal-300">
+            <SelectedIcon size={17} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-950 dark:text-slate-100">
+                {selectedTool.label}
+              </p>
+              {selectedLocked ? <Lock size={12} className="text-amber-500" /> : null}
+              <span className={`rounded-md px-2 py-1 text-[9px] font-bold uppercase tracking-[0.12em] ${
+                selectedTool.plan === "Free"
+                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300"
+                  : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+              }`}>
+                {selectedTool.plan}
+              </span>
+            </div>
+            <p className="mt-1 text-[12px] font-semibold leading-5 text-slate-500 dark:text-slate-400">
+              {selectedTool.description}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -4,8 +4,9 @@ services:
     name: ai-sql-query-generator-b
     runtime: node
     plan: free
-    buildCommand: npm install
+    buildCommand: npm ci
     startCommand: npm start
+    healthCheckPath: /api/health
     rootDir: Backend_Part
     envVars:
       - key: PORT
@@ -16,18 +17,26 @@ services:
         sync: false
       - key: JWT_SECRET
         generateValue: true
+      - key: ADMIN_JWT_SECRET
+        generateValue: true
       - key: ADMIN_USER_ID
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
+      - key: CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: CLERK_WEBHOOK_SECRET
+        sync: false
+      - key: CLERK_ADMIN_USER_IDS
+        sync: false
+      - key: RUN_SUBSCRIPTION_CRON
+        value: "true"
       - key: CORS_ORIGIN
         value: https://ai-sql-frontend.onrender.com
       - key: FRONTEND_URL
         value: https://ai-sql-frontend.onrender.com
-      - key: GOOGLE_CLIENT_ID
-        sync: false
-      - key: GOOGLE_CLIENT_SECRET
-        sync: false
       - key: GEMINI_API_KEY
         sync: false
       - key: GOOGLE_API_KEY
@@ -50,15 +59,34 @@ services:
     name: ai-sql-frontend
     runtime: static
     plan: free
-    buildCommand: npm install && npm run build
+    buildCommand: npm ci && npm run build
     staticPublishPath: dist
     rootDir: Frontend_Part
     routes:
       - type: rewrite
         source: /*
         destination: /index.html
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Strict-Transport-Security
+        value: max-age=31536000; includeSubDomains
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Permissions-Policy
+        value: camera=(), microphone=(), geolocation=()
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; script-src 'self' https://*.clerk.accounts.dev https://*.clerk.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://ai-sql-query-generator-b.onrender.com; frame-src https://*.clerk.accounts.dev https://*.clerk.com; object-src 'none'; base-uri 'self'; frame-ancestors 'none';"
     envVars:
       - key: VITE_API_BASE_URL
         value: https://ai-sql-query-generator-b.onrender.com/api
-      - key: VITE_GOOGLE_AUTH_URL
-        value: https://ai-sql-query-generator-b.onrender.com/api/auth/google
+      - key: VITE_CLERK_PUBLISHABLE_KEY
+        sync: false

@@ -7,11 +7,16 @@ const querySchema = new mongoose.Schema(
       ref: "User",
       required: true
     },
+    clerkOrgId: {
+      type: String,
+      default: null,
+      index: true
+    },
     prompt: String,
     generatedSQL: String,
     mode: {
       type: String,
-      enum: ["generate", "optimize", "validate", "explain", "format"],
+      enum: ["generate", "optimize", "validate", "explain", "format", "schema"],
       default: "generate"
     },
     dialect: {
@@ -55,5 +60,10 @@ querySchema.index({ userId: 1, favorite: -1, createdAt: -1 });
 querySchema.index({ userId: 1, mode: 1, createdAt: -1 });
 querySchema.index({ userId: 1, createdAt: -1 });
 querySchema.index({ userId: 1, tags: 1 });
+querySchema.index({ clerkOrgId: 1, pinned: -1, createdAt: -1 });
+querySchema.index({ clerkOrgId: 1, favorite: -1, createdAt: -1 });
+querySchema.index({ clerkOrgId: 1, mode: 1, createdAt: -1 });
+querySchema.index({ clerkOrgId: 1, createdAt: -1 });
+querySchema.index({ clerkOrgId: 1, userId: 1 });
 
 module.exports = mongoose.model("Query", querySchema);

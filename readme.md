@@ -24,6 +24,7 @@ This is a strong interview project because it demonstrates both frontend and bac
 - [Database Models](#database-models)
 - [Deployment](#deployment)
 - [SEO, Security, And Quality Status](#seo-security-and-quality-status)
+- [Clerk Migration](#clerk-migration)
 - [Interview Talking Points](#interview-talking-points)
 
 ## What This Project Does
@@ -106,9 +107,9 @@ The app can generate SQL based on the saved schema, optimize existing SQL, expla
 | Icons | Lucide React, React Icons |
 | Backend | Node.js, Express 5 |
 | Database | MongoDB, Mongoose |
-| Authentication | JWT, bcrypt, Passport Google OAuth |
+| Authentication | Clerk Authentication, Clerk session tokens, legacy JWT fallback |
 | AI | Google Gemini API |
-| Payments | Razorpay |
+| Payments | Clerk Billing UI and webhook sync, legacy Razorpay backend kept for compatibility |
 | Email | Nodemailer |
 | Scheduled Jobs | node-cron |
 | API Documentation | OpenAPI 3.0 JSON |
@@ -421,7 +422,7 @@ Backend:  http://localhost:5000
 MongoDB:  mongodb://localhost:27017/sql-studio
 ```
 
-Set `GEMINI_API_KEY` or `GOOGLE_API_KEY` in the backend service environment before using AI features. Add Razorpay, Google OAuth, and email secrets the same way when testing those integrations locally.
+Set `GEMINI_API_KEY` or `GOOGLE_API_KEY` in the backend service environment before using AI features. Add Clerk, Razorpay, and email secrets the same way when testing those integrations locally.
 For Razorpay webhooks, configure the dashboard webhook URL as `https://your-backend-domain/api/payment/webhook` and store the webhook signing secret in `RAZORPAY_WEBHOOK_SECRET`.
 
 ## Environment Variables
@@ -434,13 +435,18 @@ NODE_ENV=development
 MONGO_URI=your_mongodb_connection_string
 MONGO_URI_TEST=your_test_mongodb_connection_string
 JWT_SECRET=generate-a-random-32-plus-character-secret
+ADMIN_JWT_SECRET=generate-a-different-random-32-plus-character-secret
+ENABLE_LEGACY_JWT_AUTH=false
 CORS_ORIGIN=http://localhost:5173
 FRONTEND_URL=http://localhost:5173
 ADMIN_USER_ID=replace-with-production-admin-id
 ADMIN_PASSWORD=use-a-strong-12-plus-character-password-or-bcrypt-hash
 
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
+CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
+CLERK_WEBHOOK_SECRET=your_clerk_webhook_secret
+CLERK_ADMIN_USER_IDS=user_abc123,user_def456
+RUN_SUBSCRIPTION_CRON=false
 
 GEMINI_API_KEY=your_gemini_api_key
 # Or use GOOGLE_API_KEY instead of GEMINI_API_KEY.
@@ -458,15 +464,15 @@ EMAIL_FROM=your_sender_email
 ```
 
 Production startup validates required backend environment variables before the app boots.
-For `NODE_ENV=production`, set `JWT_SECRET`, `MONGO_URI`, `ADMIN_USER_ID`, `ADMIN_PASSWORD`, `FRONTEND_URL`, `CORS_ORIGIN`, and either `GEMINI_API_KEY` or `GOOGLE_API_KEY`.
-Optional integrations are validated only when configured, for example Google OAuth requires both Google secrets and Razorpay requires both payment secrets. Razorpay webhooks additionally require `RAZORPAY_WEBHOOK_SECRET`.
-Use a strong admin password with at least 12 characters, or store a bcrypt hash in `ADMIN_PASSWORD`.
+For `NODE_ENV=production`, set `JWT_SECRET`, `ADMIN_JWT_SECRET`, `MONGO_URI`, `CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SECRET`, `ADMIN_USER_ID`, `ADMIN_PASSWORD`, `FRONTEND_URL`, `CORS_ORIGIN`, and either `GEMINI_API_KEY` or `GOOGLE_API_KEY`.
+Optional integrations are validated only when configured. Razorpay requires both payment secrets, and webhooks additionally require `RAZORPAY_WEBHOOK_SECRET`.
+Use a strong admin password with at least 12 characters, or store a bcrypt hash in `ADMIN_PASSWORD`. Prefer Clerk admin access with `CLERK_ADMIN_USER_IDS`; password admin is best treated as a break-glass fallback.
 
 ### Frontend `.env.local`
 
 ```env
 VITE_API_BASE_URL=http://localhost:5000/api
-VITE_GOOGLE_AUTH_URL=http://localhost:5000/api/auth/google
+VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
 ```
 
 ## Available Scripts
@@ -636,6 +642,17 @@ npm run lint
 npm test
 npm run build
 ```
+
+## Clerk Migration
+
+This project now has Clerk Authentication and Clerk Billing integration points. The migration plan and setup notes are documented in [CLERK_MIGRATION_README.md](./CLERK_MIGRATION_README.md), and the next Clerk SaaS features are tracked in [CLERK_EXTRA_FEATURES_README.md](./CLERK_EXTRA_FEATURES_README.md).
+
+That document explains how to move to:
+
+- Clerk Authentication for login, signup, OAuth, password reset, MFA, passkeys, sessions, and user profiles.
+- Clerk Billing for Free, Pro, and future Team subscriptions.
+- Clerk Organizations for future team workspaces, invitations, roles, and organization billing.
+- MongoDB as the app data store for usage, SQL history, schemas, analytics, admin state, and local plan snapshots.
 
 ## Interview Talking Points
 

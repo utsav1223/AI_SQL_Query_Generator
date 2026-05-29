@@ -1,9 +1,14 @@
-const mongoose = require("mongoose");
-
 const Feedback = require("../models/Feedback");
 const AppError = require("../utils/AppError");
+const {
+  getWorkspaceWriteFields,
+  normalizeActor,
+  withWorkspaceScope
+} = require("../utils/workspaceScope");
 
-const createFeedbackForUser = async (userId, { rating, topic, message }) => {
+const createFeedbackForUser = async (actorOrUserId, { rating, topic, message }) => {
+  const actor = normalizeActor(actorOrUserId);
+
   if (!rating || rating < 1 || rating > 5) {
     throw new AppError(400, "Rating must be between 1 and 5");
   }
@@ -17,16 +22,16 @@ const createFeedbackForUser = async (userId, { rating, topic, message }) => {
   }
 
   return Feedback.create({
-    userId,
+    ...getWorkspaceWriteFields(actor),
     rating,
     topic: String(topic).trim(),
     message: String(message).trim()
   });
 };
 
-const getUserFeedbackHistory = async (userId) => {
-  const ownerId = new mongoose.Types.ObjectId(userId);
-  return Feedback.find({ userId: ownerId }).sort({ createdAt: -1 }).limit(20);
+const getUserFeedbackHistory = async (actorOrUserId) => {
+  const actor = normalizeActor(actorOrUserId);
+  return Feedback.find(withWorkspaceScope(actor)).sort({ createdAt: -1 }).limit(20);
 };
 
 module.exports = {

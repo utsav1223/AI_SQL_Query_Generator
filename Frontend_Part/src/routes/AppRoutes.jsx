@@ -2,8 +2,6 @@ import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import ProtectedRoute from "../components/ProtectedRoute";
-import ResetRouteGuard from "../components/ResetRouteGuard";
-import PublicRoute from "../components/PublicRoute";
 import AdminProtectedRoute from "../components/AdminProtectedRoute";
 import AdminPublicRoute from "../components/AdminPublicRoute";
 import Seo from "../components/Seo";
@@ -11,8 +9,6 @@ import RouteLoadingScreen from "../components/ui/RouteLoadingScreen";
 
 const Landing = lazy(() => import("../pages/Landing"));
 const Developers = lazy(() => import("../pages/Developers"));
-const OAuthSuccess = lazy(() => import("../pages/OAuthSuccess"));
-const Billing = lazy(() => import("../pages/Billing"));
 const BillingSuccess = lazy(() => import("../pages/BillingSuccess"));
 const DashboardLayout = lazy(() => import("../components/layout/DashboardLayout"));
 const Overview = lazy(() => import("../pages/dashboard/Overview"));
@@ -24,34 +20,25 @@ const Support = lazy(() => import("../pages/dashboard/Support"));
 const FAQ = lazy(() => import("../pages/dashboard/FAQ"));
 const Feedback = lazy(() => import("../pages/dashboard/Feedback"));
 const Schema = lazy(() => import("../pages/dashboard/Schema"));
-const Pricing = lazy(() => import("../pages/dashboard/Pricing"));
+const DashboardBilling = lazy(() => import("../pages/dashboard/Pricing"));
 const Invoices = lazy(() => import("../pages/dashboard/Invoices"));
 const AdminLogin = lazy(() => import("../pages/admin/AdminLogin"));
 const AdminDashboard = lazy(() => import("../pages/admin/AdminDashboard"));
 
 export default function AppRoutes() {
   return (
-    <Suspense fallback={<RouteLoadingScreen label="Loading page..." />}>
+    <Suspense fallback={<RouteLoadingScreen label="Preparing workspace..." />}>
       <Seo />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/developers" element={<Developers />} />
-        <Route path="/oauth-success" element={<OAuthSuccess />} />
         <Route
           path="/forgot-password"
-          element={
-            <PublicRoute>
-              <Landing />
-            </PublicRoute>
-          }
+          element={<Navigate to="/login" replace />}
         />
         <Route
           path="/billing"
-          element={
-            <ProtectedRoute>
-              <Billing />
-            </ProtectedRoute>
-          }
+          element={<Navigate to="/dashboard/billing" replace />}
         />
         <Route path="/billing/success" element={<BillingSuccess />} />
         <Route path="/billingsuccess" element={<BillingSuccess />} />
@@ -80,31 +67,17 @@ export default function AppRoutes() {
 
         <Route
           path="/login"
-          element={
-            <PublicRoute>
-              <Landing />
-            </PublicRoute>
-          }
+          element={<Landing />}
         />
 
         <Route
           path="/register"
-          element={
-            <PublicRoute>
-              <Landing />
-            </PublicRoute>
-          }
+          element={<Landing />}
         />
 
         <Route
           path="/reset-with-otp"
-          element={
-            <PublicRoute>
-              <ResetRouteGuard>
-                <Landing />
-              </ResetRouteGuard>
-            </PublicRoute>
-          }
+          element={<Navigate to="/login" replace />}
         />
 
         <Route
@@ -121,7 +94,8 @@ export default function AppRoutes() {
           <Route path="history" element={<History />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="settings" element={<Settings />} />
-          <Route path="pricing" element={<Pricing />} />
+          <Route path="billing" element={<DashboardBilling />} />
+          <Route path="pricing" element={<Navigate to="/dashboard/billing" replace />} />
           <Route path="invoices" element={<Invoices />} />
           <Route path="support" element={<Support />} />
           <Route path="faq" element={<FAQ />} />

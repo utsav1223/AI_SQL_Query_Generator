@@ -26,7 +26,11 @@ test("production env validation accepts required core settings", () => {
   process.env = {
     NODE_ENV: "production",
     JWT_SECRET: "a".repeat(32),
+    ADMIN_JWT_SECRET: "b".repeat(32),
     MONGO_URI: "mongodb://127.0.0.1:27017/sql-studio",
+    CLERK_PUBLISHABLE_KEY: "pk_test_clerk",
+    CLERK_SECRET_KEY: "sk_test_clerk",
+    CLERK_WEBHOOK_SECRET: "whsec_test_clerk",
     ADMIN_USER_ID: "platform-admin",
     ADMIN_PASSWORD: "StrongAdminPassword123!",
     FRONTEND_URL: "https://example.com",
@@ -41,6 +45,7 @@ test("production env validation rejects weak admin password", () => {
   process.env = {
     NODE_ENV: "production",
     JWT_SECRET: "a".repeat(32),
+    ADMIN_JWT_SECRET: "b".repeat(32),
     MONGO_URI: "mongodb://127.0.0.1:27017/sql-studio",
     ADMIN_USER_ID: "platform-admin",
     ADMIN_PASSWORD: "short",
@@ -59,6 +64,7 @@ test("production env validation rejects documented placeholder secrets", () => {
   process.env = {
     NODE_ENV: "production",
     JWT_SECRET: "generate-a-random-32-plus-character-secret",
+    ADMIN_JWT_SECRET: "generate-a-random-32-plus-character-secret",
     MONGO_URI: "mongodb://127.0.0.1:27017/sql-studio",
     ADMIN_USER_ID: "replace-with-production-admin-id",
     ADMIN_PASSWORD: "use-a-strong-12-plus-character-password-or-bcrypt-hash",
@@ -76,12 +82,11 @@ test("production env validation rejects documented placeholder secrets", () => {
 test("integration validation catches partial secrets", () => {
   process.env = {
     NODE_ENV: "development",
-    GOOGLE_CLIENT_ID: "client-id",
     RAZORPAY_KEY_ID: "payment-key"
   };
 
   assert.throws(
     () => validateEnv(),
-    /Google OAuth requires GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET[\s\S]*Razorpay payments requires RAZORPAY_KEY_ID and RAZORPAY_SECRET/
+    /Razorpay payments requires RAZORPAY_KEY_ID and RAZORPAY_SECRET/
   );
 });

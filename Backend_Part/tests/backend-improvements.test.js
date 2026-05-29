@@ -15,12 +15,19 @@ const Query = require("../src/models/Query");
 const Feedback = require("../src/models/Feedback");
 const Invoice = require("../src/models/Invoice");
 const Payment = require("../src/models/Payment");
+const OrganizationSubscription = require("../src/models/OrganizationSubscription");
 const SecurityEvent = require("../src/models/SecurityEvent");
 const AdminAuditLog = require("../src/models/AdminAuditLog");
 
 const hasIndex = (model, expectedFields) => {
   return model.schema.indexes().some(([fields]) => {
     return JSON.stringify(fields) === JSON.stringify(expectedFields);
+  });
+};
+
+const hasUniqueIndex = (model, expectedFields) => {
+  return model.schema.indexes().some(([fields, options = {}]) => {
+    return JSON.stringify(fields) === JSON.stringify(expectedFields) && options.unique === true;
   });
 };
 
@@ -49,9 +56,18 @@ describe("MongoDB query indexes", () => {
 
     assert.equal(hasIndex(Invoice, { userId: 1, createdAt: -1 }), true);
     assert.equal(hasIndex(Invoice, { status: 1, createdAt: -1 }), true);
+    assert.equal(hasUniqueIndex(Invoice, { paymentId: 1 }), true);
+    assert.equal(hasUniqueIndex(Invoice, { orderId: 1, userId: 1 }), true);
 
     assert.equal(hasIndex(Payment, { orderId: 1 }), true);
     assert.equal(hasIndex(Payment, { paymentLinkId: 1, referenceId: 1 }), true);
+    assert.equal(hasUniqueIndex(Payment, { paymentId: 1 }), true);
+    assert.equal(hasUniqueIndex(Payment, { orderId: 1 }), true);
+    assert.equal(hasUniqueIndex(Payment, { paymentLinkId: 1, referenceId: 1 }), true);
+
+    assert.equal(hasUniqueIndex(OrganizationSubscription, { clerkOrgId: 1 }), true);
+    assert.equal(hasIndex(OrganizationSubscription, { plan: 1, currentPeriodEnd: 1 }), true);
+    assert.equal(hasIndex(OrganizationSubscription, { status: 1, currentPeriodEnd: 1 }), true);
 
     assert.equal(hasIndex(SecurityEvent, { status: 1, createdAt: -1 }), true);
     assert.equal(hasIndex(SecurityEvent, { severity: 1, status: 1, createdAt: -1 }), true);

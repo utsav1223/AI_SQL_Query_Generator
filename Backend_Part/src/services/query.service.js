@@ -1,22 +1,26 @@
-const mongoose = require("mongoose");
-
 const Query = require("../models/Query");
 const User = require("../models/User");
 const SchemaModel = require("../models/Schema");
 const AppError = require("../utils/AppError");
 const { FREE_CREDIT_LIMIT, resetDailyUsageIfNeeded } = require("../utils/usageManager");
+const { hasPlan } = require("../utils/planAccess");
+const { getEffectivePlanForActor } = require("../utils/effectivePlan");
+const {
+  normalizeActor,
+  withWorkspaceScope
+} = require("../utils/workspaceScope");
 
 const FREE_HISTORY_LIMIT = 10;
+const ADVANCED_ANALYTICS_QUERY_SAMPLE_LIMIT = 500;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 const MODE_TIME_SAVED_MINUTES = {
   generate: 10,
   optimize: 5,
   validate: 5,
   explain: 5,
-  format: 2
+  format: 2,
+  schema: 8
 };
-
-const toObjectId = (value) => new mongoose.Types.ObjectId(value);
 
 const escapeRegex = (value) => {
   return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -138,44 +142,44 @@ const buildTopTables = (queries = []) => {
     .slice(0, 6);
 };
 
-const getUserQueries = async (userId, options = {}) => {
-  const ownerId = toObjectId(userId);
+const getUserQueries = async (actorOrUserId, options = {}) => {
+  const actor = normalizeActor(actorOrUserId);
   const safePage = Math.max(parseInt(options.page || "1", 10), 1);
   const safeLimit = Math.min(Math.max(parseInt(options.limit || "10", 10), 1), 50);
   const mode = String(options.mode || "all").trim().toLowerCase();
   const search = String(options.search || "").trim().slice(0, 120);
   const sortOrder = String(options.sort || "newest").trim().toLowerCase();
   const skip = (safePage - 1) * safeLimit;
-  const user = await User.findById(ownerId).select("plan");
-  const isPro = user?.plan === "pro";
-
-  const filter = {
-    userId: ownerId
-  };
+  const user = await User.findById(actor.userId).select("plan");
+  const effectivePlan = await getEffectivePlanForActor(actor, user);
+  const hasFullHistory = hasPlan(effectivePlan, "pro");
+  const extraFilter = {};
 
   let freeAccessibleIds = [];
 
-  if (!isPro) {
-    freeAccessibleIds = await Query.find({ userId: ownerId })
+  if (!hasFullHistory) {
+    freeAccessibleIds = await Query.find(withWorkspaceScope(actor))
       .sort({ createdAt: -1 })
       .limit(FREE_HISTORY_LIMIT)
       .select("_id")
       .lean();
 
-    filter._id = { $in: freeAccessibleIds.map((query) => query._id) };
+    extraFilter._id = { $in: freeAccessibleIds.map((query) => query._id) };
   }
 
-  if (["generate", "optimize", "validate", "explain", "format"].includes(mode)) {
-    filter.mode = mode;
+  if (["generate", "optimize", "validate", "explain", "format", "schema"].includes(mode)) {
+    extraFilter.mode = mode;
   }
 
   if (search) {
     const safeSearch = escapeRegex(search);
-    filter.$or = [
+    extraFilter.$or = [
       { prompt: { $regex: safeSearch, $options: "i" } },
       { generatedSQL: { $regex: safeSearch, $options: "i" } }
     ];
   }
+
+  const filter = withWorkspaceScope(actor, extraFilter);
 
   const sort = {
     pinned: -1,
@@ -187,9 +191,9 @@ const getUserQueries = async (userId, options = {}) => {
     Query.countDocuments(filter)
   ]);
 
-  const allHistoryCount = isPro
+  const allHistoryCount = hasFullHistory
     ? total
-    : await Query.countDocuments({ userId: ownerId });
+    : await Query.countDocuments(withWorkspaceScope(actor));
 
   return {
     queries,
@@ -200,31 +204,32 @@ const getUserQueries = async (userId, options = {}) => {
       pages: Math.max(Math.ceil(total / safeLimit), 1)
     },
     accessPolicy: {
-      fullHistory: isPro,
-      visibleLimit: isPro ? null : FREE_HISTORY_LIMIT,
-      hiddenCount: isPro ? 0 : Math.max(allHistoryCount - FREE_HISTORY_LIMIT, 0)
+      fullHistory: hasFullHistory,
+      visibleLimit: hasFullHistory ? null : FREE_HISTORY_LIMIT,
+      hiddenCount: hasFullHistory ? 0 : Math.max(allHistoryCount - FREE_HISTORY_LIMIT, 0)
     }
   };
 };
 
-const deleteUserQuery = async (userId, queryId) => {
-  const deletedQuery = await Query.findOneAndDelete({
-    _id: queryId,
-    userId
-  });
+const deleteUserQuery = async (actorOrUserId, queryId) => {
+  const actor = normalizeActor(actorOrUserId);
+  const deletedQuery = await Query.findOneAndDelete(
+    withWorkspaceScope(actor, { _id: queryId })
+  );
 
   if (!deletedQuery) {
     throw new AppError(404, "Query not found");
   }
 };
 
-const getUserAnalytics = async (userId) => {
-  const ownerId = toObjectId(userId);
+const getUserAnalytics = async (actorOrUserId) => {
+  const actor = normalizeActor(actorOrUserId);
+  const workspaceFilter = withWorkspaceScope(actor);
 
   const [total, modes] = await Promise.all([
-    Query.countDocuments({ userId: ownerId }),
+    Query.countDocuments(workspaceFilter),
     Query.aggregate([
-      { $match: { userId: ownerId } },
+      { $match: workspaceFilter },
       { $group: { _id: "$mode", count: { $sum: 1 } } }
     ])
   ]);
@@ -235,17 +240,18 @@ const getUserAnalytics = async (userId) => {
   };
 };
 
-const getAdvancedUserAnalytics = async (userId) => {
-  const ownerId = toObjectId(userId);
+const getAdvancedUserAnalytics = async (actorOrUserId) => {
+  const actor = normalizeActor(actorOrUserId);
+  const workspaceFilter = withWorkspaceScope(actor);
 
   const [totalQueries, modeStats, dailyStats, queries, schemaData] = await Promise.all([
-    Query.countDocuments({ userId: ownerId }),
+    Query.countDocuments(workspaceFilter),
     Query.aggregate([
-      { $match: { userId: ownerId } },
+      { $match: workspaceFilter },
       { $group: { _id: "$mode", count: { $sum: 1 } } }
     ]),
     Query.aggregate([
-      { $match: { userId: ownerId } },
+      { $match: workspaceFilter },
       {
         $group: {
           _id: {
@@ -256,8 +262,12 @@ const getAdvancedUserAnalytics = async (userId) => {
       },
       { $sort: { _id: 1 } }
     ]),
-    Query.find({ userId: ownerId }).sort({ createdAt: -1 }).lean(),
-    SchemaModel.findOne({ userId: ownerId }).lean()
+    Query.find(workspaceFilter)
+      .sort({ createdAt: -1 })
+      .limit(ADVANCED_ANALYTICS_QUERY_SAMPLE_LIMIT)
+      .select("mode prompt generatedSQL copyCount exportCount pinned favorite tags createdAt")
+      .lean(),
+    SchemaModel.findOne(workspaceFilter).lean()
   ]);
 
   const sevenDaysAgo = new Date();
@@ -267,11 +277,10 @@ const getAdvancedUserAnalytics = async (userId) => {
   fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
 
   const [weeklyQueries, lastWeekQueries] = await Promise.all([
-    Query.countDocuments({ userId: ownerId, createdAt: { $gte: sevenDaysAgo } }),
-    Query.countDocuments({
-      userId: ownerId,
+    Query.countDocuments(withWorkspaceScope(actor, { createdAt: { $gte: sevenDaysAgo } })),
+    Query.countDocuments(withWorkspaceScope(actor, {
       createdAt: { $gte: fourteenDaysAgo, $lt: sevenDaysAgo }
-    })
+    }))
   ]);
 
   const growth =
@@ -414,21 +423,20 @@ const getAdvancedUserAnalytics = async (userId) => {
     },
     reliability: {
       model: GEMINI_MODEL,
+      sampleSize: queries.length,
+      sampleLimit: ADVANCED_ANALYTICS_QUERY_SAMPLE_LIMIT,
       lastSuccessfulGeneration: queries[0]?.createdAt || null
     },
     insights
   };
 };
 
-const togglePinnedQuery = async (userId, queryId) => {
-  const query = await Query.findById(queryId);
+const togglePinnedQuery = async (actorOrUserId, queryId) => {
+  const actor = normalizeActor(actorOrUserId);
+  const query = await Query.findOne(withWorkspaceScope(actor, { _id: queryId }));
 
   if (!query) {
     throw new AppError(404, "Query not found");
-  }
-
-  if (String(query.userId) !== String(userId)) {
-    throw new AppError(403, "You can only update your own queries");
   }
 
   query.pinned = !query.pinned;
@@ -439,15 +447,12 @@ const togglePinnedQuery = async (userId, queryId) => {
   };
 };
 
-const toggleFavoriteQuery = async (userId, queryId) => {
-  const query = await Query.findById(queryId);
+const toggleFavoriteQuery = async (actorOrUserId, queryId) => {
+  const actor = normalizeActor(actorOrUserId);
+  const query = await Query.findOne(withWorkspaceScope(actor, { _id: queryId }));
 
   if (!query) {
     throw new AppError(404, "Query not found");
-  }
-
-  if (String(query.userId) !== String(userId)) {
-    throw new AppError(403, "You can only update your own queries");
   }
 
   query.favorite = !query.favorite;
@@ -458,15 +463,12 @@ const toggleFavoriteQuery = async (userId, queryId) => {
   };
 };
 
-const updateQueryTags = async (userId, queryId, tags = []) => {
-  const query = await Query.findById(queryId);
+const updateQueryTags = async (actorOrUserId, queryId, tags = []) => {
+  const actor = normalizeActor(actorOrUserId);
+  const query = await Query.findOne(withWorkspaceScope(actor, { _id: queryId }));
 
   if (!query) {
     throw new AppError(404, "Query not found");
-  }
-
-  if (String(query.userId) !== String(userId)) {
-    throw new AppError(403, "You can only update your own queries");
   }
 
   query.tags = normalizeTags(tags);
@@ -477,7 +479,8 @@ const updateQueryTags = async (userId, queryId, tags = []) => {
   };
 };
 
-const trackQueryAction = async (userId, queryId, action) => {
+const trackQueryAction = async (actorOrUserId, queryId, action) => {
+  const actor = normalizeActor(actorOrUserId);
   const fieldMap = {
     copy: { countField: "copyCount", dateField: "copiedAt" },
     export: { countField: "exportCount", dateField: "exportedAt" }
@@ -489,10 +492,7 @@ const trackQueryAction = async (userId, queryId, action) => {
   }
 
   const updatedQuery = await Query.findOneAndUpdate(
-    {
-      _id: queryId,
-      userId
-    },
+    withWorkspaceScope(actor, { _id: queryId }),
     {
       $inc: { [actionFields.countField]: 1 },
       $set: { [actionFields.dateField]: new Date() }
@@ -511,29 +511,27 @@ const trackQueryAction = async (userId, queryId, action) => {
   };
 };
 
-const getUserOverview = async (userId) => {
-  const ownerId = toObjectId(userId);
-  const user = await User.findById(ownerId);
+const getUserOverview = async (actorOrUserId) => {
+  const actor = normalizeActor(actorOrUserId);
+  const user = await User.findById(actor.userId);
 
   if (!user) {
     throw new AppError(404, "User not found");
   }
 
   await resetDailyUsageIfNeeded(user);
+  const effectivePlan = await getEffectivePlanForActor(actor, user);
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
   const [totalQueries, todayQueries, recentQueries] = await Promise.all([
-    Query.countDocuments({ userId: ownerId }),
-    Query.countDocuments({
-      userId: ownerId,
-      createdAt: { $gte: todayStart }
-    }),
-    Query.find({ userId: ownerId }).sort({ createdAt: -1 }).limit(5)
+    Query.countDocuments(withWorkspaceScope(actor)),
+    Query.countDocuments(withWorkspaceScope(actor, { createdAt: { $gte: todayStart } })),
+    Query.find(withWorkspaceScope(actor)).sort({ createdAt: -1 }).limit(5)
   ]);
 
-  if (user.plan === "free") {
+  if (!hasPlan(effectivePlan, "pro")) {
     const usedCredits = user.dailyUsage || 0;
     const remainingCredits = Math.max(FREE_CREDIT_LIMIT - usedCredits, 0);
 
@@ -553,11 +551,11 @@ const getUserOverview = async (userId) => {
 
   const [modeStats, dailyStats] = await Promise.all([
     Query.aggregate([
-      { $match: { userId: ownerId } },
+      { $match: withWorkspaceScope(actor) },
       { $group: { _id: "$mode", count: { $sum: 1 } } }
     ]),
     Query.aggregate([
-      { $match: { userId: ownerId } },
+      { $match: withWorkspaceScope(actor) },
       {
         $group: {
           _id: {
@@ -574,7 +572,7 @@ const getUserOverview = async (userId) => {
   ]);
 
   return {
-    plan: "pro",
+    plan: effectivePlan || "pro",
     totalQueries,
     todayQueries,
     modeStats,

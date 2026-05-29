@@ -86,8 +86,8 @@ export default function Feedback() {
                   onClick={() => setRating(value)}
                   className={`rounded-md border p-2 transition-all ${
                     value <= rating
-                      ? "bg-amber-50 border-amber-200 text-amber-500"
-                      : "bg-white border-slate-200 text-slate-300 hover:text-amber-400"
+                      ? "border-amber-200 bg-amber-50 text-amber-500 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-300"
+                      : "border-slate-200 bg-white text-slate-300 hover:text-amber-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-600 dark:hover:text-amber-300"
                   }`}
                 >
                   <Star size={18} fill={value <= rating ? "currentColor" : "none"} />
@@ -101,7 +101,7 @@ export default function Feedback() {
             <select
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-950"
+              className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:ring-emerald-400/20"
             >
               {FEEDBACK_TOPICS.map((item) => (
                 <option key={item} value={item}>
@@ -118,19 +118,19 @@ export default function Feedback() {
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Please share details. Minimum 10 characters."
               rows={6}
-              className="w-full resize-y rounded-md border border-slate-200 bg-white p-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-950"
+              className="w-full resize-y rounded-md border border-slate-200 bg-white p-3 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-emerald-400/20"
             />
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <p className="text-xs text-slate-400 font-medium">
-              Rating: <span className="font-black text-slate-700">{rating}/5</span> | Topic:{" "}
-              <span className="font-black text-slate-700">{topic}</span>
+            <p className="text-xs text-slate-400 font-medium dark:text-slate-500">
+              Rating: <span className="font-black text-slate-700 dark:text-slate-200">{rating}/5</span> | Topic:{" "}
+              <span className="font-black text-slate-700 dark:text-slate-200">{topic}</span>
             </p>
             <button
               type="submit"
               disabled={!canSubmit}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-[#10232d] px-5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white transition-all hover:bg-teal-700 disabled:bg-slate-200 disabled:text-slate-500"
+              className="button-primary inline-flex h-11 items-center justify-center gap-2 rounded-md px-5 text-[11px] font-extrabold uppercase tracking-[0.12em] disabled:cursor-not-allowed"
             >
               <Send size={14} />
               {submitting ? "Sending..." : "Submit"}
@@ -138,12 +138,12 @@ export default function Feedback() {
           </div>
 
           {notice && (
-            <div className="rounded-md border border-emerald-100 bg-emerald-50 px-3 py-2.5 text-[13px] font-semibold text-emerald-700">
+            <div className="rounded-md border border-emerald-100 bg-emerald-50 px-3 py-2.5 text-[13px] font-semibold text-emerald-700 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-300">
               {notice}
             </div>
           )}
           {error && (
-            <div className="rounded-md border border-rose-100 bg-rose-50 px-3 py-2.5 text-[13px] font-semibold text-rose-700">
+            <div className="rounded-md border border-rose-100 bg-rose-50 px-3 py-2.5 text-[13px] font-semibold text-rose-700 dark:border-rose-400/30 dark:bg-rose-400/10 dark:text-rose-300">
               {error}
             </div>
           )}
@@ -175,8 +175,8 @@ export default function Feedback() {
                       {item.rating}/5
                     </div>
                   </div>
-                  <p className="text-sm text-slate-600 mt-3 leading-relaxed">{item.message}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] mt-3 text-emerald-700">
+                  <p className="text-sm text-slate-600 mt-3 leading-relaxed dark:text-slate-300">{item.message}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] mt-3 text-emerald-700 dark:text-emerald-300">
                     Status: {item.status || "new"}
                   </p>
                 </article>

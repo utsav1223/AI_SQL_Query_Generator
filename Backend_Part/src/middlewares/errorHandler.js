@@ -2,8 +2,14 @@ const sendResponse = require("../utils/sendResponse");
 const logger = require("../utils/logger");
 
 const errorHandler = (error, req, res, next) => {
-  const statusCode = error.statusCode || 500;
-  const message = error.message || "Something went wrong on the server";
+  const isCastError = error.name === "CastError";
+  const isDuplicateKeyError = error.code === 11000;
+  const statusCode = isCastError ? 400 : isDuplicateKeyError ? 409 : error.statusCode || 500;
+  const message = isCastError
+    ? "Invalid resource identifier"
+    : isDuplicateKeyError
+    ? "Resource already exists"
+    : error.message || "Something went wrong on the server";
   const responseData = error.data || {};
 
   if (process.env.NODE_ENV !== "production" && error.stack) {

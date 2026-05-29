@@ -18,14 +18,22 @@ const getPublicUser = (user) => {
 
   return {
     id: user._id,
+    clerkId: user.clerkId || null,
     name: user.name,
     email: user.email,
     role: user.role,
     status: user.status || "active",
+    accessStatus: user.accessStatus || "approved",
     plan: user.plan || "free",
+    clerkOrgId: user.clerkOrgId || null,
+    clerkOrgRole: user.clerkOrgRole || null,
+    clerkOrgPermissions: Array.isArray(user.clerkOrgPermissions)
+      ? user.clerkOrgPermissions
+      : [],
     avatarUrl: user.avatarUrl || null,
     dailyUsage: user.dailyUsage || 0,
-    billingRenewal: user.billingRenewal || null
+    billingRenewal: user.billingRenewal || null,
+    billingStatus: user.billingStatus || "free"
   };
 };
 

@@ -32,6 +32,7 @@ import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
 import { useAuth } from "../../hooks/useAuth";
 import { queryService } from "../../services/queryService";
 import { logger } from "../../utils/logger";
+import { isPaidPlan } from "../../utils/planAccess";
 import SQLSyntaxHighlighter from "../../components/ai/SQLSyntaxHighlighter";
 import { buildSQLFilename, downloadSQLFile } from "../../utils/sqlExport";
 
@@ -56,6 +57,7 @@ export default function History() {
   const [favoriteLoadingId, setFavoriteLoadingId] = useState(null);
   const [tagDrafts, setTagDrafts] = useState({});
   const [tagSavingId, setTagSavingId] = useState(null);
+  const paidPlan = isPaidPlan(user?.plan);
 
   const fetchHistory = useCallback(async () => {
     setLoading(true);
@@ -229,6 +231,7 @@ export default function History() {
             <option value="validate">Validate</option>
             <option value="explain">Explain</option>
             <option value="format">Format</option>
+            <option value="schema">Schema</option>
           </SelectControl>
 
           <SelectControl icon={<ArrowUpDown size={14} />} value={sortOrder} onChange={setSortOrder}>
@@ -294,7 +297,7 @@ export default function History() {
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">
-                  {user?.plan === "pro" ? (
+                  {paidPlan ? (
                     <>
                       <IconButton
                         onClick={() => toggleFavorite(q._id)}
@@ -314,7 +317,7 @@ export default function History() {
                 </div>
               </div>
 
-              {user?.plan === "pro" ? (
+              {paidPlan ? (
                 <form
                   onSubmit={(event) => saveTags(event, q)}
                   className="flex flex-col gap-3 border-b border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950 sm:flex-row sm:items-center"

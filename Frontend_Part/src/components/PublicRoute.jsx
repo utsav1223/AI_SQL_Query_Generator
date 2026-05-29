@@ -5,7 +5,7 @@ import RouteLoadingScreen from "./ui/RouteLoadingScreen";
 export default function PublicRoute({ children }) {
   const { user, loading } = useAuth();
 
-  if (loading) return <RouteLoadingScreen label="Checking authentication..." />;
+  if (loading) return <RouteLoadingScreen label="Preparing sign in..." />;
 
   if (user) {
     return <Navigate to="/dashboard" replace />;

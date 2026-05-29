@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useAuth as useClerkAuth } from "@clerk/clerk-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -21,9 +22,9 @@ import {
   Zap
 } from "lucide-react";
 import AuthModal from "../components/public/AuthModal";
-import ForgotPasswordModal from "../components/public/ForgotPasswordModal";
-import ResetPasswordModal from "../components/public/ResetPasswordModal";
 import { PRICING_PLANS } from "../config/productConfig";
+import { useAuth } from "../hooks/useAuth";
+import RouteLoadingScreen from "../components/ui/RouteLoadingScreen";
 
 const navItems = [
   { label: "Home", sectionId: null },
@@ -127,6 +128,8 @@ const cardReveal = {
 export default function Landing() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isLoaded: clerkLoaded, isSignedIn } = useClerkAuth();
+  const { user, loading: appAuthLoading, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const authMode =
@@ -134,24 +137,23 @@ export default function Landing() {
       ? "login"
       : location.pathname === "/register"
         ? "register"
-        : location.pathname === "/forgot-password"
-          ? "forgot"
-          : location.pathname === "/reset-with-otp"
-            ? "reset"
-            : null;
+        : null;
 
-  const recoveryEmail = location.state?.email || "";
+  useEffect(() => {
+    if (authMode && user) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [authMode, navigate, user]);
+
+  const shouldShowAccountSync =
+    authMode && clerkLoaded && isSignedIn && !appAuthLoading && !user;
 
   const openAuthModal = (mode) => {
     setMobileMenuOpen(false);
     navigate(
       mode === "register"
         ? "/register"
-        : mode === "forgot"
-          ? "/forgot-password"
-          : mode === "reset"
-            ? "/reset-with-otp"
-            : "/login"
+        : "/login"
     );
   };
 
@@ -185,14 +187,14 @@ export default function Landing() {
     const nextPath =
       mode === "register"
         ? "/register"
-        : mode === "forgot"
-          ? "/forgot-password"
-          : mode === "reset"
-            ? "/reset-with-otp"
-            : "/login";
+        : "/login";
 
     navigate(nextPath, { replace: true, state: routeState });
   };
+
+  if (authMode && appAuthLoading) {
+    return <RouteLoadingScreen label="Syncing your account..." />;
+  }
 
   return (
     <div className="public-page bg-[#f6f8fb] text-slate-950">
@@ -816,27 +818,36 @@ GROUP BY plan;`}
         </div>
       </footer>
 
-      {authMode === "login" || authMode === "register" ? (
+      {shouldShowAccountSync ? (
+        <AccountSyncNotice onSignOut={logout} />
+      ) : authMode === "login" || authMode === "register" ? (
         <AuthModal mode={authMode} onClose={closeAuthModal} onSwitchMode={switchAuthMode} />
       ) : null}
+    </div>
+  );
+}
 
-      {authMode === "forgot" ? (
-        <ForgotPasswordModal
-          isOpen
-          onClose={closeAuthModal}
-          onSwitchMode={switchAuthMode}
-          recoveryEmail={recoveryEmail}
-        />
-      ) : null}
-
-      {authMode === "reset" ? (
-        <ResetPasswordModal
-          isOpen
-          onClose={closeAuthModal}
-          onSwitchMode={switchAuthMode}
-          recoveryEmail={recoveryEmail}
-        />
-      ) : null}
+function AccountSyncNotice({ onSignOut }) {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-md">
+      <section className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 text-center shadow-2xl">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-teal-50 text-teal-700">
+          <ShieldCheck size={23} />
+        </div>
+        <h2 className="display-font mt-4 text-xl font-bold tracking-tight text-slate-950">
+          Finishing account setup
+        </h2>
+        <p className="mt-3 text-sm font-medium leading-7 text-slate-600">
+          Your Clerk session is active, but the workspace profile did not load yet. Refresh once after the backend is running, or sign out and sign in again.
+        </p>
+        <button
+          type="button"
+          onClick={onSignOut}
+          className="mt-5 inline-flex items-center justify-center rounded-md bg-[#10232d] px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white hover:bg-teal-700"
+        >
+          Sign out
+        </button>
+      </section>
     </div>
   );
 }

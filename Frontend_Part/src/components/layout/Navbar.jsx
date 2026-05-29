@@ -1,8 +1,10 @@
-import { useContext } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useContext, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { LogOut, Menu, Moon, Sun } from "lucide-react";
 import { ThemeContext } from "../../context/ThemeContext";
 import { useAuth } from "../../hooks/useAuth";
+import { getPlanLabel } from "../../utils/planAccess";
+import WorkspaceSwitcher from "../clerk/WorkspaceSwitcher";
 import UserAvatar from "../ui/UserAvatar";
 
 const routeLabelMap = {
@@ -25,6 +27,10 @@ const routeLabelMap = {
   analytics: {
     title: "Analytics",
     description: "See advanced usage insights"
+  },
+  billing: {
+    title: "Billing",
+    description: "Compare plans and upgrade"
   },
   pricing: {
     title: "Billing",
@@ -55,8 +61,8 @@ const routeLabelMap = {
 export default function Navbar({ onMenuClick }) {
   const { user, logout } = useAuth();
   const { isDark, toggleTheme } = useContext(ThemeContext);
-  const navigate = useNavigate();
   const location = useLocation();
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const pathName = location.pathname.split("/").filter(Boolean).pop() || "dashboard";
   const pageMeta =
@@ -91,12 +97,16 @@ export default function Navbar({ onMenuClick }) {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
+          <div className="hidden max-w-[260px] lg:block">
+            <WorkspaceSwitcher compact />
+          </div>
+
           <div className="surface-card hidden items-center gap-3 rounded-lg px-3 py-2 text-slate-950 dark:text-slate-100 sm:flex">
             <UserAvatar user={user} size="sm" />
             <div className="leading-tight">
               <p className="text-[13px] font-bold">{user?.name || "Workspace User"}</p>
               <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
-                {user?.plan === "pro" ? "Pro plan" : "Free plan"}
+                {getPlanLabel(user?.plan)} plan
               </p>
             </div>
           </div>
@@ -114,14 +124,19 @@ export default function Navbar({ onMenuClick }) {
 
           <button
             type="button"
-            onClick={() => {
-              logout();
-              navigate("/login");
+            disabled={loggingOut}
+            onClick={async () => {
+              if (loggingOut) {
+                return;
+              }
+
+              setLoggingOut(true);
+              await logout();
             }}
-            className="button-primary inline-flex items-center gap-2 rounded-md px-3 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em]"
+            className="button-primary inline-flex items-center gap-2 rounded-md px-3 py-2.5 text-[10px] font-bold uppercase tracking-[0.12em] disabled:cursor-not-allowed disabled:opacity-70"
           >
             <LogOut size={14} />
-            <span className="hidden sm:inline">Logout</span>
+            <span className="hidden sm:inline">{loggingOut ? "Logging out" : "Logout"}</span>
           </button>
         </div>
       </div>

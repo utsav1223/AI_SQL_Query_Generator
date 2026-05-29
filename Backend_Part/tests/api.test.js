@@ -13,6 +13,7 @@ const crypto = require("crypto");
 const { after, before, beforeEach, describe, it } = require("node:test");
 const mongoose = require("mongoose");
 const request = require("supertest");
+const jwt = require("jsonwebtoken");
 
 const app = require("../src/app");
 const User = require("../src/models/User");
@@ -21,30 +22,20 @@ const Schema = require("../src/models/Schema");
 const Feedback = require("../src/models/Feedback");
 const Payment = require("../src/models/Payment");
 const Invoice = require("../src/models/Invoice");
+const OrganizationSubscription = require("../src/models/OrganizationSubscription");
 const SecurityEvent = require("../src/models/SecurityEvent");
 
 describe("API validation and auth guards", () => {
-  it("rejects weak registration passwords before controller logic", async () => {
-    const response = await request(app)
+  it("does not expose legacy password auth endpoints after Clerk migration", async () => {
+    const registerResponse = await request(app)
       .post("/api/auth/register")
-      .send({
-        name: "Test User",
-        email: "test@example.com",
-        password: "weak"
-      });
-
-    assert.equal(response.status, 400);
-    assert.equal(response.body.success, false);
-    assert.match(response.body.message, /validation/i);
-  });
-
-  it("rejects invalid forgot-password email format", async () => {
-    const response = await request(app)
+      .send({ email: "test@example.com", password: "weak" });
+    const forgotResponse = await request(app)
       .post("/api/auth/forgot-password")
-      .send({ email: "not-an-email" });
+      .send({ email: "test@example.com" });
 
-    assert.equal(response.status, 400);
-    assert.equal(response.body.success, false);
+    assert.equal(registerResponse.status, 404);
+    assert.equal(forgotResponse.status, 404);
   });
 
   it("rejects protected routes without a session", async () => {
@@ -52,6 +43,43 @@ describe("API validation and auth guards", () => {
 
     assert.equal(response.status, 401);
     assert.equal(response.body.success, false);
+  });
+
+  it("does not accept legacy app JWTs unless migration mode is explicitly enabled", async () => {
+    const token = jwt.sign(
+      {
+        userId: "507f1f77bcf86cd799439011",
+        role: "user"
+      },
+      process.env.JWT_SECRET
+    );
+
+    const response = await request(app)
+      .get("/api/auth/me")
+      .set("Authorization", `Bearer ${token}`);
+
+    assert.equal(response.status, 401);
+    assert.match(response.body.message, /Clerk session or API key/i);
+  });
+
+  it("rejects cookie-backed mutation requests from untrusted browser origins", async () => {
+    const response = await request(app)
+      .post("/api/admin/logout")
+      .set("Origin", "https://evil.example")
+      .set("Cookie", "sql_studio_admin_token=fake-token")
+      .send({});
+
+    assert.equal(response.status, 403);
+    assert.equal(response.body.data.code, "CORS_ORIGIN_DENIED");
+  });
+
+  it("validates public admin login payloads before credential checks", async () => {
+    const response = await request(app)
+      .post("/api/admin/login")
+      .send({ userId: "", password: "" });
+
+    assert.equal(response.status, 400);
+    assert.equal(response.body.data.errors.length > 0, true);
   });
 });
 
@@ -129,6 +157,7 @@ dbDescribe("Database-backed auth integration", () => {
       Feedback.deleteMany({}),
       Payment.deleteMany({}),
       Invoice.deleteMany({}),
+      OrganizationSubscription.deleteMany({}),
       SecurityEvent.deleteMany({})
     ]);
   });
@@ -137,47 +166,11 @@ dbDescribe("Database-backed auth integration", () => {
     await mongoose.disconnect();
   });
 
-  it("registers, logs in with an httpOnly cookie, and loads current user", async () => {
-    const registerResponse = await request(app)
-      .post("/api/auth/register")
-      .send({
-        name: "Cookie User",
-        email: "cookie@example.com",
-        password: "CookieUser@123"
-      });
-
-    assert.equal(registerResponse.status, 201);
-    assert.equal(registerResponse.body.data.token, undefined);
-
-    const loginResponse = await request(app)
-      .post("/api/auth/login")
-      .send({
-        email: "cookie@example.com",
-        password: "CookieUser@123"
-      });
-
-    assert.equal(loginResponse.status, 200);
-    assert.equal(loginResponse.body.data.token, undefined);
-
-    const cookie = loginResponse.headers["set-cookie"]?.join("; ");
-    assert.match(cookie || "", /sql_studio_token=/);
-    assert.match(cookie || "", /HttpOnly/i);
-
-    const meResponse = await request(app)
-      .get("/api/auth/me")
-      .set("Cookie", cookie);
-
-    assert.equal(meResponse.status, 200);
-    assert.equal(meResponse.body.data.email, "cookie@example.com");
-  });
-
-  it("does not reveal whether a forgot-password email exists", async () => {
+  it("keeps password recovery out of the backend because Clerk owns it", async () => {
     const response = await request(app)
       .post("/api/auth/forgot-password")
       .send({ email: "unknown@example.com" });
 
-    assert.equal(response.status, 200);
-    assert.equal(response.body.success, true);
-    assert.equal(response.body.message, "OTP sent to your email");
+    assert.equal(response.status, 404);
   });
 });

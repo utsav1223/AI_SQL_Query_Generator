@@ -4,12 +4,22 @@ const Query = require("../models/Query");
 const AppError = require("../utils/AppError");
 const { callGemini } = require("../utils/geminiClient");
 const {
-  assertUsageAvailable,
-  incrementUsage
+  refundUsage,
+  reserveUsage
 } = require("../utils/usageManager");
 const { createSecurityEvent } = require("../utils/securityMonitor");
+const { hasPlan } = require("../utils/planAccess");
+const { getEffectivePlanForActor } = require("../utils/effectivePlan");
+const {
+  getWorkspaceWriteFields,
+  normalizeActor,
+  withWorkspaceScope
+} = require("../utils/workspaceScope");
 
-const GEMINI_MAX_OUTPUT_TOKENS = 1024;
+const GEMINI_MAX_OUTPUT_TOKENS = Math.max(
+  Number.parseInt(process.env.GEMINI_MAX_OUTPUT_TOKENS || "2048", 10) || 2048,
+  512
+);
 
 const DIALECT_LABELS = {
   standard: "Standard SQL",
@@ -60,6 +70,18 @@ Rules:
 - Keep query behavior equivalent unless a behavioral fix is required.
 - If SQL is already valid, return the same logic with clean SQL structure.
 - Do not include markdown, comments, or prose outside JSON.
+`,
+  schema: `
+You are a senior database architect.
+Convert the user's natural-language product/domain description into a practical relational database schema.
+Return strict JSON only:
+{"sql":"<complete SQL DDL schema>"}
+Rules:
+- Output executable SQL DDL with CREATE TABLE statements, primary keys, foreign keys, indexes, and sensible constraints.
+- Prefer clear normalized tables and predictable column names.
+- Include junction tables for many-to-many relationships.
+- Use the requested SQL dialect when provided.
+- Do not include seed data, markdown, comments, or prose outside JSON.
 `,
   explain: `
 You are a SQL educator for developers.
@@ -331,6 +353,18 @@ Return strict JSON only:
 `;
   }
 
+  if (mode === "schema") {
+    return `
+Product or Database Description:
+${prompt}
+
+${dialectBlock}
+
+Return strict JSON only:
+{"sql":"<complete SQL DDL schema>"}
+`;
+  }
+
   if (mode === "optimize") {
     return `
 ${schemaBlock}
@@ -517,7 +551,7 @@ const validateAiRequest = ({ mode, prompt, sql, user }) => {
     throw new AppError(404, "User not found");
   }
 
-  if (mode === "generate" && !prompt) {
+  if (["generate", "schema"].includes(mode) && !prompt) {
     throw new AppError(400, "Prompt required");
   }
 
@@ -526,12 +560,14 @@ const validateAiRequest = ({ mode, prompt, sql, user }) => {
   }
 };
 
-const runAiRequest = async ({ userId, mode, prompt, sql, dialect, requestMeta = {} }) => {
-  const user = await User.findById(userId);
+const runAiRequest = async ({ actor: actorInput, userId, mode, prompt, sql, dialect, requestMeta = {} }) => {
+  const actor = normalizeActor(actorInput || userId);
+  const user = await User.findById(actor.userId);
   validateAiRequest({ mode, prompt, sql, user });
   const normalizedDialect = normalizeDialect(dialect);
+  const effectivePlan = await getEffectivePlanForActor(actor, user);
 
-  if (mode !== "generate" && user.plan !== "pro") {
+  if (mode !== "generate" && !hasPlan(effectivePlan, "pro")) {
     await createSecurityEvent({
       userId: user._id,
       emailSnapshot: user.email,
@@ -539,15 +575,15 @@ const runAiRequest = async ({ userId, mode, prompt, sql, dialect, requestMeta = 
       severity: "low",
       source: "ai",
       message: `Free user attempted ${mode} mode.`,
-      metadata: { mode },
+      metadata: { mode, effectivePlan, orgId: actor.orgId || null },
       ...requestMeta
     });
 
-    throw new AppError(403, "Upgrade to Pro to use this feature.");
+    throw new AppError(403, "Upgrade to a paid plan to use this feature.");
   }
 
-  if (normalizedDialect !== "standard" && user.plan !== "pro") {
-    throw new AppError(403, "Upgrade to Pro to choose a SQL dialect.");
+  if (normalizedDialect !== "standard" && !hasPlan(effectivePlan, "pro")) {
+    throw new AppError(403, "Upgrade to a paid plan to choose a SQL dialect.");
   }
 
   let cleanResult = "";
@@ -556,7 +592,9 @@ const runAiRequest = async ({ userId, mode, prompt, sql, dialect, requestMeta = 
     cleanResult = formatSqlSafely(sql);
   }
 
-  const schemaData = mode === "format" ? null : await SchemaModel.findOne({ userId });
+  const schemaData = ["format", "schema"].includes(mode)
+    ? null
+    : await SchemaModel.findOne(withWorkspaceScope(actor));
   const schemaText = String(schemaData?.schemaText || "").trim();
   const hasSchema = schemaText.length > 0;
 
@@ -580,9 +618,11 @@ const runAiRequest = async ({ userId, mode, prompt, sql, dialect, requestMeta = 
     throw new AppError(400, "Invalid mode");
   }
 
+  let usageReservation = null;
+
   if (mode !== "format") {
     try {
-      await assertUsageAvailable(user._id);
+      usageReservation = await reserveUsage(user._id, effectivePlan);
     } catch (error) {
       if (error.code === "LIMIT") {
         await createSecurityEvent({
@@ -599,88 +639,104 @@ const runAiRequest = async ({ userId, mode, prompt, sql, dialect, requestMeta = 
     }
   }
 
-  if (mode !== "format") {
-    const aiResponse = await callGemini({
-      systemInstruction: SYSTEM_PROMPTS[mode],
-      userPrompt,
-      temperature: mode === "explain" ? 0.1 : 0,
-      maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
-      responseMimeType: "application/json",
-      returnMeta: true
-    });
-
-    const aiResult =
-      typeof aiResponse === "string" ? aiResponse : aiResponse?.text || "";
-    const finishReason =
-      typeof aiResponse === "string" ? null : aiResponse?.finishReason;
-
-    if (!aiResult) {
-      throw new AppError(500, "AI failed");
-    }
-
-    if (mode === "explain") {
-      const parsed = await parseJsonWithRepair({
-        mode,
-        rawText: aiResult
-      });
-      const normalized = normalizeExplainPayload(parsed, aiResult);
-      cleanResult = buildExplainOutput(normalized);
-    } else {
-      const parsed = await parseJsonWithRepair({
-        mode,
-        rawText: aiResult
+  try {
+    if (mode !== "format") {
+      const aiResponse = await callGemini({
+        systemInstruction: SYSTEM_PROMPTS[mode],
+        userPrompt,
+        temperature: mode === "explain" ? 0.1 : 0,
+        maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
+        responseMimeType: "application/json",
+        returnMeta: true
       });
 
-      let sqlText =
-        parsed && typeof parsed.sql === "string"
-          ? parsed.sql
-          : stripCodeFences(aiResult);
+      const aiResult =
+        typeof aiResponse === "string" ? aiResponse : aiResponse?.text || "";
+      const finishReason =
+        typeof aiResponse === "string" ? null : aiResponse?.finishReason;
 
-      if (mode === "generate") {
-        const initialCandidateSql = sqlText;
-        sqlText = await reviewGeneratedSql({
-          schemaText,
-          prompt,
-          candidateSql: sqlText
+      if (!aiResult) {
+        throw new AppError(500, "AI failed");
+      }
+
+      if (mode === "explain") {
+        const parsed = await parseJsonWithRepair({
+          mode,
+          rawText: aiResult
+        });
+        const normalized = normalizeExplainPayload(parsed, aiResult);
+        cleanResult = buildExplainOutput(normalized);
+      } else {
+        const parsed = await parseJsonWithRepair({
+          mode,
+          rawText: aiResult
         });
 
-        if (finishReason === "MAX_TOKENS" || isLikelyIncompleteSql(sqlText)) {
-          const completionSeed =
-            sqlText || (finishReason === "MAX_TOKENS" ? initialCandidateSql : "");
+        let sqlText =
+          parsed && typeof parsed.sql === "string"
+            ? parsed.sql
+            : stripCodeFences(aiResult);
 
-          sqlText = await completeGeneratedSqlIfNeeded({
+        if (mode === "generate") {
+          const initialCandidateSql = sqlText;
+          sqlText = await reviewGeneratedSql({
             schemaText,
             prompt,
-            candidateSql: completionSeed
+            candidateSql: sqlText
           });
+
+          if (finishReason === "MAX_TOKENS" || isLikelyIncompleteSql(sqlText)) {
+            const completionSeed =
+              sqlText || (finishReason === "MAX_TOKENS" ? initialCandidateSql : "");
+
+            sqlText = await completeGeneratedSqlIfNeeded({
+              schemaText,
+              prompt,
+              candidateSql: completionSeed
+            });
+          }
+        }
+
+        cleanResult = formatSqlSafely(sqlText);
+
+        if (mode === "generate" && !cleanResult.trim()) {
+          throw new AppError(
+            400,
+            "Unable to generate SQL from saved schema context for this request."
+          );
         }
       }
-
-      cleanResult = formatSqlSafely(sqlText);
-
-      if (mode === "generate" && !cleanResult.trim()) {
-        throw new AppError(
-          400,
-          "Unable to generate SQL from saved schema context for this request."
-        );
-      }
     }
+  } catch (error) {
+    if (usageReservation?.reserved) {
+      await refundUsage(user._id);
+    }
+
+    throw error;
   }
 
   if (!cleanResult) {
+    if (usageReservation?.reserved) {
+      await refundUsage(user._id);
+    }
+
     throw new AppError(500, "AI response was empty");
   }
 
-  await Query.create({
-    userId: user._id,
-    prompt: prompt || sql,
-    generatedSQL: cleanResult,
-    mode,
-    dialect: normalizedDialect
-  });
+  try {
+    await Query.create({
+      ...getWorkspaceWriteFields(actor),
+      prompt: prompt || sql,
+      generatedSQL: cleanResult,
+      mode,
+      dialect: normalizedDialect
+    });
+  } catch (error) {
+    if (usageReservation?.reserved) {
+      await refundUsage(user._id);
+    }
 
-  if (mode !== "format") {
-    await incrementUsage(user._id);
+    throw error;
   }
 
   return {

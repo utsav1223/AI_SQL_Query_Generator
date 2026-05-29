@@ -41,6 +41,7 @@ export default function AdminDashboard() {
     feedbackStatus,
     feedbackStatusData,
     handleDeleteUser,
+    handleAccessDecision,
     handleFeedbackSearch,
     handleFeedbackStatusFilter,
     handleFeedbackStatusUpdate,
@@ -321,11 +322,14 @@ export default function AdminDashboard() {
                           </p>
                         </div>
                         <div className="flex flex-col items-end gap-1.5">
-                          <span className={`inline-flex rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${user.plan === "pro" ? "bg-emerald-100 text-emerald-700" : isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700"}`}>
+                          <span className={`inline-flex rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${["pro", "team", "business"].includes(user.plan) ? "bg-emerald-100 text-emerald-700" : isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700"}`}>
                             {user.plan}
                           </span>
                           <span className={`inline-flex rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${user.status === "suspended" ? "bg-rose-100 text-rose-700" : isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700"}`}>
                             {user.status || "active"}
+                          </span>
+                          <span className={`inline-flex rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${accessBadgeClass(user.accessStatus, isDark)}`}>
+                            {user.accessStatus || "approved"}
                           </span>
                         </div>
                       </div>
@@ -349,6 +353,26 @@ export default function AdminDashboard() {
                         >
                           {user.status === "suspended" ? "Unsuspend" : "Suspend"}
                         </button>
+                        {user.accessStatus !== "approved" ? (
+                          <button
+                            type="button"
+                            disabled={isBusy}
+                            onClick={() => handleAccessDecision(user, "approved")}
+                            className="rounded-md border border-emerald-300 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-500 disabled:opacity-60"
+                          >
+                            Approve
+                          </button>
+                        ) : null}
+                        {user.accessStatus !== "rejected" ? (
+                          <button
+                            type="button"
+                            disabled={isBusy}
+                            onClick={() => handleAccessDecision(user, "rejected")}
+                            className="rounded-md border border-rose-300 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-rose-500 disabled:opacity-60"
+                          >
+                            Reject
+                          </button>
+                        ) : null}
                         <button
                           type="button"
                           disabled={isBusy}
@@ -365,12 +389,13 @@ export default function AdminDashboard() {
             </div>
 
             <div className={`hidden overflow-x-auto rounded-lg border md:block ${isDark ? "border-slate-700" : "border-slate-200"}`}>
-              <table className="min-w-[880px] divide-y divide-slate-200 dark:divide-slate-700">
+              <table className="min-w-[980px] divide-y divide-slate-200 dark:divide-slate-700">
                 <thead>
                   <tr className={`text-left text-[10px] font-bold uppercase tracking-[0.12em] ${isDark ? "bg-slate-800/70 text-slate-300" : "bg-slate-50 text-slate-500"}`}>
                     <th className="px-3 py-2.5">User</th>
                     <th className="px-3 py-2.5">Plan</th>
                     <th className="px-3 py-2.5">Status</th>
+                    <th className="px-3 py-2.5">Access</th>
                     <th className="px-3 py-2.5">Risk</th>
                     <th className="px-3 py-2.5">Joined</th>
                     <th className="px-3 py-2.5 text-right">Actions</th>
@@ -381,7 +406,7 @@ export default function AdminDashboard() {
                     <UserTableSkeletonRows isDark={isDark} />
                   ) : users.length === 0 ? (
                     <tr>
-                      <td className={`px-3 py-5 text-sm font-medium ${mutedTextClass}`} colSpan={6}>
+                      <td className={`px-3 py-5 text-sm font-medium ${mutedTextClass}`} colSpan={7}>
                         No users found.
                       </td>
                     </tr>
@@ -395,13 +420,18 @@ export default function AdminDashboard() {
                             <p className={`text-xs font-medium ${mutedTextClass}`}>{user.email}</p>
                           </td>
                           <td className="px-3 py-3">
-                            <span className={`inline-flex rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${user.plan === "pro" ? "bg-emerald-100 text-emerald-700" : isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700"}`}>
+                            <span className={`inline-flex rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${["pro", "team", "business"].includes(user.plan) ? "bg-emerald-100 text-emerald-700" : isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700"}`}>
                               {user.plan}
                             </span>
                           </td>
                           <td className="px-3 py-3">
                             <span className={`inline-flex rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${user.status === "suspended" ? "bg-rose-100 text-rose-700" : isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700"}`}>
                               {user.status || "active"}
+                            </span>
+                          </td>
+                          <td className="px-3 py-3">
+                            <span className={`inline-flex rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${accessBadgeClass(user.accessStatus, isDark)}`}>
+                              {user.accessStatus || "approved"}
                             </span>
                           </td>
                           <td className={`px-3 py-3 text-xs font-bold uppercase tracking-[0.12em] ${user.riskScore > 40 ? "text-rose-500" : mutedTextClass}`}>
@@ -428,6 +458,26 @@ export default function AdminDashboard() {
                               >
                                 {user.status === "suspended" ? "Unsuspend" : "Suspend"}
                               </button>
+                              {user.accessStatus !== "approved" ? (
+                                <button
+                                  type="button"
+                                  disabled={isBusy}
+                                  onClick={() => handleAccessDecision(user, "approved")}
+                                  className="rounded-md border border-emerald-300 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-500 disabled:opacity-60"
+                                >
+                                  Approve
+                                </button>
+                              ) : null}
+                              {user.accessStatus !== "rejected" ? (
+                                <button
+                                  type="button"
+                                  disabled={isBusy}
+                                  onClick={() => handleAccessDecision(user, "rejected")}
+                                  className="rounded-md border border-rose-300 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-rose-500 disabled:opacity-60"
+                                >
+                                  Reject
+                                </button>
+                              ) : null}
                               <button
                                 type="button"
                                 disabled={isBusy}
@@ -805,6 +855,12 @@ function statusBadgeClass(status) {
   if (status === "resolved") return "bg-emerald-100 text-emerald-700";
   if (status === "reviewed") return "bg-sky-100 text-sky-700";
   return "bg-amber-100 text-amber-700";
+}
+
+function accessBadgeClass(accessStatus, isDark) {
+  if (accessStatus === "approved") return "bg-emerald-100 text-emerald-700";
+  if (accessStatus === "rejected") return "bg-rose-100 text-rose-700";
+  return isDark ? "bg-amber-500/15 text-amber-200" : "bg-amber-100 text-amber-700";
 }
 
 function severityBadgeClass(severity) {

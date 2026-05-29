@@ -4,7 +4,7 @@ const schemaService = require("../services/schema.service");
 
 exports.saveSchema = asyncHandler(async (req, res) => {
   const result = await schemaService.saveSchemaForUser({
-    userId: req.user.userId,
+    actor: req.user,
     schemaText: req.body.schemaText,
     clear: req.body.clear,
     clearQuery: req.query?.clear
@@ -17,7 +17,7 @@ exports.saveSchema = asyncHandler(async (req, res) => {
 });
 
 exports.getSchema = asyncHandler(async (req, res) => {
-  const schema = await schemaService.getSchemaForUser(req.user.userId);
+  const schema = await schemaService.getSchemaForUser(req.user);
 
   return sendResponse(res, {
     message: "Schema fetched successfully",
@@ -26,7 +26,7 @@ exports.getSchema = asyncHandler(async (req, res) => {
 });
 
 exports.deleteSchema = asyncHandler(async (req, res) => {
-  const result = await schemaService.deleteSchemaForUser(req.user.userId);
+  const result = await schemaService.deleteSchemaForUser(req.user);
 
   return sendResponse(res, {
     message: "Schema deleted successfully",

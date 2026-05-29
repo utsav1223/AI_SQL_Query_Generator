@@ -13,13 +13,28 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true
     },
-    password: {
+    clerkId: {
       type: String,
-      default: null
+      default: null,
+      unique: true,
+      sparse: true,
+      index: true
     },
-    googleId: {
+    clerkOrgId: {
       type: String,
-      default: null
+      default: null,
+      index: true
+    },
+    billingStatus: {
+      type: String,
+      default: "free",
+      trim: true
+    },
+    accessStatus: {
+      type: String,
+      enum: ["approved", "pending", "rejected"],
+      default: "approved",
+      index: true
     },
     avatarUrl: {
       type: String,
@@ -39,8 +54,17 @@ const userSchema = new mongoose.Schema(
     },
     plan: {
       type: String,
-      enum: ["free", "pro"],
+      enum: ["free", "pro", "team", "business"],
       default: "free"
+    },
+    clerkOrgRole: {
+      type: String,
+      default: null,
+      trim: true
+    },
+    clerkOrgPermissions: {
+      type: [String],
+      default: []
     },
     riskScore: {
       type: Number,
@@ -71,14 +95,6 @@ const userSchema = new mongoose.Schema(
     teamSize: {
       type: Number,
       default: 1
-    },
-    resetPasswordToken: String,
-    resetPasswordExpire: Date,
-    resetOTP: String,
-    resetOTPExpire: Date,
-    resetOTPAttempts: {
-      type: Number,
-      default: 0
     }
   },
   { timestamps: true }
@@ -88,6 +104,7 @@ userSchema.index({ plan: 1 });
 userSchema.index({ plan: 1, billingRenewal: 1 });
 userSchema.index({ createdAt: -1 });
 userSchema.index({ riskScore: -1, updatedAt: -1 });
-userSchema.index({ googleId: 1 }, { sparse: true });
+userSchema.index({ clerkId: 1 }, { sparse: true });
+userSchema.index({ accessStatus: 1, createdAt: -1 });
 
 module.exports = mongoose.model("User", userSchema);

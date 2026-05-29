@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Database, Loader2, RotateCcw, Save } from "lucide-react";
+import { useOrganization } from "@clerk/clerk-react";
+import { Building2, CheckCircle2, Database, Loader2, RotateCcw, Save } from "lucide-react";
 import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
 import { schemaService } from "../../services/schemaService";
 
@@ -7,6 +8,7 @@ const MAX_SCHEMA_SIZE_BYTES = 20000;
 
 export default function Schema() {
   const { confirmAction, ConfirmationDialog } = useConfirmationDialog();
+  const { organization, isLoaded: organizationLoaded } = useOrganization();
   const [schemaText, setSchemaText] = useState("");
   const [lastUpdated, setLastUpdated] = useState(null);
   const [size, setSize] = useState(0);
@@ -15,23 +17,49 @@ export default function Schema() {
   const [clearing, setClearing] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [savedHighlight, setSavedHighlight] = useState(false);
+  const workspaceKey = organization?.id || "personal";
+  const workspaceLabel = organization?.name || "Personal workspace";
 
   useEffect(() => {
+    if (!organizationLoaded) {
+      return undefined;
+    }
+
+    let isCurrent = true;
+
     const loadSchema = async () => {
+      setLoading(true);
+      setMessage("");
+      setError("");
+      setSavedHighlight(false);
+
       try {
         const data = await schemaService.getSchema();
+        if (!isCurrent) {
+          return;
+        }
+
         setSchemaText(data.schemaText || "");
         setLastUpdated(data.lastUpdated || null);
         setSize(data.size || 0);
       } catch (requestError) {
-        setError(requestError.message || "Unable to load schema.");
+        if (isCurrent) {
+          setError(requestError.message || "Unable to load schema.");
+        }
       } finally {
-        setLoading(false);
+        if (isCurrent) {
+          setLoading(false);
+        }
       }
     };
 
     loadSchema();
-  }, []);
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [organizationLoaded, workspaceKey]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -42,7 +70,9 @@ export default function Schema() {
       const data = await schemaService.saveSchema(schemaText);
       setLastUpdated(data.lastUpdated || null);
       setSize(data.size || 0);
-      setMessage("Schema saved successfully.");
+      setMessage(`Schema saved for ${workspaceLabel}.`);
+      setSavedHighlight(true);
+      window.setTimeout(() => setSavedHighlight(false), 2400);
     } catch (requestError) {
       setError(requestError.message || "Unable to save schema.");
     } finally {
@@ -71,7 +101,7 @@ export default function Schema() {
       setSchemaText("");
       setLastUpdated(null);
       setSize(0);
-      setMessage("Schema cleared successfully.");
+      setMessage(`Schema cleared for ${workspaceLabel}.`);
     } catch (requestError) {
       setError(requestError.message || "Unable to clear schema.");
     } finally {
@@ -108,6 +138,10 @@ export default function Schema() {
             <p className="mt-3 max-w-2xl text-sm font-medium leading-7 text-slate-600 dark:text-slate-400">
               Save DDL, table names, columns, keys, and relationships so generated SQL matches your real database.
             </p>
+            <div className="mt-4 inline-flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200">
+              <Building2 size={14} className="text-[var(--accent)]" />
+              {workspaceLabel}
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-3">
@@ -149,7 +183,13 @@ export default function Schema() {
         />
       </section>
 
-      <section className="dashboard-card overflow-hidden rounded-lg">
+      <section
+        className={`dashboard-card overflow-hidden rounded-lg transition-all ${
+          savedHighlight
+            ? "ring-2 ring-emerald-400/70 dark:ring-emerald-300/70"
+            : ""
+        }`}
+      >
         <div className="flex flex-col gap-2 border-b border-slate-200 px-5 py-4 dark:border-slate-700 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-base font-bold text-slate-950 dark:text-slate-100">Schema Editor</h2>
@@ -157,9 +197,17 @@ export default function Schema() {
               Paste SQL DDL or notes the AI should follow.
             </p>
           </div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
-            {usedKb} KB Used
-          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            {lastUpdated ? (
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-300">
+                <CheckCircle2 size={12} />
+                Saved Context
+              </span>
+            ) : null}
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+              {usedKb} KB Used
+            </p>
+          </div>
         </div>
 
         <textarea

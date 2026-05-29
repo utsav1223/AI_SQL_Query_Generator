@@ -5,7 +5,7 @@ const aiService = require("../services/ai.service");
 
 exports.handleAI = asyncHandler(async (req, res) => {
   const result = await aiService.runAiRequest({
-    userId: req.user.userId,
+    actor: req.user,
     mode: req.body.mode,
     prompt: req.body.prompt,
     sql: req.body.sql,
@@ -13,11 +13,15 @@ exports.handleAI = asyncHandler(async (req, res) => {
     requestMeta: getRequestMeta(req)
   });
 
+  const message =
+    req.body.mode === "format"
+      ? "SQL formatted successfully"
+      : req.body.mode === "schema"
+        ? "Schema generated successfully"
+        : "AI request completed successfully";
+
   return sendResponse(res, {
-    message:
-      req.body.mode === "format"
-        ? "SQL formatted successfully"
-        : "AI request completed successfully",
+    message,
     data: result
   });
 });

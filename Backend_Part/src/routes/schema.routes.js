@@ -1,15 +1,28 @@
 const router = require("express").Router();
 const auth = require("../middlewares/auth.middleware");
+const validate = require("../middlewares/validate.middleware");
+const {
+  requireApprovedAccess,
+  requireWorkspacePermission
+} = require("../middlewares/access.middleware");
 const {
   saveSchema,
   getSchema,
   deleteSchema
 } = require("../controllers/schema.controller");
+const { requireTeamForOrganizationWorkspace } = require("../middlewares/plan.middleware");
+const { schemaSaveRules } = require("../validators/api.validator");
 
-router.get("/", auth, getSchema);
-router.post("/", auth, saveSchema);
-router.delete("/", auth, deleteSchema);
-router.post("/clear", auth, deleteSchema);
-router.delete("/clear", auth, deleteSchema);
+const canManageSchema = requireWorkspacePermission("org:schema:manage", [
+  "org:admin",
+  "org:analyst",
+  "org:member"
+]);
+
+router.get("/", auth, requireApprovedAccess, requireTeamForOrganizationWorkspace, getSchema);
+router.post("/", auth, requireApprovedAccess, requireTeamForOrganizationWorkspace, canManageSchema, schemaSaveRules, validate, saveSchema);
+router.delete("/", auth, requireApprovedAccess, requireTeamForOrganizationWorkspace, canManageSchema, deleteSchema);
+router.post("/clear", auth, requireApprovedAccess, requireTeamForOrganizationWorkspace, canManageSchema, deleteSchema);
+router.delete("/clear", auth, requireApprovedAccess, requireTeamForOrganizationWorkspace, canManageSchema, deleteSchema);
 
 module.exports = router;

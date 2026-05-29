@@ -5,6 +5,13 @@ import { describe, expect, it, vi } from "vitest";
 import ProtectedRoute from "./ProtectedRoute";
 import { AuthContext } from "../context/AuthContext";
 
+vi.mock("@clerk/clerk-react", () => ({
+  useAuth: () => ({
+    isLoaded: true,
+    isSignedIn: false
+  })
+}));
+
 const renderProtectedRoute = ({ user = null, loading = false, roles } = {}) => {
   return render(
     <AuthContext.Provider value={{ user, loading, login: vi.fn(), logout: vi.fn() }}>
@@ -30,7 +37,7 @@ describe("ProtectedRoute", () => {
   it("shows a loading screen while auth is restoring", () => {
     renderProtectedRoute({ loading: true });
 
-    expect(screen.getByText("Restoring secure session...")).toBeInTheDocument();
+    expect(screen.getByText("Securing your workspace...")).toBeInTheDocument();
   });
 
   it("redirects unauthenticated users to login", () => {

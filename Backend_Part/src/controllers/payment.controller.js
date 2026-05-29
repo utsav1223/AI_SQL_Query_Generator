@@ -4,7 +4,10 @@ const paymentService = require("../services/payment.service");
 
 exports.createOrder = asyncHandler(async (req, res) => {
   const order = await paymentService.createOrder({
-    userId: req.user.userId
+    userId: req.user.userId,
+    actor: req.user,
+    plan: req.body.plan,
+    scope: req.body.scope
   });
 
   return sendResponse(res, {
@@ -15,7 +18,10 @@ exports.createOrder = asyncHandler(async (req, res) => {
 
 exports.createPaymentLink = asyncHandler(async (req, res) => {
   const paymentLink = await paymentService.createPaymentLink({
-    userId: req.user.userId
+    userId: req.user.userId,
+    actor: req.user,
+    plan: req.body.plan,
+    scope: req.body.scope
   });
 
   return sendResponse(res, {
@@ -57,7 +63,7 @@ exports.verifyPaymentLink = asyncHandler(async (req, res) => {
 });
 
 exports.getInvoices = asyncHandler(async (req, res) => {
-  const invoices = await paymentService.getInvoicesForUser(req.user.userId);
+  const invoices = await paymentService.getInvoicesForUser(req.user);
 
   return sendResponse(res, {
     message: "Invoices fetched successfully",
@@ -66,13 +72,22 @@ exports.getInvoices = asyncHandler(async (req, res) => {
 });
 
 exports.downgradePlan = asyncHandler(async (req, res) => {
-  const result = await paymentService.downgradePlanForUser(req.user.userId);
+  const result = await paymentService.downgradePlanForUser(req.user);
 
   return sendResponse(res, {
     message: result.alreadyFree
       ? "Account is already on the free plan."
       : "Plan downgraded to free.",
     data: result
+  });
+});
+
+exports.getCurrentBilling = asyncHandler(async (req, res) => {
+  const billing = await paymentService.getCurrentBillingState(req.user);
+
+  return sendResponse(res, {
+    message: "Billing state fetched successfully",
+    data: billing
   });
 });
 

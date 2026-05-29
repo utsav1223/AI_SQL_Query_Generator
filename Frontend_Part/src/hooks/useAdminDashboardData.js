@@ -246,6 +246,31 @@ export function useAdminDashboardData() {
     }
   };
 
+  const handleAccessDecision = async (user, nextAccessStatus) => {
+    const action = nextAccessStatus === "approved" ? "approve_access" : "reject_access";
+    const reason = await getModerationReason({
+      title: nextAccessStatus === "approved" ? "Approve access" : "Reject access",
+      description: `${user.email} will be marked as ${nextAccessStatus}.`,
+      confirmLabel: nextAccessStatus === "approved" ? "Approve" : "Reject"
+    });
+    if (!reason) return;
+
+    setActioningId(user._id);
+    setError("");
+    try {
+      await adminService.moderateUser(user._id, {
+        action,
+        reason
+      });
+      await Promise.all([loadOverview(), loadUsers(usersPagination.page, usersSearchQuery)]);
+    } catch (err) {
+      setError(err.message || "Failed to update access status");
+    } finally {
+      setActioningId("");
+    }
+  };
+
+
   const handleFeedbackStatusUpdate = async (feedbackId, status) => {
     setActioningId(feedbackId);
     setError("");
@@ -288,6 +313,7 @@ export function useAdminDashboardData() {
     handleFeedbackStatusFilter,
     handleFeedbackStatusUpdate,
     handleSecurityEventStatusUpdate,
+    handleAccessDecision,
     handleSuspendToggle,
     handleTogglePlan,
     handleUsersSearch,

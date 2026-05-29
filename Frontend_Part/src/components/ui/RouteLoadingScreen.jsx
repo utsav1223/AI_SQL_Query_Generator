@@ -1,116 +1,193 @@
-import { Database, Loader2, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Activity,
+  Database,
+  LockKeyhole,
+  Server,
+  ShieldCheck,
+  Sparkles
+} from "lucide-react";
 
-import Skeleton from "./Skeleton";
+const loadingStates = [
+  { icon: ShieldCheck, label: "Verifying access" },
+  { icon: Database, label: "Loading workspace" },
+  { icon: Server, label: "Syncing services" },
+  { icon: Sparkles, label: "Preparing tools" }
+];
 
-export default function RouteLoadingScreen({ label = "Loading workspace..." }) {
-  const isSessionRestore = label.toLowerCase().includes("session");
-  const title = isSessionRestore ? "Restoring your secure workspace" : "Preparing your workspace";
-  const description = isSessionRestore
-    ? "We are validating your saved session and reconnecting your dashboard."
-    : "The next page is loading with your workspace settings and tools.";
+const getLoadingCopy = (label) => {
+  const normalizedLabel = label.toLowerCase();
+
+  if (
+    normalizedLabel.includes("session") ||
+    normalizedLabel.includes("auth") ||
+    normalizedLabel.includes("access") ||
+    normalizedLabel.includes("secure")
+  ) {
+    return {
+      eyebrow: "Secure sign in",
+      title: "Securing your workspace",
+      description: "Your session is being verified before the dashboard opens."
+    };
+  }
+
+  if (normalizedLabel.includes("admin")) {
+    return {
+      eyebrow: "Admin console",
+      title: "Preparing admin controls",
+      description: "Loading protected tools and permissions."
+    };
+  }
+
+  return {
+    eyebrow: "AI SQL Studio",
+    title: "Preparing your workspace",
+    description: "Loading your dashboard, schema tools, and recent activity."
+  };
+};
+
+export default function RouteLoadingScreen({ label = "Preparing workspace..." }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const activeState = loadingStates[activeIndex];
+  const ActiveIcon = activeState.icon;
+  const copy = getLoadingCopy(label);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setActiveIndex((current) => (current + 1) % loadingStates.length);
+    }, 1050);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
 
   return (
     <div
       role="status"
       aria-live="polite"
-      className="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#f3f7fb_46%,#edf3f7_100%)] px-4 py-5 text-slate-950 sm:px-6 lg:px-8"
+      className="min-h-screen overflow-hidden bg-[#f6f8fb] text-slate-950 dark:bg-slate-950 dark:text-slate-100"
     >
-      <div className="fixed inset-x-0 top-0 h-1 bg-slate-200">
-        <div className="h-full w-1/3 animate-pulse bg-teal-600" />
-      </div>
-
-      <div className="mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-7xl flex-col">
-        <header className="flex items-center justify-between border-b border-slate-200 py-4">
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-[#10232d] text-teal-300">
+      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-5 sm:px-6 lg:px-8">
+        <header className="flex items-center justify-between border-b border-slate-200/80 py-4 dark:border-slate-800">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="route-loader-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#10232d] text-teal-200 shadow-sm dark:bg-slate-900">
               <Database size={18} />
             </span>
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                 AI SQL Studio
               </p>
-              <p className="text-sm font-bold text-slate-950">Workspace loading</p>
+              <p className="truncate text-sm font-bold text-slate-950 dark:text-slate-100">
+                Enterprise workspace
+              </p>
             </div>
           </div>
 
-          <div className="hidden items-center gap-2 rounded-md border border-teal-200 bg-white px-3 py-2 text-[10px] font-extrabold uppercase tracking-[0.12em] text-teal-800 shadow-sm sm:inline-flex">
-            <Loader2 size={13} className="animate-spin" />
-            In progress
+          <div className="hidden items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 sm:inline-flex">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            Secure connection
           </div>
         </header>
 
-        <main className="grid flex-1 items-center gap-10 py-10 lg:grid-cols-[minmax(0,0.82fr)_minmax(380px,1fr)] lg:py-12">
+        <main className="grid flex-1 items-center gap-10 py-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(420px,1fr)] lg:py-12">
           <section className="min-w-0">
-            <div className="inline-flex items-center gap-2 rounded-md border border-teal-200 bg-teal-50 px-3 py-1.5 text-teal-800">
-              <LockKeyhole size={13} />
-              <span className="text-[10px] font-bold uppercase tracking-[0.12em]">{label}</span>
-            </div>
-
-            <h1 className="mt-5 max-w-2xl text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
-              {title}
-            </h1>
-            <p className="mt-3 max-w-xl text-sm font-medium leading-7 text-slate-600">{description}</p>
-
-            <div className="mt-8 grid gap-3 sm:grid-cols-3">
-              <LoadingStep icon={ShieldCheck} label="Session" value="Protected" />
-              <LoadingStep icon={Sparkles} label="Interface" value="Optimizing" />
-              <LoadingStep icon={Database} label="Workspace" value="Syncing" />
-            </div>
-          </section>
-
-          <section className="min-w-0 border border-slate-200 bg-white shadow-[0_24px_70px_-54px_rgba(15,23,42,0.45)]">
-            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 sm:px-5">
-              <div className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-rose-300" />
-                <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
-              </div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
-                Secure preview
+            <div className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+              <ActiveIcon key={activeState.label} size={14} className="text-[var(--accent)]" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em]">
+                {activeState.label}
               </span>
             </div>
 
-            <div className="grid gap-5 p-4 sm:p-5">
+            <p className="mt-7 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--accent)]">
+              {copy.eyebrow}
+            </p>
+            <h1 className="mt-3 max-w-xl text-4xl font-bold tracking-tight text-slate-950 dark:text-slate-100 sm:text-5xl">
+              {copy.title}
+            </h1>
+            <p className="mt-4 max-w-lg text-sm font-medium leading-7 text-slate-600 dark:text-slate-400">
+              {copy.description}
+            </p>
+
+            <div className="mt-8 max-w-lg">
               <div className="flex items-center justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                  <Skeleton className="h-3 w-24 rounded-md" />
-                  <Skeleton className="mt-3 h-7 w-56 max-w-full rounded-md" />
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+                  {label}
+                </p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
+                  Protected
+                </p>
+              </div>
+              <div className="relative mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+                <span className="route-loader-progress absolute inset-y-0 left-0 rounded-full bg-[#10232d] dark:bg-teal-300" />
+              </div>
+            </div>
+
+            <div className="mt-8 grid max-w-lg gap-3 sm:grid-cols-3">
+              <SignalCard label="Identity" value="Verified" tone="emerald" />
+              <SignalCard label="API" value="Ready" tone="sky" />
+              <SignalCard label="Data" value="Private" tone="amber" />
+            </div>
+          </section>
+
+          <section className="hidden min-w-0 lg:block" aria-hidden="true">
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_26px_80px_-56px_rgba(15,23,42,0.38)] dark:border-slate-800 dark:bg-slate-900">
+              <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-rose-300" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
                 </div>
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-teal-50 text-teal-700">
-                  <Loader2 size={18} className="animate-spin" />
-                </div>
+                <div className="h-2.5 w-36 rounded-full bg-slate-100 dark:bg-slate-800" />
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-3">
-                <Skeleton className="h-24 rounded-md" />
-                <Skeleton className="h-24 rounded-md" />
-                <Skeleton className="h-24 rounded-md" />
-              </div>
+              <div className="grid min-h-[420px] grid-cols-[150px_minmax(0,1fr)]">
+                <aside className="border-r border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
+                  <div className="mb-6 flex items-center gap-3">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-md bg-[#10232d] text-teal-200">
+                      <LockKeyhole size={14} />
+                    </span>
+                    <div className="space-y-2">
+                      <div className="h-2 w-16 rounded-full bg-slate-200 dark:bg-slate-800" />
+                      <div className="h-2 w-10 rounded-full bg-slate-200 dark:bg-slate-800" />
+                    </div>
+                  </div>
 
-              <div className="grid gap-3 lg:grid-cols-[0.8fr_1fr]">
-                <div className="space-y-3 border border-slate-200 bg-slate-50 p-4">
-                  <Skeleton className="h-3 w-24 rounded-md" />
-                  <Skeleton className="h-3 w-full rounded-md" />
-                  <Skeleton className="h-3 w-5/6 rounded-md" />
-                  <Skeleton className="h-3 w-2/3 rounded-md" />
-                </div>
+                  <div className="space-y-3">
+                    {["w-24", "w-20", "w-28", "w-16"].map((width) => (
+                      <div
+                        key={width}
+                        className={`route-loader-skeleton h-8 rounded-md bg-slate-200 dark:bg-slate-800 ${width}`}
+                      />
+                    ))}
+                  </div>
+                </aside>
 
-                <div className="space-y-3 border border-slate-200 p-4">
-                  <div className="grid grid-cols-[1fr_72px] gap-3">
-                    <Skeleton className="h-3 rounded-md" />
-                    <Skeleton className="h-3 rounded-md" />
+                <div className="p-5">
+                  <div className="flex items-start justify-between gap-5">
+                    <div className="min-w-0 flex-1">
+                      <div className="route-loader-skeleton h-3 w-28 rounded-full bg-slate-200 dark:bg-slate-800" />
+                      <div className="route-loader-skeleton mt-3 h-8 w-72 max-w-full rounded-md bg-slate-200 dark:bg-slate-800" />
+                    </div>
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-teal-50 text-teal-700 dark:bg-teal-400/10 dark:text-teal-200">
+                      <Activity size={18} className="route-loader-icon" />
+                    </div>
                   </div>
-                  <div className="grid grid-cols-[1fr_72px] gap-3">
-                    <Skeleton className="h-3 rounded-md" />
-                    <Skeleton className="h-3 rounded-md" />
+
+                  <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                    <PreviewMetric tone="bg-emerald-500" />
+                    <PreviewMetric tone="bg-sky-500" />
+                    <PreviewMetric tone="bg-amber-400" />
                   </div>
-                  <div className="grid grid-cols-[1fr_72px] gap-3">
-                    <Skeleton className="h-3 rounded-md" />
-                    <Skeleton className="h-3 rounded-md" />
-                  </div>
-                  <div className="grid grid-cols-[1fr_72px] gap-3">
-                    <Skeleton className="h-3 rounded-md" />
-                    <Skeleton className="h-3 rounded-md" />
+
+                  <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
+                    <div className="mb-4 flex items-center justify-between">
+                      <div className="route-loader-skeleton h-3 w-28 rounded-full bg-slate-200 dark:bg-slate-800" />
+                      <div className="h-7 w-20 rounded-md bg-[#10232d] dark:bg-teal-300" />
+                    </div>
+                    <div className="space-y-3">
+                      <div className="route-loader-skeleton h-3 w-full rounded-full bg-slate-200 dark:bg-slate-800" />
+                      <div className="route-loader-skeleton h-3 w-11/12 rounded-full bg-slate-200 dark:bg-slate-800" />
+                      <div className="route-loader-skeleton h-3 w-4/5 rounded-full bg-slate-200 dark:bg-slate-800" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -122,20 +199,34 @@ export default function RouteLoadingScreen({ label = "Loading workspace..." }) {
   );
 }
 
-function LoadingStep({ icon, label, value }) {
-  const Icon = icon;
+function SignalCard({ label, value, tone }) {
+  const toneClass = {
+    emerald: "bg-emerald-500",
+    sky: "bg-sky-500",
+    amber: "bg-amber-400"
+  }[tone];
 
   return (
-    <div className="border border-slate-200 bg-white px-4 py-3 shadow-sm">
-      <div className="flex items-center gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-100 text-teal-700">
-          <Icon size={16} />
-        </span>
-        <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">{label}</p>
-          <p className="mt-1 truncate text-sm font-bold text-slate-950">{value}</p>
-        </div>
+    <div className="rounded-lg border border-slate-200 bg-white px-3 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex items-center gap-2">
+        <span className={`h-2 w-2 rounded-full ${toneClass}`} />
+        <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+          {label}
+        </p>
       </div>
+      <p className="mt-2 text-sm font-bold text-slate-950 dark:text-slate-100">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function PreviewMetric({ tone }) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+      <div className={`h-2 w-10 rounded-full ${tone}`} />
+      <div className="route-loader-skeleton mt-4 h-7 w-20 rounded-md bg-slate-200 dark:bg-slate-800" />
+      <div className="route-loader-skeleton mt-3 h-2.5 w-full rounded-full bg-slate-200 dark:bg-slate-800" />
     </div>
   );
 }

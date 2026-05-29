@@ -1,16 +1,19 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
+const { clerkMiddleware } = require("@clerk/express");
 
-const passport = require("./config/passport");
 const notFound = require("./middlewares/notFound");
 const errorHandler = require("./middlewares/errorHandler");
+const createCsrfProtection = require("./middlewares/csrf.middleware");
+const AppError = require("./utils/AppError");
 const authRoutes = require("./routes/auth.routes");
 const queryRoutes = require("./routes/query.routes");
 const aiRoutes = require("./routes/ai.routes");
 const schemaRoutes = require("./routes/schema.routes");
 const paymentRoutes = require("./routes/payment.routes");
 const paymentWebhookRoutes = require("./routes/paymentWebhook.routes");
+const clerkWebhookRoutes = require("./routes/clerkWebhook.routes");
 const adminRoutes = require("./routes/admin.routes");
 const feedbackRoutes = require("./routes/feedback.routes");
 const docsRoutes = require("./routes/docs.routes");
@@ -48,15 +51,36 @@ app.use(
         return callback(null, true);
       }
 
-      return callback(new Error(`Origin ${origin} is not allowed by CORS`));
+      return callback(
+        new AppError(403, `Origin ${origin} is not allowed by CORS`, "CORS_ORIGIN_DENIED")
+      );
     },
-    credentials: true
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token", "svix-id", "svix-timestamp", "svix-signature"]
   })
 );
-app.use(passport.initialize());
+if (process.env.CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY) {
+  app.use(
+    clerkMiddleware({
+      authorizedParties: allowedOrigins
+    })
+  );
+}
+app.use(createCsrfProtection(allowedOrigins));
+
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "OK",
+    data: {
+      uptime: process.uptime()
+    }
+  });
+});
 
 app.use("/api/docs", docsRoutes);
-app.use("/api/auth", tinyJson, authRoutes);
+app.use("/api/webhooks/clerk", express.raw({ type: "application/json", limit: "1mb" }), clerkWebhookRoutes);
+app.use("/api/auth", standardJson, authRoutes);
 app.use("/api/payment/webhook", razorpayWebhookRaw, paymentWebhookRoutes);
 app.use("/api/payment", tinyJson, paymentRoutes);
 app.use("/api/schema", schemaJson, schemaRoutes);

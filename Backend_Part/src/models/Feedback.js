@@ -8,6 +8,11 @@ const feedbackSchema = new mongoose.Schema(
       required: true,
       index: true
     },
+    clerkOrgId: {
+      type: String,
+      default: null,
+      index: true
+    },
     rating: {
       type: Number,
       required: true,
@@ -42,6 +47,8 @@ const feedbackSchema = new mongoose.Schema(
 );
 
 feedbackSchema.index({ userId: 1, createdAt: -1 });
+feedbackSchema.index({ clerkOrgId: 1, createdAt: -1 });
+feedbackSchema.index({ clerkOrgId: 1, userId: 1 });
 feedbackSchema.index({ status: 1, createdAt: -1 });
 feedbackSchema.index({ createdAt: -1 });
 

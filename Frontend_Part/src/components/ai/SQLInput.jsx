@@ -3,16 +3,25 @@ import SQLHighlightedTextarea from "./SQLHighlightedTextarea";
 
 export default function SQLInput({ value, onChange, mode, loading, placeholder }) {
   const editorTitle =
-    mode === "generate" ? "Natural Language Prompt" : "SQL Source";
-  const isSQLMode = mode !== "generate";
+    mode === "generate"
+      ? "Natural Language Prompt"
+      : mode === "schema"
+        ? "Schema Brief"
+        : "SQL Source";
+  const isPromptMode = ["generate", "schema"].includes(mode);
+  const isSQLMode = !isPromptMode;
   const resolvedPlaceholder =
     placeholder ||
     (mode === "generate"
       ? "Example: Find users who purchased more than 500 in the last 30 days."
+      : mode === "schema"
+      ? "Example: Build a SaaS billing schema with users, organizations, subscriptions, invoices, and audit logs."
       : "SELECT * FROM analytics.events WHERE event_type = 'conversion';");
   const tip =
     mode === "generate"
       ? "Tip: include filters, date ranges, and table names when possible."
+      : mode === "schema"
+      ? "Tip: describe entities, relationships, ownership, and constraints."
       : mode === "format"
       ? "Tip: paste rough SQL to normalize indentation and clause spacing."
       : "Tip: use clean ANSI-style SQL for easier optimization and validation.";

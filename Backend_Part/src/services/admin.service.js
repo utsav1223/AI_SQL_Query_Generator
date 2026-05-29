@@ -25,6 +25,8 @@ const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "S
 const ADMIN_USER_ACTIONS = {
   setPro: "set_pro",
   setFree: "set_free",
+  approveAccess: "approve_access",
+  rejectAccess: "reject_access",
   suspend: "suspend",
   unsuspend: "unsuspend",
   delete: "delete"
@@ -40,7 +42,7 @@ const generateAdminToken = (adminId) => {
       adminId,
       role: "admin"
     },
-    process.env.JWT_SECRET,
+    process.env.ADMIN_JWT_SECRET || process.env.JWT_SECRET,
     { expiresIn: "12h" }
   );
 };
@@ -117,6 +119,7 @@ const snapshotUserState = (user) => {
     email: user.email,
     role: user.role,
     status: user.status,
+    accessStatus: user.accessStatus || "approved",
     plan: user.plan,
     billingRenewal: user.billingRenewal,
     riskScore: user.riskScore || 0,
@@ -197,6 +200,12 @@ const runModerationAction = async ({ adminId, requestMeta, user, action, reason 
     user.plan = "free";
     user.billingRenewal = null;
     await user.save();
+  } else if (action === ADMIN_USER_ACTIONS.approveAccess) {
+    user.accessStatus = "approved";
+    await user.save();
+  } else if (action === ADMIN_USER_ACTIONS.rejectAccess) {
+    user.accessStatus = "rejected";
+    await user.save();
   } else if (action === ADMIN_USER_ACTIONS.suspend) {
     user.status = "suspended";
     await user.save();
@@ -276,6 +285,8 @@ const executeModeration = async ({ adminId, requestMeta, userId, action, reason 
   const messageMap = {
     [ADMIN_USER_ACTIONS.setPro]: "User upgraded to pro",
     [ADMIN_USER_ACTIONS.setFree]: "User moved to free plan",
+    [ADMIN_USER_ACTIONS.approveAccess]: "User access approved",
+    [ADMIN_USER_ACTIONS.rejectAccess]: "User access rejected",
     [ADMIN_USER_ACTIONS.suspend]: "User suspended",
     [ADMIN_USER_ACTIONS.unsuspend]: "User unsuspended",
     [ADMIN_USER_ACTIONS.delete]: "User and related records deleted successfully"
@@ -354,7 +365,7 @@ const getAdminOverview = async () => {
     recentAdminActions
   ] = await Promise.all([
     User.countDocuments({}),
-    User.countDocuments({ plan: "pro" }),
+    User.countDocuments({ plan: { $in: ["pro", "team", "business"] } }),
     Query.countDocuments({}),
     Invoice.countDocuments({ status: "paid" }),
     Feedback.countDocuments({}),
@@ -432,7 +443,7 @@ const getAdminOverview = async () => {
     User.find({})
       .sort({ createdAt: -1 })
       .limit(6)
-      .select("name email plan role createdAt"),
+      .select("name email plan role accessStatus createdAt"),
     Invoice.find({})
       .sort({ createdAt: -1 })
       .limit(6)
@@ -529,7 +540,7 @@ const getAdminOverview = async () => {
         { status: "Resolved", count: feedbackStatusCounts.resolved }
       ],
       planDistribution: [
-        { name: "Pro", value: proUsers },
+        { name: "Paid", value: proUsers },
         { name: "Free", value: freeUsers }
       ]
     },
@@ -564,7 +575,7 @@ const getAdminUsers = async ({ page, limit, search }) => {
       .skip(skip)
       .limit(safeLimit)
       .select(
-        "name email role status plan billingRenewal createdAt dailyUsage usageDate riskScore riskFlags lastSecurityEventAt"
+        "name email role status accessStatus plan billingRenewal createdAt dailyUsage usageDate riskScore riskFlags lastSecurityEventAt"
       ),
     User.countDocuments(filter)
   ]);

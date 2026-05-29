@@ -14,7 +14,7 @@ export function AdminSummary({ admin, overview, loadingOverview, proPercent, isD
       <section className={`rounded-lg border p-4 shadow-sm ${surfaceClass}`}>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <SummaryMetric isDark={isDark} label="Admin" value={admin?.id || "active session"} />
-          <SummaryMetric isDark={isDark} label="Conversion" value={`${proPercent}% pro`} />
+          <SummaryMetric isDark={isDark} label="Conversion" value={`${proPercent}% paid`} />
           <SummaryMetric isDark={isDark} label="Open Feedback" value={overview.stats.pendingFeedback || 0} tone="amber" />
           <SummaryMetric isDark={isDark} label="Security Queue" value={overview.stats.pendingSecurityEvents || 0} tone="rose" />
         </div>
@@ -30,7 +30,7 @@ export function AdminSummary({ admin, overview, loadingOverview, proPercent, isD
         />
         <StatCard
           isDark={isDark}
-          title="Pro Users"
+          title="Paid Users"
           value={loadingOverview ? "..." : overview.stats.proUsers}
           subtitle={`${proPercent}% of users`}
           icon={Crown}

@@ -8,6 +8,26 @@ const invoiceSchema = new mongoose.Schema(
       required: true
     },
 
+    scope: {
+      type: String,
+      enum: ["personal", "organization"],
+      default: "personal",
+      index: true
+    },
+
+    plan: {
+      type: String,
+      enum: ["pro", "team"],
+      default: "pro",
+      index: true
+    },
+
+    clerkOrgId: {
+      type: String,
+      default: null,
+      index: true
+    },
+
     invoiceNumber: {
       type: String,
       required: true,
@@ -43,7 +63,10 @@ const invoiceSchema = new mongoose.Schema(
 );
 
 invoiceSchema.index({ userId: 1, createdAt: -1 });
+invoiceSchema.index({ clerkOrgId: 1, createdAt: -1 });
+invoiceSchema.index({ scope: 1, plan: 1, createdAt: -1 });
 invoiceSchema.index({ status: 1, createdAt: -1 });
-invoiceSchema.index({ paymentId: 1 });
+invoiceSchema.index({ paymentId: 1 }, { unique: true });
+invoiceSchema.index({ orderId: 1, userId: 1 }, { unique: true });
 
 module.exports = mongoose.model("Invoice", invoiceSchema);

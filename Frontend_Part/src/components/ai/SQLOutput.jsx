@@ -1,17 +1,54 @@
 import { useEffect, useEffectEvent, useMemo, useState } from "react";
-import { BookOpen, Check, CheckCircle2, Copy, Download, Terminal } from "lucide-react";
+import {
+  AlignLeft,
+  BookOpen,
+  Check,
+  CheckCircle2,
+  Copy,
+  Database,
+  Download,
+  SearchCheck,
+  ShieldCheck,
+  Terminal,
+  Zap
+} from "lucide-react";
 import SQLSyntaxHighlighter from "./SQLSyntaxHighlighter";
 import { buildSQLFilename, downloadSQLFile } from "../../utils/sqlExport";
 
-export default function SQLOutput({ result, mode = "generate", onApplyResult }) {
+const SQL_REVIEW_ACTIONS = [
+  { id: "optimize", label: "Optimize", icon: Zap },
+  { id: "format", label: "Format", icon: AlignLeft },
+  { id: "validate", label: "Validate", icon: ShieldCheck },
+  { id: "explain", label: "Explain", icon: SearchCheck }
+];
+
+const SCHEMA_REVIEW_ACTIONS = [
+  { id: "format", label: "Format", icon: AlignLeft },
+  { id: "validate", label: "Validate", icon: ShieldCheck },
+  { id: "explain", label: "Explain", icon: SearchCheck }
+];
+
+export default function SQLOutput({
+  result,
+  mode = "generate",
+  onApplyResult,
+  onSendToTool,
+  onSaveSchemaResult,
+  savingSchema = false
+}) {
   const [typingState, setTypingState] = useState({ source: "", text: "" });
   const [copiedSource, setCopiedSource] = useState("");
   const output = result || "";
   const isExplainMode = mode === "explain";
   const isValidateMode = mode === "validate";
   const isFormatMode = mode === "format";
+  const isSchemaMode = mode === "schema";
   const canExport = !isExplainMode && Boolean(output.trim());
   const canApply = isFormatMode && typeof onApplyResult === "function" && Boolean(output.trim());
+  const canSendToTool = !isExplainMode && typeof onSendToTool === "function" && Boolean(output.trim());
+  const reviewActions = (isSchemaMode ? SCHEMA_REVIEW_ACTIONS : SQL_REVIEW_ACTIONS).filter(
+    (action) => action.id !== mode
+  );
   const displayText = typingState.source === output ? typingState.text : "";
   const isTyping = displayText.length < output.length;
   const copied = copiedSource === output;
@@ -58,7 +95,7 @@ export default function SQLOutput({ result, mode = "generate", onApplyResult }) 
   };
 
   const handleExport = () => {
-    downloadSQLFile(output, buildSQLFilename(`ai-sql-${mode}`));
+    downloadSQLFile(output, buildSQLFilename(isSchemaMode ? "ai-schema" : `ai-sql-${mode}`));
   };
 
   const copyFromShortcut = useEffectEvent(() => {
@@ -88,10 +125,10 @@ export default function SQLOutput({ result, mode = "generate", onApplyResult }) 
       <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent-soft)] text-[var(--accent)]">
-            {isExplainMode ? <BookOpen size={14} /> : <Terminal size={14} />}
+            {isExplainMode ? <BookOpen size={14} /> : isSchemaMode ? <Database size={14} /> : <Terminal size={14} />}
           </span>
           <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
-            {isExplainMode ? "Explanation" : "Output"}
+            {isExplainMode ? "Explanation" : isSchemaMode ? "Generated Schema" : "Output"}
           </p>
         </div>
 
@@ -123,6 +160,18 @@ export default function SQLOutput({ result, mode = "generate", onApplyResult }) 
             </button>
           ) : null}
 
+          {isSchemaMode && typeof onSaveSchemaResult === "function" ? (
+            <button
+              type="button"
+              onClick={() => onSaveSchemaResult(output)}
+              disabled={savingSchema}
+              className="button-primary inline-flex items-center gap-2 rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] disabled:cursor-not-allowed"
+            >
+              <Database size={13} />
+              {savingSchema ? "Saving" : "Save Schema"}
+            </button>
+          ) : null}
+
           {canApply ? (
             <button
               type="button"
@@ -136,13 +185,36 @@ export default function SQLOutput({ result, mode = "generate", onApplyResult }) 
         </div>
       </div>
 
+      {canSendToTool ? (
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-900">
+          <span className="px-2 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+            Continue with
+          </span>
+          {reviewActions.map((action) => {
+            const Icon = action.icon;
+
+            return (
+              <button
+                key={action.id}
+                type="button"
+                onClick={() => onSendToTool(action.id, output)}
+                className="button-secondary inline-flex items-center gap-2 rounded-md px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em]"
+              >
+                <Icon size={13} />
+                {action.label}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+
       <div className="code-shell overflow-hidden rounded-lg">
         <div className="code-toolbar flex items-center gap-2 px-4 py-3">
           <span className="h-2.5 w-2.5 rounded-full bg-slate-500/40" />
           <span className="h-2.5 w-2.5 rounded-full bg-slate-500/40" />
           <span className="h-2.5 w-2.5 rounded-full bg-slate-500/40" />
           <span className="mono-font ml-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-            {isExplainMode ? "analysis.txt" : "result.sql"}
+            {isExplainMode ? "analysis.txt" : isSchemaMode ? "schema.sql" : "result.sql"}
           </span>
         </div>
 

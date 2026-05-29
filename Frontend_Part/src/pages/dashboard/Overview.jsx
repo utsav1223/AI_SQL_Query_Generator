@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight, Clock3, Database, FileText, ShieldCheck, Sparkles } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { queryService } from "../../services/queryService";
+import { getPlanLabel } from "../../utils/planAccess";
 
 export default function Overview() {
   const navigate = useNavigate();
@@ -66,7 +67,7 @@ export default function Overview() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <MiniPanel label="Current Plan" value={user?.plan || overview.plan} />
+            <MiniPanel label="Current Plan" value={getPlanLabel(user?.plan || overview.plan)} />
             <MiniPanel label="Next Step" value={isFreePlan ? "Try AI Workspace" : "Open Analytics"} />
           </div>
         </div>
@@ -83,7 +84,7 @@ export default function Overview() {
             </div>
             <button
               type="button"
-              onClick={() => navigate("/dashboard/pricing")}
+              onClick={() => navigate("/dashboard/billing")}
               className="inline-flex items-center justify-center gap-2 rounded-md bg-[#10232d] px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-white hover:bg-teal-700"
             >
               Upgrade Plan
@@ -173,11 +174,6 @@ export default function Overview() {
           <div className="mt-5 space-y-3">
             <ActionCard title="Open AI Workspace" description="Generate or refine SQL from one focused screen." onClick={() => navigate("/dashboard/generate")} />
             <ActionCard title="Update Schema Context" description="Keep schema aligned with real tables and columns." onClick={() => navigate("/dashboard/schema")} />
-            <ActionCard
-              title={isFreePlan ? "Compare Pro Features" : "Review Invoices"}
-              description={isFreePlan ? "See what unlocks beyond the free plan." : "Review subscription and invoice history."}
-              onClick={() => navigate(isFreePlan ? "/dashboard/pricing" : "/dashboard/invoices")}
-            />
           </div>
         </article>
       </section>

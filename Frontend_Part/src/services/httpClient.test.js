@@ -28,7 +28,7 @@ describe("httpClient auth events", () => {
     window.removeEventListener(API_AUTH_EVENT, listener);
   });
 
-  it("does not dispatch auth events for public login failures", async () => {
+  it("does not dispatch auth events for admin login failures", async () => {
     const listener = vi.fn();
     window.addEventListener(API_AUTH_EVENT, listener);
     vi.spyOn(globalThis, "fetch").mockResolvedValue({
@@ -39,7 +39,7 @@ describe("httpClient auth events", () => {
 
     const request = createRequest({ authScope: "user" });
 
-    await expect(request("/auth/login", "POST", { email: "a@b.com" })).rejects.toMatchObject({ status: 401 });
+    await expect(request("/admin/login", "POST", { userId: "admin" })).rejects.toMatchObject({ status: 401 });
     expect(listener).not.toHaveBeenCalled();
 
     window.removeEventListener(API_AUTH_EVENT, listener);

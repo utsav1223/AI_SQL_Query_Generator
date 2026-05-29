@@ -3,7 +3,7 @@ const sendResponse = require("../utils/sendResponse");
 const queryService = require("../services/query.service");
 
 exports.getUserQueries = asyncHandler(async (req, res) => {
-  const result = await queryService.getUserQueries(req.user.userId, req.query);
+  const result = await queryService.getUserQueries(req.user, req.query);
 
   return sendResponse(res, {
     message: "Query history fetched successfully",
@@ -12,7 +12,7 @@ exports.getUserQueries = asyncHandler(async (req, res) => {
 });
 
 exports.deleteQuery = asyncHandler(async (req, res) => {
-  await queryService.deleteUserQuery(req.user.userId, req.params.id);
+  await queryService.deleteUserQuery(req.user, req.params.id);
 
   return sendResponse(res, {
     message: "Query deleted successfully"
@@ -20,7 +20,7 @@ exports.deleteQuery = asyncHandler(async (req, res) => {
 });
 
 exports.getAnalytics = asyncHandler(async (req, res) => {
-  const analytics = await queryService.getUserAnalytics(req.user.userId);
+  const analytics = await queryService.getUserAnalytics(req.user);
 
   return sendResponse(res, {
     message: "Analytics fetched successfully",
@@ -29,7 +29,7 @@ exports.getAnalytics = asyncHandler(async (req, res) => {
 });
 
 exports.getAdvancedAnalytics = asyncHandler(async (req, res) => {
-  const analytics = await queryService.getAdvancedUserAnalytics(req.user.userId);
+  const analytics = await queryService.getAdvancedUserAnalytics(req.user);
 
   return sendResponse(res, {
     message: "Advanced analytics fetched successfully",
@@ -38,7 +38,7 @@ exports.getAdvancedAnalytics = asyncHandler(async (req, res) => {
 });
 
 exports.togglePin = asyncHandler(async (req, res) => {
-  const result = await queryService.togglePinnedQuery(req.user.userId, req.params.id);
+  const result = await queryService.togglePinnedQuery(req.user, req.params.id);
 
   return sendResponse(res, {
     message: "Pin status updated successfully",
@@ -47,7 +47,7 @@ exports.togglePin = asyncHandler(async (req, res) => {
 });
 
 exports.toggleFavorite = asyncHandler(async (req, res) => {
-  const result = await queryService.toggleFavoriteQuery(req.user.userId, req.params.id);
+  const result = await queryService.toggleFavoriteQuery(req.user, req.params.id);
 
   return sendResponse(res, {
     message: "Favorite status updated successfully",
@@ -56,7 +56,7 @@ exports.toggleFavorite = asyncHandler(async (req, res) => {
 });
 
 exports.updateTags = asyncHandler(async (req, res) => {
-  const result = await queryService.updateQueryTags(req.user.userId, req.params.id, req.body.tags);
+  const result = await queryService.updateQueryTags(req.user, req.params.id, req.body.tags);
 
   return sendResponse(res, {
     message: "Query tags updated successfully",
@@ -65,7 +65,7 @@ exports.updateTags = asyncHandler(async (req, res) => {
 });
 
 exports.trackAction = asyncHandler(async (req, res) => {
-  const result = await queryService.trackQueryAction(req.user.userId, req.params.id, req.body.action);
+  const result = await queryService.trackQueryAction(req.user, req.params.id, req.body.action);
 
   return sendResponse(res, {
     message: "Query action tracked successfully",
@@ -74,7 +74,7 @@ exports.trackAction = asyncHandler(async (req, res) => {
 });
 
 exports.getOverview = asyncHandler(async (req, res) => {
-  const overview = await queryService.getUserOverview(req.user.userId);
+  const overview = await queryService.getUserOverview(req.user);
 
   return sendResponse(res, {
     message: "Overview fetched successfully",

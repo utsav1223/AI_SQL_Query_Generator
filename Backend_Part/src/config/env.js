@@ -1,5 +1,6 @@
 const PLACEHOLDER_VALUES = new Set([
   "replace-with-a-secure-secret",
+  "replace-with-a-separate-secure-admin-secret",
   "replace-with-a-strong-admin-password-or-bcrypt-hash",
   "generate-a-random-32-plus-character-secret",
   "replace-with-production-admin-id",
@@ -80,6 +81,18 @@ const assertJwtSecret = (errors) => {
   }
 };
 
+const assertSecretLength = (errors, key, label = key) => {
+  const value = read(key);
+
+  if (!value || !isProduction()) {
+    return;
+  }
+
+  if (value.length < 32) {
+    errors.push(`${label} must be at least 32 characters in production`);
+  }
+};
+
 const assertAdminPassword = (errors) => {
   const value = read("ADMIN_PASSWORD");
 
@@ -102,6 +115,10 @@ const validateEnv = () => {
   if (isProduction()) {
     [
       "JWT_SECRET",
+      "ADMIN_JWT_SECRET",
+      "CLERK_PUBLISHABLE_KEY",
+      "CLERK_SECRET_KEY",
+      "CLERK_WEBHOOK_SECRET",
       "MONGO_URI",
       "ADMIN_USER_ID",
       "ADMIN_PASSWORD",
@@ -109,7 +126,7 @@ const validateEnv = () => {
       "CORS_ORIGIN"
     ].forEach((key) => addMissing(errors, key));
 
-    ["JWT_SECRET", "ADMIN_USER_ID", "ADMIN_PASSWORD"].forEach((key) => {
+    ["JWT_SECRET", "ADMIN_JWT_SECRET", "ADMIN_USER_ID", "ADMIN_PASSWORD"].forEach((key) => {
       assertNoPlaceholder(errors, key);
     });
 
@@ -117,11 +134,16 @@ const validateEnv = () => {
   }
 
   assertJwtSecret(errors);
+  assertSecretLength(errors, "ADMIN_JWT_SECRET", "ADMIN_JWT_SECRET");
   assertAdminPassword(errors);
   assertUrl(errors, "FRONTEND_URL");
   assertUrl(errors, "CORS_ORIGIN", { allowList: true });
 
-  addPairValidation(errors, ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"], "Google OAuth");
+  addPairValidation(
+    errors,
+    ["CLERK_PUBLISHABLE_KEY", "CLERK_SECRET_KEY"],
+    "Clerk authentication"
+  );
   addPairValidation(errors, ["RAZORPAY_KEY_ID", "RAZORPAY_SECRET"], "Razorpay payments");
 
   const emailProvider = read("EMAIL_PROVIDER").toLowerCase();

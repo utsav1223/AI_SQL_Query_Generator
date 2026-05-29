@@ -6,27 +6,21 @@ export default function FAQ() {
     () => [
       {
         id: "billing-1",
-        question: "How do I upgrade to Pro?",
+        question: "How do I upgrade?",
         answer:
-          "Open Pricing in dashboard, click upgrade, complete Razorpay payment, and your plan updates automatically after verification."
-      },
-      {
-        id: "billing-2",
-        question: "Why does Billing Success redirect me back to Billing?",
-        answer:
-          "That happens when callback parameters are missing or signature verification fails. Use the payment flow from Billing page only."
+          "Open Billing in the dashboard and choose the plan that fits your workspace."
       },
       {
         id: "usage-1",
         question: "What is the free plan limit?",
         answer:
-          "Free users get 5 one-time credits. After all credits are used, upgrade to Pro to continue generating SQL."
+          "Free users get 5 one-time credits. After all credits are used, upgrade to continue generating SQL."
       },
       {
         id: "invoice-1",
         question: "Where can I download invoices?",
         answer:
-          "Open Dashboard > Billing Records. Paid invoices are listed there after successful verification."
+          "Open Dashboard > Invoices to review billing records and account payment details."
       },
       {
         id: "support-1",

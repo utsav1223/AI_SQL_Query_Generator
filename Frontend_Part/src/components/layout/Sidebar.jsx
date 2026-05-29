@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { ThemeContext } from "../../context/ThemeContext";
 import { useAuth } from "../../hooks/useAuth";
+import { getPlanLabel, isPaidPlan } from "../../utils/planAccess";
+import WorkspaceSwitcher from "../clerk/WorkspaceSwitcher";
 import UserAvatar from "../ui/UserAvatar";
 
 const workspaceLinks = [
@@ -27,7 +29,7 @@ const workspaceLinks = [
 
 const accountLinks = [
   { to: "/dashboard/analytics", icon: BarChart3, label: "Analytics", proOnly: true },
-  { to: "/dashboard/pricing", icon: CreditCard, label: "Billing" },
+  { to: "/dashboard/billing", icon: CreditCard, label: "Billing" },
   { to: "/dashboard/invoices", icon: FileText, label: "Invoices" },
   { to: "/dashboard/settings", icon: Settings, label: "Settings" }
 ];
@@ -41,6 +43,7 @@ const helpLinks = [
 export default function Sidebar({ onClose }) {
   const { user } = useAuth();
   const { isDark } = useContext(ThemeContext);
+  const paidPlan = isPaidPlan(user?.plan);
 
   return (
     <div
@@ -79,13 +82,17 @@ export default function Sidebar({ onClose }) {
           Current plan
         </p>
         <p className="mt-2 text-sm font-bold">
-          {user?.plan === "pro" ? "Professional" : "Free"}
+          {getPlanLabel(user?.plan)}
         </p>
         <p className="mt-1.5 text-[12px] leading-5 text-slate-500 dark:text-slate-400">
-          {user?.plan === "pro"
+          {paidPlan
             ? "Advanced tools are available in your workspace."
             : "Upgrade to unlock analytics and advanced AI tools."}
         </p>
+      </div>
+
+      <div className="mt-3 lg:hidden">
+        <WorkspaceSwitcher />
       </div>
 
       <div className="mt-5 flex-1 overflow-y-auto custom-scrollbar pr-1">
@@ -97,7 +104,7 @@ export default function Sidebar({ onClose }) {
 
         <NavSection title="Account">
           {accountLinks.map((item) =>
-            item.proOnly && user?.plan !== "pro" ? (
+            item.proOnly && !paidPlan ? (
               <div
                 key={item.to}
                 className="surface-card-soft flex items-center justify-between rounded-md border border-slate-200 px-3 py-2.5 text-slate-500 dark:border-slate-700 dark:text-slate-400"
@@ -109,7 +116,7 @@ export default function Sidebar({ onClose }) {
                   </span>
                 </div>
                 <span className="rounded-md bg-[var(--accent-soft)] px-2 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]">
-                  Pro
+                  Paid
                 </span>
               </div>
             ) : (

@@ -191,6 +191,440 @@ img {
   color: var(--text-on-inverse);
 }
 
+.route-loader-brand {
+  animation: route-loader-brand 1.8s ease-in-out infinite;
+}
+
+.route-loader-progress {
+  width: 42%;
+  animation: route-loader-progress 1.6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+.route-loader-skeleton {
+  position: relative;
+  overflow: hidden;
+}
+
+.route-loader-skeleton::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.72),
+    transparent
+  );
+  animation: route-loader-sheen 1.75s ease-in-out infinite;
+}
+
+html.dark .route-loader-skeleton::after {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.08),
+    transparent
+  );
+}
+
+.route-loader-icon {
+  animation: route-loader-icon 1.4s ease-in-out infinite;
+}
+
+.clerk-profile-section,
+.clerk-profile-section .cl-rootBox,
+.clerk-profile-section .cl-cardBox,
+.clerk-profile-section .cl-card {
+  width: 100%;
+  max-width: none;
+}
+
+.clerk-profile-section .cl-card {
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.clerk-profile-section .cl-cardBox {
+  box-shadow: none;
+  background: transparent;
+}
+
+.clerk-profile-section .cl-navbar {
+  width: 100%;
+}
+
+.clerk-pricing-table,
+.clerk-profile-section {
+  color: var(--text-main);
+}
+
+.cl-organizationSwitcherTrigger,
+.cl-userButtonTrigger {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.cl-organizationSwitcherTrigger [class*="cl-organizationPreview"],
+.cl-organizationSwitcherTrigger span,
+.cl-organizationSwitcherTrigger p,
+.cl-userButtonTrigger [class*="cl-userPreview"],
+.cl-userButtonTrigger span,
+.cl-userButtonTrigger p {
+  color: inherit !important;
+}
+
+body.public-auth-active {
+  color-scheme: light;
+}
+
+body.public-auth-active .cl-card,
+body.public-auth-active .cl-cardBox,
+body.public-auth-active .cl-modalContent {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 24px 70px -36px rgba(15, 23, 42, 0.48) !important;
+}
+
+body.public-auth-active .cl-headerTitle,
+body.public-auth-active .cl-formFieldLabel,
+body.public-auth-active .cl-formFieldInput,
+body.public-auth-active .cl-formFieldInput *,
+body.public-auth-active .cl-socialButtonsBlockButton,
+body.public-auth-active .cl-socialButtonsBlockButton *,
+body.public-auth-active .cl-identityPreviewText,
+body.public-auth-active .cl-identityPreviewText *,
+body.public-auth-active .cl-footerActionText {
+  color: #0f172a !important;
+}
+
+body.public-auth-active .cl-headerSubtitle,
+body.public-auth-active .cl-dividerText,
+body.public-auth-active .cl-formFieldHintText,
+body.public-auth-active .cl-footerActionText {
+  color: #64748b !important;
+}
+
+body.public-auth-active .cl-formFieldInput,
+body.public-auth-active .cl-input,
+body.public-auth-active .cl-otpCodeFieldInput {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+  caret-color: #0f766e !important;
+}
+
+body.public-auth-active .cl-formFieldInput::placeholder,
+body.public-auth-active .cl-input::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+body.public-auth-active .cl-socialButtonsBlockButton {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+body.public-auth-active .cl-socialButtonsBlockButton:hover {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+body.public-auth-active .cl-dividerLine {
+  background: #e2e8f0 !important;
+}
+
+body.public-auth-active .cl-footerActionLink,
+body.public-auth-active .cl-formFieldAction,
+body.public-auth-active .cl-formButtonReset {
+  color: #0f766e !important;
+}
+
+body.public-auth-active .cl-formButtonPrimary {
+  background: #10232d !important;
+  color: #ffffff !important;
+}
+
+body.public-auth-active .cl-formButtonPrimary:hover {
+  background: #0f766e !important;
+}
+
+html.dark body:not(.public-auth-active) .cl-card,
+html.dark body:not(.public-auth-active) .cl-cardBox,
+html.dark body:not(.public-auth-active) .cl-modalContent,
+html.dark body:not(.public-auth-active) .cl-popoverBox,
+html.dark body:not(.public-auth-active) .cl-userButtonPopoverCard,
+html.dark body:not(.public-auth-active) .cl-organizationSwitcherPopoverCard,
+html.dark body:not(.public-auth-active) .cl-navbar {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text-main) !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+html.dark body:not(.public-auth-active) .clerk-profile-section .cl-card {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html.dark body:not(.public-auth-active) .clerk-profile-section .cl-cardBox {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+html.dark body:not(.public-auth-active) .cl-organizationSwitcherTrigger,
+html.dark body:not(.public-auth-active) .cl-userButtonTrigger,
+html.dark body:not(.public-auth-active) .cl-menuButton,
+html.dark body:not(.public-auth-active) .cl-selectButton {
+  background: var(--surface-inverse) !important;
+  border: 1px solid var(--border-strong) !important;
+  color: var(--text-main) !important;
+}
+
+html.dark body:not(.public-auth-active) .cl-organizationSwitcherTrigger:hover,
+html.dark body:not(.public-auth-active) .cl-userButtonTrigger:hover,
+html.dark body:not(.public-auth-active) .cl-menuButton:hover,
+html.dark body:not(.public-auth-active) .cl-selectButton:hover {
+  background: var(--surface-inverse-soft) !important;
+  border-color: var(--accent-soft-strong) !important;
+}
+
+html.dark body:not(.public-auth-active) .cl-organizationSwitcherTrigger *,
+html.dark body:not(.public-auth-active) .cl-userButtonTrigger *,
+html.dark body:not(.public-auth-active) .cl-organizationPreviewTextContainer,
+html.dark body:not(.public-auth-active) .cl-organizationPreviewMainIdentifier,
+html.dark body:not(.public-auth-active) .cl-userPreviewMainIdentifier,
+html.dark body:not(.public-auth-active) .cl-menuItemLabel,
+html.dark body:not(.public-auth-active) .cl-headerTitle,
+html.dark body:not(.public-auth-active) .cl-pageTitle,
+html.dark body:not(.public-auth-active) .cl-profileSectionTitleText,
+html.dark body:not(.public-auth-active) .cl-formFieldLabel,
+html.dark body:not(.public-auth-active) .cl-breadcrumbsItem,
+html.dark body:not(.public-auth-active) .cl-accordionTriggerButton,
+html.dark body:not(.public-auth-active) .cl-apiKeysPageTitle,
+html.dark body:not(.public-auth-active) .cl-pricingTableCardTitle {
+  color: var(--text-main) !important;
+  opacity: 1 !important;
+}
+
+html.dark body:not(.public-auth-active) .cl-organizationPreviewSecondaryIdentifier,
+html.dark body:not(.public-auth-active) .cl-userPreviewSecondaryIdentifier,
+html.dark body:not(.public-auth-active) .cl-headerSubtitle,
+html.dark body:not(.public-auth-active) .cl-pageSubtitle,
+html.dark body:not(.public-auth-active) .cl-profileSectionContent,
+html.dark body:not(.public-auth-active) .cl-formFieldHintText,
+html.dark body:not(.public-auth-active) .cl-navbarButton,
+html.dark body:not(.public-auth-active) .cl-menuItemSubtext,
+html.dark body:not(.public-auth-active) .cl-apiKeysPageDescription,
+html.dark body:not(.public-auth-active) .cl-pricingTableCardDescription {
+  color: var(--text-muted) !important;
+  opacity: 1 !important;
+}
+
+html.dark body:not(.public-auth-active) .cl-navbarButton:hover,
+html.dark body:not(.public-auth-active) .cl-navbarButtonActive,
+html.dark body:not(.public-auth-active) .cl-menuItem:hover,
+html.dark body:not(.public-auth-active) .cl-organizationSwitcherPopoverActionButton:hover,
+html.dark body:not(.public-auth-active) .cl-userButtonPopoverActionButton:hover {
+  background: var(--surface-inverse-soft) !important;
+  color: var(--text-main) !important;
+}
+
+html.dark body:not(.public-auth-active) .cl-dividerLine,
+html.dark body:not(.public-auth-active) .cl-profileSection,
+html.dark body:not(.public-auth-active) .cl-accordionContent,
+html.dark body:not(.public-auth-active) .cl-menuList,
+html.dark body:not(.public-auth-active) .cl-menuItem,
+html.dark body:not(.public-auth-active) .cl-formFieldInput,
+html.dark body:not(.public-auth-active) .cl-tagInputContainer,
+html.dark body:not(.public-auth-active) .cl-otpCodeFieldInput,
+html.dark body:not(.public-auth-active) .cl-pricingTableCard {
+  border-color: var(--border) !important;
+}
+
+html.dark body:not(.public-auth-active) .cl-formFieldInput,
+html.dark body:not(.public-auth-active) .cl-input,
+html.dark body:not(.public-auth-active) .cl-textarea,
+html.dark body:not(.public-auth-active) .cl-tagInputContainer,
+html.dark body:not(.public-auth-active) .cl-otpCodeFieldInput {
+  background: var(--surface-soft) !important;
+  color: var(--text-main) !important;
+  caret-color: var(--accent) !important;
+}
+
+html.dark body:not(.public-auth-active) .cl-formFieldInput::placeholder,
+html.dark body:not(.public-auth-active) .cl-input::placeholder,
+html.dark body:not(.public-auth-active) .cl-textarea::placeholder {
+  color: var(--text-soft) !important;
+  opacity: 1 !important;
+}
+
+.cl-formButtonPrimary {
+  display: inline-flex !important;
+  min-height: 44px !important;
+  width: 100% !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  background: #10232d !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  box-shadow: 0 14px 30px -20px rgba(15, 23, 42, 0.55) !important;
+}
+
+.cl-formButtonPrimary:hover {
+  background: #0f766e !important;
+}
+
+.cl-formButtonPrimary:disabled {
+  background: #cbd5e1 !important;
+  color: #475569 !important;
+  cursor: not-allowed !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+}
+
+.cl-formButtonPrimary span,
+.cl-formButtonPrimary svg {
+  color: currentColor !important;
+  opacity: 1 !important;
+}
+
+.clerk-profile-section .cl-profileSectionPrimaryButton,
+.clerk-profile-section button[class*="invite" i],
+.clerk-profile-section button[class*="primary" i],
+.clerk-profile-section a[class*="invite" i],
+.cl-organizationSwitcherPopoverCard button[class*="invite" i],
+.cl-organizationSwitcherPopoverCard button[class*="primary" i] {
+  display: inline-flex !important;
+  min-height: 36px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  border: 1px solid #10232d !important;
+  border-radius: 8px !important;
+  background: #10232d !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.clerk-profile-section .cl-profileSectionPrimaryButton *,
+.clerk-profile-section button[class*="invite" i] *,
+.clerk-profile-section button[class*="primary" i] *,
+.clerk-profile-section a[class*="invite" i] *,
+.cl-organizationSwitcherPopoverCard button[class*="invite" i] *,
+.cl-organizationSwitcherPopoverCard button[class*="primary" i] * {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+html.dark body:not(.public-auth-active) .clerk-profile-section .cl-profileSectionPrimaryButton,
+html.dark body:not(.public-auth-active) .clerk-profile-section button[class*="invite" i],
+html.dark body:not(.public-auth-active) .clerk-profile-section button[class*="primary" i],
+html.dark body:not(.public-auth-active) .clerk-profile-section a[class*="invite" i],
+html.dark body:not(.public-auth-active) .cl-organizationSwitcherPopoverCard button[class*="invite" i],
+html.dark body:not(.public-auth-active) .cl-organizationSwitcherPopoverCard button[class*="primary" i] {
+  border-color: #0f766e !important;
+  background: #0f766e !important;
+  color: #ffffff !important;
+}
+
+html.dark body:not(.public-auth-active) .cl-formButtonPrimary {
+  background: #0f766e !important;
+  color: #ffffff !important;
+}
+
+html.dark body:not(.public-auth-active) .cl-formButtonPrimary:hover {
+  background: #14b8a6 !important;
+}
+
+html.dark body:not(.public-auth-active) .cl-formButtonPrimary:disabled {
+  background: var(--surface-muted) !important;
+  color: var(--text-muted) !important;
+}
+
+html.dark body:not(.public-auth-active) .cl-footerActionLink,
+html.dark body:not(.public-auth-active) .cl-formButtonReset,
+html.dark body:not(.public-auth-active) .cl-profileSectionPrimaryButton,
+html.dark body:not(.public-auth-active) .cl-apiKeysPageLink {
+  color: var(--accent) !important;
+}
+
+html.dark body:not(.public-auth-active) .cl-formFieldErrorText,
+html.dark body:not(.public-auth-active) .cl-alertText {
+  color: #fda4af !important;
+}
+
+html.dark body:not(.public-auth-active) .cl-badge,
+html.dark body:not(.public-auth-active) .cl-tag {
+  background: var(--accent-soft) !important;
+  border-color: var(--accent-soft-strong) !important;
+  color: var(--accent) !important;
+}
+
+html.dark body:not(.public-auth-active) .cl-organizationSwitcherTrigger svg,
+html.dark body:not(.public-auth-active) .cl-userButtonTrigger svg,
+html.dark body:not(.public-auth-active) .cl-menuButton svg,
+html.dark body:not(.public-auth-active) .cl-selectButton svg {
+  color: var(--text-main) !important;
+  stroke: currentColor !important;
+}
+
+@keyframes route-loader-brand {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(15, 118, 110, 0.18);
+  }
+
+  50% {
+    box-shadow: 0 0 0 8px rgba(15, 118, 110, 0);
+  }
+}
+
+@keyframes route-loader-progress {
+  0% {
+    transform: translateX(-105%) scaleX(0.7);
+  }
+
+  50% {
+    transform: translateX(85%) scaleX(1);
+  }
+
+  100% {
+    transform: translateX(250%) scaleX(0.7);
+  }
+}
+
+@keyframes route-loader-sheen {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes route-loader-icon {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.82;
+  }
+
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
 .badge-accent {
   display: inline-flex;
   align-items: center;
@@ -264,6 +698,50 @@ a[class*="hover:bg-teal-700"]:hover * {
 .button-secondary:hover {
   border-color: var(--border-strong);
   background: var(--surface-soft);
+}
+
+html.dark .dashboard-shell .button-primary {
+  background: #0f766e !important;
+  border-color: #14b8a6 !important;
+  color: #ffffff !important;
+  box-shadow: 0 16px 32px -24px rgba(20, 184, 166, 0.72);
+}
+
+html.dark .dashboard-shell .button-primary *,
+html.dark .dashboard-shell button[class~="bg-[#10232d]"] *,
+html.dark .dashboard-shell button[class~="bg-slate-900"] * {
+  color: #ffffff !important;
+}
+
+html.dark .dashboard-shell .button-primary:hover {
+  background: #115e59 !important;
+  border-color: #2dd4bf !important;
+}
+
+html.dark .dashboard-shell .button-primary:disabled,
+html.dark .dashboard-shell button[class*="disabled:bg-slate"]:disabled {
+  background: #334155 !important;
+  border-color: #475569 !important;
+  color: #cbd5e1 !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+html.dark .dashboard-shell .button-primary:disabled *,
+html.dark .dashboard-shell button[class*="disabled:bg-slate"]:disabled * {
+  color: #cbd5e1 !important;
+}
+
+html.dark .dashboard-shell .button-secondary {
+  background: #111827 !important;
+  border-color: #334155 !important;
+  color: #e5e7eb !important;
+}
+
+html.dark .dashboard-shell .button-secondary:hover {
+  background: #0f172a !important;
+  border-color: #475569 !important;
 }
 
 .button-danger {

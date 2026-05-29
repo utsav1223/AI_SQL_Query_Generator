@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlignLeft, Bot, BrainCircuit, SearchCheck, ShieldCheck, Sparkles, WandSparkles, Zap } from "lucide-react";
+import { AlignLeft, Bot, BrainCircuit, Database, SearchCheck, ShieldCheck, Sparkles, WandSparkles, Zap } from "lucide-react";
 
 const icons = [Sparkles, BrainCircuit, WandSparkles, Bot];
 
@@ -22,6 +22,12 @@ const modeSteps = {
     "Aligning clauses",
     "Preparing formatted SQL"
   ],
+  schema: [
+    "Reading product brief",
+    "Finding entities and relationships",
+    "Designing tables and keys",
+    "Writing schema DDL"
+  ],
   validate: [
     "Checking syntax",
     "Reviewing logic",
@@ -40,6 +46,7 @@ const modeMeta = {
   generate: { label: "Generating SQL", icon: Sparkles },
   optimize: { label: "Optimizing SQL", icon: Zap },
   format: { label: "Formatting SQL", icon: AlignLeft },
+  schema: { label: "Generating Schema", icon: Database },
   validate: { label: "Validating SQL", icon: ShieldCheck },
   explain: { label: "Explaining SQL", icon: SearchCheck }
 };

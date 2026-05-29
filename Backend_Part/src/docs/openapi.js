@@ -4,7 +4,7 @@ const openApiDocument = {
     title: "AI SQL Studio API",
     version: "1.0.0",
     description:
-      "Express API for authentication, AI SQL tools, query history, schema storage, billing, feedback, and admin operations."
+      "Express API for Clerk-authenticated AI SQL tools, query history, schema storage, Razorpay billing, feedback, and admin operations."
   },
   servers: [
     {
@@ -13,6 +13,7 @@ const openApiDocument = {
     }
   ],
   tags: [
+    { name: "System" },
     { name: "Auth" },
     { name: "AI" },
     { name: "Queries" },
@@ -23,10 +24,16 @@ const openApiDocument = {
   ],
   components: {
     securitySchemes: {
+      clerkBearer: {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT"
+      },
       userCookie: {
         type: "apiKey",
         in: "cookie",
-        name: "sql_studio_token"
+        name: "sql_studio_token",
+        description: "Legacy migration cookie. Disabled unless ENABLE_LEGACY_JWT_AUTH=true."
       },
       adminCookie: {
         type: "apiKey",
@@ -43,21 +50,13 @@ const openApiDocument = {
           data: { type: "object" }
         }
       },
-      AuthCredentials: {
-        type: "object",
-        required: ["email", "password"],
-        properties: {
-          email: { type: "string", format: "email" },
-          password: { type: "string", minLength: 8 }
-        }
-      },
       AIRequest: {
         type: "object",
         required: ["mode"],
         properties: {
           mode: {
             type: "string",
-            enum: ["generate", "optimize", "validate", "explain", "format"]
+            enum: ["generate", "optimize", "validate", "explain", "format", "schema"]
           },
           prompt: { type: "string" },
           sql: { type: "string" },
@@ -90,101 +89,32 @@ const openApiDocument = {
     }
   },
   paths: {
-    "/auth/register": {
-      post: {
-        tags: ["Auth"],
-        summary: "Register a user",
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                allOf: [
-                  { $ref: "#/components/schemas/AuthCredentials" },
-                  {
-                    type: "object",
-                    required: ["name"],
-                    properties: {
-                      name: { type: "string" }
-                    }
-                  }
-                ]
-              }
-            }
-          }
-        },
-        responses: {
-          201: { description: "Registration successful" },
-          400: { description: "Validation failed" },
-          429: { $ref: "#/components/responses/RateLimited" }
-        }
-      }
-    },
-    "/auth/login": {
-      post: {
-        tags: ["Auth"],
-        summary: "Login and set the httpOnly user session cookie",
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: { $ref: "#/components/schemas/AuthCredentials" }
-            }
-          }
-        },
-        responses: {
-          200: { description: "Login successful" },
-          401: { description: "Invalid credentials" },
-          429: { $ref: "#/components/responses/RateLimited" }
-        }
-      }
-    },
     "/auth/logout": {
       post: {
         tags: ["Auth"],
-        summary: "Clear the user session cookie",
+        summary: "Clear the legacy user session cookie",
         responses: {
           200: { description: "Logout successful" }
+        }
+      }
+    },
+    "/health": {
+      get: {
+        tags: ["System"],
+        summary: "Health check for deployment platforms",
+        responses: {
+          200: { description: "Service is healthy" }
         }
       }
     },
     "/auth/me": {
       get: {
         tags: ["Auth"],
-        summary: "Get the current user profile",
-        security: [{ userCookie: [] }],
+        summary: "Get the current Clerk-authenticated app profile",
+        security: [{ clerkBearer: [] }, { userCookie: [] }],
         responses: {
           200: { description: "User profile" },
           401: { $ref: "#/components/responses/Unauthorized" }
-        }
-      }
-    },
-    "/auth/forgot-password": {
-      post: {
-        tags: ["Auth"],
-        summary: "Send a password reset OTP",
-        responses: {
-          200: { description: "OTP sent when the request is accepted" },
-          429: { $ref: "#/components/responses/RateLimited" }
-        }
-      }
-    },
-    "/auth/verify-otp": {
-      post: {
-        tags: ["Auth"],
-        summary: "Verify OTP and reset password",
-        responses: {
-          200: { description: "Password reset successful" }
-        }
-      }
-    },
-    "/auth/google": {
-      get: {
-        tags: ["Auth"],
-        summary: "Start Google OAuth login",
-        responses: {
-          302: { description: "Redirects to Google OAuth" },
-          503: { description: "Google OAuth is not configured" }
         }
       }
     },
@@ -192,7 +122,7 @@ const openApiDocument = {
       post: {
         tags: ["AI"],
         summary: "Run an AI SQL tool",
-        security: [{ userCookie: [] }],
+        security: [{ clerkBearer: [] }, { userCookie: [] }],
         requestBody: {
           required: true,
           content: {
@@ -213,7 +143,7 @@ const openApiDocument = {
       get: {
         tags: ["Queries"],
         summary: "List query history with pagination, search, mode filter, and sort",
-        security: [{ userCookie: [] }],
+        security: [{ clerkBearer: [] }, { userCookie: [] }],
         parameters: [
           { name: "page", in: "query", schema: { type: "integer", minimum: 1 } },
           { name: "limit", in: "query", schema: { type: "integer", minimum: 1, maximum: 50 } },
@@ -231,7 +161,7 @@ const openApiDocument = {
       get: {
         tags: ["Queries"],
         summary: "Get user dashboard query overview",
-        security: [{ userCookie: [] }],
+        security: [{ clerkBearer: [] }, { userCookie: [] }],
         responses: {
           200: { description: "Overview metrics" }
         }
@@ -241,7 +171,7 @@ const openApiDocument = {
       delete: {
         tags: ["Queries"],
         summary: "Delete a saved query",
-        security: [{ userCookie: [] }],
+        security: [{ clerkBearer: [] }, { userCookie: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           200: { description: "Query deleted" },
@@ -253,7 +183,7 @@ const openApiDocument = {
       patch: {
         tags: ["Queries"],
         summary: "Toggle a Pro user's pinned query",
-        security: [{ userCookie: [] }],
+        security: [{ clerkBearer: [] }, { userCookie: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           200: { description: "Pin state updated" },
@@ -265,7 +195,7 @@ const openApiDocument = {
       patch: {
         tags: ["Queries"],
         summary: "Toggle a Pro user's favorite query",
-        security: [{ userCookie: [] }],
+        security: [{ clerkBearer: [] }, { userCookie: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           200: { description: "Favorite state updated" },
@@ -277,7 +207,7 @@ const openApiDocument = {
       patch: {
         tags: ["Queries"],
         summary: "Update a Pro user's query tags",
-        security: [{ userCookie: [] }],
+        security: [{ clerkBearer: [] }, { userCookie: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           200: { description: "Tags updated" },
@@ -289,7 +219,7 @@ const openApiDocument = {
       post: {
         tags: ["Queries"],
         summary: "Track copy or export activity for analytics",
-        security: [{ userCookie: [] }],
+        security: [{ clerkBearer: [] }, { userCookie: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           200: { description: "Query action tracked" },
@@ -301,21 +231,29 @@ const openApiDocument = {
       get: {
         tags: ["Schema"],
         summary: "Get saved schema context",
-        security: [{ userCookie: [] }],
+        security: [{ clerkBearer: [] }, { userCookie: [] }],
         responses: { 200: { description: "Saved schema" } }
       },
       post: {
         tags: ["Schema"],
         summary: "Save schema context",
-        security: [{ userCookie: [] }],
+        security: [{ clerkBearer: [] }, { userCookie: [] }],
         responses: { 200: { description: "Schema saved" } }
+      }
+    },
+    "/payment/current": {
+      get: {
+        tags: ["Payments"],
+        summary: "Get current billing state for the active workspace",
+        security: [{ clerkBearer: [] }, { userCookie: [] }],
+        responses: { 200: { description: "Billing state" } }
       }
     },
     "/payment/create-payment-link": {
       post: {
         tags: ["Payments"],
-        summary: "Create a Razorpay hosted payment link",
-        security: [{ userCookie: [] }],
+        summary: "Create a Razorpay hosted payment link for Pro or Team",
+        security: [{ clerkBearer: [] }, { userCookie: [] }],
         responses: {
           200: { description: "Payment link created" },
           503: { description: "Payment service not configured" }
@@ -326,7 +264,7 @@ const openApiDocument = {
       post: {
         tags: ["Payments"],
         summary: "Verify hosted payment link callback",
-        security: [{ userCookie: [] }],
+        security: [{ clerkBearer: [] }, { userCookie: [] }],
         responses: { 200: { description: "Payment link verified" } }
       }
     },
@@ -343,31 +281,33 @@ const openApiDocument = {
     "/payment/invoices": {
       get: {
         tags: ["Payments"],
-        summary: "List the current user's invoices",
-        security: [{ userCookie: [] }],
+        summary: "List invoices for the active personal or organization workspace",
+        security: [{ clerkBearer: [] }, { userCookie: [] }],
         responses: { 200: { description: "Invoice list" } }
       }
     },
     "/payment/downgrade": {
       post: {
         tags: ["Payments"],
-        summary: "Downgrade the current user to Free",
-        security: [{ userCookie: [] }],
+        summary: "Downgrade the active personal or organization workspace to Free",
+        security: [{ clerkBearer: [] }, { userCookie: [] }],
         responses: { 200: { description: "Plan downgraded" } }
       }
     },
     "/feedback": {
-      get: {
-        tags: ["Feedback"],
-        summary: "List current user's recent feedback",
-        security: [{ userCookie: [] }],
-        responses: { 200: { description: "Feedback history" } }
-      },
       post: {
         tags: ["Feedback"],
         summary: "Submit feedback",
-        security: [{ userCookie: [] }],
+        security: [{ clerkBearer: [] }, { userCookie: [] }],
         responses: { 201: { description: "Feedback submitted" } }
+      }
+    },
+    "/feedback/mine": {
+      get: {
+        tags: ["Feedback"],
+        summary: "List current user's recent feedback",
+        security: [{ clerkBearer: [] }, { userCookie: [] }],
+        responses: { 200: { description: "Feedback history" } }
       }
     },
     "/admin/login": {
@@ -384,7 +324,7 @@ const openApiDocument = {
       get: {
         tags: ["Admin"],
         summary: "Get admin dashboard overview",
-        security: [{ adminCookie: [] }],
+        security: [{ clerkBearer: [] }, { adminCookie: [] }],
         responses: { 200: { description: "Admin overview" } }
       }
     },
@@ -392,15 +332,15 @@ const openApiDocument = {
       get: {
         tags: ["Admin"],
         summary: "List users with pagination and search",
-        security: [{ adminCookie: [] }],
+        security: [{ clerkBearer: [] }, { adminCookie: [] }],
         responses: { 200: { description: "User list" } }
       }
     },
     "/admin/users/{userId}/moderate": {
-      patch: {
+      post: {
         tags: ["Admin"],
         summary: "Apply a moderated user action with a reason",
-        security: [{ adminCookie: [] }],
+        security: [{ clerkBearer: [] }, { adminCookie: [] }],
         parameters: [{ name: "userId", in: "path", required: true, schema: { type: "string" } }],
         responses: { 200: { description: "Moderation action applied" } }
       }
@@ -409,7 +349,7 @@ const openApiDocument = {
       get: {
         tags: ["Admin"],
         summary: "List feedback for triage",
-        security: [{ adminCookie: [] }],
+        security: [{ clerkBearer: [] }, { adminCookie: [] }],
         responses: { 200: { description: "Feedback list" } }
       }
     },
@@ -417,7 +357,7 @@ const openApiDocument = {
       get: {
         tags: ["Admin"],
         summary: "List security events for review",
-        security: [{ adminCookie: [] }],
+        security: [{ clerkBearer: [] }, { adminCookie: [] }],
         responses: { 200: { description: "Security event list" } }
       }
     }
