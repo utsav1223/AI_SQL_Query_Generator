@@ -197,8 +197,8 @@ export default function Landing() {
   }
 
   return (
-    <div className="public-page bg-[#f6f8fb] text-slate-950">
-      <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
+    <div className="public-page bg-[#f6f8fb] pt-[60px] text-slate-950">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
         <div className="mx-auto flex min-h-[60px] w-full max-w-7xl items-center justify-between gap-3 px-4 py-2 sm:px-6 lg:px-8">
           <Link to="/" className="inline-flex min-w-0 items-center gap-3">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#10232d] text-teal-300">

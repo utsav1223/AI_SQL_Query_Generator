@@ -72,7 +72,7 @@ export default function Navbar({ onMenuClick }) {
     };
 
   return (
-    <header className="sticky top-0 z-30 border-b border-[var(--border)] bg-[var(--app-bg)]/90 backdrop-blur-xl">
+    <header className="fixed inset-x-0 top-0 z-30 border-b border-[var(--border)] bg-[var(--app-bg)]/90 backdrop-blur-xl lg:left-[260px]">
       <div className="mx-auto flex w-full max-w-[1500px] items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-3">
           <button

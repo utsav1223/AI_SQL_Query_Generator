@@ -84,8 +84,8 @@ export default function AdminDashboard() {
   const chartTooltipBorder = isDark ? "#334155" : "#e2e8f0";
 
   return (
-    <div className={`admin-shell min-h-screen overflow-x-hidden ${isDark ? "bg-slate-950 text-slate-100" : "bg-slate-100 text-slate-900"}`}>
-      <header className={`sticky top-0 z-30 border-b shadow-sm backdrop-blur-xl ${isDark ? "border-slate-800 bg-slate-950/88" : "border-slate-200 bg-white/88"}`}>
+    <div className={`admin-shell min-h-screen overflow-x-hidden pt-[136px] sm:pt-[72px] ${isDark ? "bg-slate-950 text-slate-100" : "bg-slate-100 text-slate-900"}`}>
+      <header className={`fixed inset-x-0 top-0 z-30 border-b shadow-sm backdrop-blur-xl ${isDark ? "border-slate-800 bg-slate-950/88" : "border-slate-200 bg-white/88"}`}>
         <div className="mx-auto flex w-full max-w-[1500px] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <div className="min-w-0">
             <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-emerald-500">Admin Dashboard</p>

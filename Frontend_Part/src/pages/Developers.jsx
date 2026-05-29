@@ -15,8 +15,8 @@ const stagger = {
 
 export default function Developers() {
   return (
-    <div className="public-page">
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/82 backdrop-blur-xl">
+    <div className="public-page pt-[60px]">
+      <header className="fixed inset-x-0 top-0 z-40 border-b border-slate-200 bg-white/82 backdrop-blur-xl">
         <div className="mx-auto flex min-h-[60px] w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-2 sm:px-6 lg:px-8">
           <Link
             to="/"
