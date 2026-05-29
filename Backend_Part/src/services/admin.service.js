@@ -553,21 +553,36 @@ const getAdminOverview = async () => {
   };
 };
 
-const getAdminUsers = async ({ page, limit, search }) => {
+const getAdminUsers = async ({ page, limit, search, plan, status, accessStatus }) => {
   const safePage = Math.max(parseInt(page || "1", 10), 1);
   const safeLimit = Math.min(Math.max(parseInt(limit || "10", 10), 1), 50);
   const searchText = normalizeSearchText(search);
+  const planFilter = String(plan || "all").trim().toLowerCase();
+  const statusFilter = String(status || "all").trim().toLowerCase();
+  const accessStatusFilter = String(accessStatus || "all").trim().toLowerCase();
   const skip = (safePage - 1) * safeLimit;
   const safeSearch = escapeRegex(searchText);
 
-  const filter = searchText
-    ? {
-        $or: [
-          { name: { $regex: safeSearch, $options: "i" } },
-          { email: { $regex: safeSearch, $options: "i" } }
-        ]
-      }
-    : {};
+  const filter = {};
+
+  if (["free", "pro", "team", "business"].includes(planFilter)) {
+    filter.plan = planFilter;
+  }
+
+  if (["active", "suspended"].includes(statusFilter)) {
+    filter.status = statusFilter;
+  }
+
+  if (["approved", "pending", "rejected"].includes(accessStatusFilter)) {
+    filter.accessStatus = accessStatusFilter;
+  }
+
+  if (searchText) {
+    filter.$or = [
+      { name: { $regex: safeSearch, $options: "i" } },
+      { email: { $regex: safeSearch, $options: "i" } }
+    ];
+  }
 
   const [users, total] = await Promise.all([
     User.find(filter)

@@ -76,6 +76,9 @@ const adminLoginRules = [
 
 const adminUsersQueryRules = [
   ...paginationQuery,
+  query("plan").optional().isIn(["all", "free", "pro", "team", "business"]).withMessage("plan is invalid"),
+  query("status").optional().isIn(["all", "active", "suspended"]).withMessage("status is invalid"),
+  query("accessStatus").optional().isIn(["all", "approved", "pending", "rejected"]).withMessage("access status is invalid"),
   query("search").optional().isString().trim().isLength({ max: 120 }).withMessage("search is too long")
 ];
 

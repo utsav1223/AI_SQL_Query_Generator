@@ -31,6 +31,23 @@ const initialOverview = {
 
 export const FEEDBACK_STATUSES = ["all", "new", "reviewed", "resolved"];
 
+const escapeCsvValue = (value) => {
+  const text = String(value ?? "");
+  return `"${text.replace(/"/g, '""')}"`;
+};
+
+const downloadTextFile = (content, filename, type = "text/csv;charset=utf-8") => {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+};
+
 export function useAdminDashboardData() {
   const { confirmAction, ConfirmationDialog } = useConfirmationDialog();
   const [overview, setOverview] = useState(initialOverview);
@@ -38,6 +55,9 @@ export function useAdminDashboardData() {
   const [usersPagination, setUsersPagination] = useState({ total: 0, page: 1, limit: 10, pages: 1 });
   const [usersSearchInput, setUsersSearchInput] = useState("");
   const [usersSearchQuery, setUsersSearchQuery] = useState("");
+  const [userPlanFilter, setUserPlanFilter] = useState("all");
+  const [userStatusFilter, setUserStatusFilter] = useState("all");
+  const [userAccessFilter, setUserAccessFilter] = useState("all");
 
   const [feedbackItems, setFeedbackItems] = useState([]);
   const [feedbackPagination, setFeedbackPagination] = useState({ total: 0, page: 1, limit: 10, pages: 1 });
@@ -65,12 +85,20 @@ export function useAdminDashboardData() {
     }
   }, []);
 
-  const loadUsers = useCallback(async (page = 1, query = "") => {
+  const loadUsers = useCallback(async (page = 1, query = "", filters = {}) => {
     setLoadingUsers(true);
     try {
+      const resolvedFilters = {
+        plan: filters.plan ?? userPlanFilter,
+        status: filters.status ?? userStatusFilter,
+        accessStatus: filters.accessStatus ?? userAccessFilter
+      };
       const params = new URLSearchParams({
         page: String(page),
         limit: "10",
+        plan: resolvedFilters.plan,
+        status: resolvedFilters.status,
+        accessStatus: resolvedFilters.accessStatus,
         ...(query ? { search: query } : {})
       });
 
@@ -82,7 +110,7 @@ export function useAdminDashboardData() {
     } finally {
       setLoadingUsers(false);
     }
-  }, []);
+  }, [userAccessFilter, userPlanFilter, userStatusFilter]);
 
   const loadFeedback = useCallback(async (page = 1, status = "all", query = "") => {
     setLoadingFeedback(true);
@@ -106,9 +134,12 @@ export function useAdminDashboardData() {
 
   useEffect(() => {
     loadOverview();
-    loadUsers(1, "");
     loadFeedback(1, "all", "");
-  }, [loadFeedback, loadOverview, loadUsers]);
+  }, [loadFeedback, loadOverview]);
+
+  useEffect(() => {
+    loadUsers(1, usersSearchQuery);
+  }, [loadUsers, usersSearchQuery]);
 
   const proPercent = useMemo(() => {
     const total = overview.stats.totalUsers || 0;
@@ -129,7 +160,44 @@ export function useAdminDashboardData() {
     event.preventDefault();
     const value = usersSearchInput.trim();
     setUsersSearchQuery(value);
-    await loadUsers(1, value);
+  };
+
+  const handleUsersFilterChange = (filterName, value) => {
+    if (filterName === "plan") {
+      setUserPlanFilter(value);
+    } else if (filterName === "status") {
+      setUserStatusFilter(value);
+    } else if (filterName === "accessStatus") {
+      setUserAccessFilter(value);
+    }
+  };
+
+  const resetUsersFilters = () => {
+    setUserPlanFilter("all");
+    setUserStatusFilter("all");
+    setUserAccessFilter("all");
+    setUsersSearchInput("");
+    setUsersSearchQuery("");
+  };
+
+  const exportVisibleUsers = () => {
+    const rows = users.map((user) => [
+      user.name,
+      user.email,
+      user.plan,
+      user.status || "active",
+      user.accessStatus || "approved",
+      user.riskScore || 0,
+      user.createdAt ? new Date(user.createdAt).toISOString() : ""
+    ]);
+    const csv = [
+      ["Name", "Email", "Plan", "Status", "Access", "Risk Score", "Joined"],
+      ...rows
+    ]
+      .map((row) => row.map(escapeCsvValue).join(","))
+      .join("\n");
+
+    downloadTextFile(csv, `admin-users-page-${usersPagination.page}.csv`);
   };
 
   const handleFeedbackSearch = async (event) => {
@@ -302,6 +370,7 @@ export function useAdminDashboardData() {
     actioningId,
     ConfirmationDialog,
     error,
+    exportVisibleUsers,
     feedbackItems,
     feedbackPagination,
     feedbackSearchInput,
@@ -317,6 +386,7 @@ export function useAdminDashboardData() {
     handleSuspendToggle,
     handleTogglePlan,
     handleUsersSearch,
+    handleUsersFilterChange,
     loadFeedback,
     loadUsers,
     loadingFeedback,
@@ -330,6 +400,10 @@ export function useAdminDashboardData() {
     securityEvents,
     setFeedbackSearchInput,
     setUsersSearchInput,
+    resetUsersFilters,
+    userAccessFilter,
+    userPlanFilter,
+    userStatusFilter,
     users,
     usersPagination,
     usersSearchInput,

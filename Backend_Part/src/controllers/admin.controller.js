@@ -17,6 +17,7 @@ exports.adminLogin = asyncHandler(async (req, res) => {
   return sendResponse(res, {
     message: "Admin login successful",
     data: {
+      token: result.token,
       admin: result.admin
     }
   });

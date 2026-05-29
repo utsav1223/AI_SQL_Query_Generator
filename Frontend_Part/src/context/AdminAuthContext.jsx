@@ -52,6 +52,10 @@ export function AdminAuthProvider({ children }) {
       throw new Error("Invalid admin login response");
     }
 
+    if (data.token) {
+      writeJson(STORAGE_KEYS.adminToken, data.token);
+    }
+
     writeJson(STORAGE_KEYS.admin, data.admin);
     setAdmin(data.admin);
     return data.admin;

@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Clock3,
+  Download,
   Filter,
   LogOut,
   Moon,
@@ -34,6 +35,7 @@ export default function AdminDashboard() {
     actioningId,
     ConfirmationDialog,
     error,
+    exportVisibleUsers,
     feedbackItems,
     feedbackPagination,
     feedbackSearchInput,
@@ -48,6 +50,7 @@ export default function AdminDashboard() {
     handleSecurityEventStatusUpdate,
     handleSuspendToggle,
     handleTogglePlan,
+    handleUsersFilterChange,
     handleUsersSearch,
     loadFeedback,
     loadUsers,
@@ -59,9 +62,13 @@ export default function AdminDashboard() {
     planDistributionData,
     proPercent,
     refreshAll,
+    resetUsersFilters,
     securityEvents,
     setFeedbackSearchInput,
     setUsersSearchInput,
+    userAccessFilter,
+    userPlanFilter,
+    userStatusFilter,
     users,
     usersPagination,
     usersSearchInput,
@@ -77,6 +84,9 @@ export default function AdminDashboard() {
   const inputClass = isDark
     ? "bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-500 focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/20"
     : "bg-white border-slate-200 text-slate-800 placeholder:text-slate-300 focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-100";
+  const selectClass = isDark
+    ? "border-slate-700 bg-slate-900 text-slate-100 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20"
+    : "border-slate-200 bg-white text-slate-800 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100";
 
   const chartAxisColor = isDark ? "#94a3b8" : "#64748b";
   const chartGridColor = isDark ? "#334155" : "#e2e8f0";
@@ -301,6 +311,78 @@ export default function AdminDashboard() {
                   Search
                 </button>
               </form>
+            </div>
+
+            <div className={`mb-4 rounded-lg border p-3 ${subtleBgClass}`}>
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] xl:items-end">
+                <label className="min-w-0">
+                  <span className={`mb-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
+                    Plan
+                  </span>
+                  <select
+                    value={userPlanFilter}
+                    onChange={(event) => handleUsersFilterChange("plan", event.target.value)}
+                    className={`h-10 w-full rounded-md border px-3 text-sm font-semibold outline-none ${selectClass}`}
+                  >
+                    <option value="all">All Plans</option>
+                    <option value="free">Free</option>
+                    <option value="pro">Pro</option>
+                    <option value="team">Team</option>
+                    <option value="business">Business</option>
+                  </select>
+                </label>
+                <label className="min-w-0">
+                  <span className={`mb-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
+                    Status
+                  </span>
+                  <select
+                    value={userStatusFilter}
+                    onChange={(event) => handleUsersFilterChange("status", event.target.value)}
+                    className={`h-10 w-full rounded-md border px-3 text-sm font-semibold outline-none ${selectClass}`}
+                  >
+                    <option value="all">All Statuses</option>
+                    <option value="active">Active</option>
+                    <option value="suspended">Suspended</option>
+                  </select>
+                </label>
+                <label className="min-w-0">
+                  <span className={`mb-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
+                    Access
+                  </span>
+                  <select
+                    value={userAccessFilter}
+                    onChange={(event) => handleUsersFilterChange("accessStatus", event.target.value)}
+                    className={`h-10 w-full rounded-md border px-3 text-sm font-semibold outline-none ${selectClass}`}
+                  >
+                    <option value="all">All Access</option>
+                    <option value="approved">Approved</option>
+                    <option value="pending">Pending</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                </label>
+                <div className="grid gap-2 sm:grid-cols-2 xl:flex xl:w-[236px] xl:items-center">
+                  <button
+                    type="button"
+                    onClick={resetUsersFilters}
+                    className={`h-10 rounded-md border px-3 text-[10px] font-bold uppercase tracking-[0.12em] ${
+                      isDark
+                        ? "border-slate-600 text-slate-200 hover:border-slate-500"
+                        : "border-slate-200 text-slate-700 hover:border-slate-300"
+                    }`}
+                  >
+                    Reset
+                  </button>
+                  <button
+                    type="button"
+                    onClick={exportVisibleUsers}
+                    disabled={loadingUsers || users.length === 0}
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-emerald-600 px-3 text-[10px] font-bold uppercase tracking-[0.12em] text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Download size={13} />
+                    Export
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div className="md:hidden space-y-3">
