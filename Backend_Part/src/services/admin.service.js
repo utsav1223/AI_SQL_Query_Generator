@@ -12,9 +12,11 @@ const Feedback = require("../models/Feedback");
 const SecurityEvent = require("../models/SecurityEvent");
 const AdminAuditLog = require("../models/AdminAuditLog");
 const AccessAppeal = require("../models/AccessAppeal");
+const Notification = require("../models/Notification");
 const AppError = require("../utils/AppError");
 const { createSecurityEvent } = require("../utils/securityMonitor");
 const accessAppealService = require("./accessAppeal.service");
+const notificationService = require("./notification.service");
 const { getNextRenewalDate } = require("./subscription.service");
 
 const SYSTEM_ADMIN_PROFILE = {
@@ -366,7 +368,9 @@ const getAdminOverview = async () => {
     riskyUsers,
     recentAdminActions,
     pendingAccessAppeals,
-    recentAccessAppeals
+    recentAccessAppeals,
+    publishedNotifications,
+    recentNotifications
   ] = await Promise.all([
     User.countDocuments({}),
     User.countDocuments({ plan: { $in: ["pro", "team", "business"] } }),
@@ -483,7 +487,11 @@ const getAdminOverview = async () => {
     AccessAppeal.find({})
       .sort({ createdAt: -1 })
       .limit(5)
-      .populate("userId", "name email status accessStatus plan")
+      .populate("userId", "name email status accessStatus plan"),
+    Notification.countDocuments({ status: "published" }),
+    Notification.find({})
+      .sort({ createdAt: -1 })
+      .limit(5)
   ]);
 
   const totalRevenue = revenueSummary[0]?.totalRevenue || 0;
@@ -540,7 +548,8 @@ const getAdminOverview = async () => {
       pendingFeedback,
       pendingSecurityEvents,
       recentHighSeverityEvents,
-      pendingAccessAppeals
+      pendingAccessAppeals,
+      publishedNotifications
     },
     charts: {
       monthlyBusiness,
@@ -560,7 +569,8 @@ const getAdminOverview = async () => {
     recentSecurityEvents,
     riskyUsers,
     recentAdminActions,
-    recentAccessAppeals
+    recentAccessAppeals,
+    recentNotifications
   };
 };
 
@@ -695,6 +705,18 @@ const updateAccessAppealStatus = async (payload) => {
   return accessAppealService.updateAccessAppealStatus(payload);
 };
 
+const createNotification = async (payload) => {
+  return notificationService.createNotification(payload);
+};
+
+const getAdminNotifications = async (query) => {
+  return notificationService.getAdminNotifications(query);
+};
+
+const updateNotificationStatus = async (payload) => {
+  return notificationService.updateNotificationStatus(payload);
+};
+
 const getAdminSecurityEvents = async ({ page, limit, severity, status, search }) => {
   const safePage = Math.max(parseInt(page || "1", 10), 1);
   const safeLimit = Math.min(Math.max(parseInt(limit || "10", 10), 1), 50);
@@ -770,6 +792,9 @@ module.exports = {
   updateFeedbackStatus,
   getAdminAccessAppeals,
   updateAccessAppealStatus,
+  createNotification,
+  getAdminNotifications,
+  updateNotificationStatus,
   getAdminSecurityEvents,
   updateSecurityEventStatus
 };

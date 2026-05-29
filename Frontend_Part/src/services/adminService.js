@@ -22,11 +22,20 @@ export const adminService = {
   getAccessAppeals(queryString = "") {
     return adminApiRequest(`/admin/access-appeals${queryString ? `?${queryString}` : ""}`, "GET");
   },
+  getNotifications(queryString = "") {
+    return adminApiRequest(`/admin/notifications${queryString ? `?${queryString}` : ""}`, "GET");
+  },
+  createNotification(payload) {
+    return adminApiRequest("/admin/notifications", "POST", payload);
+  },
   moderateUser(userId, payload) {
     return adminApiRequest(`/admin/users/${userId}/moderate`, "POST", payload);
   },
   updateAccessAppealStatus(appealId, payload) {
     return adminApiRequest(`/admin/access-appeals/${appealId}/status`, "PATCH", payload);
+  },
+  updateNotificationStatus(notificationId, payload) {
+    return adminApiRequest(`/admin/notifications/${notificationId}/status`, "PATCH", payload);
   },
   updateFeedbackStatus(feedbackId, payload) {
     return adminApiRequest(`/admin/feedback/${feedbackId}/status`, "PATCH", payload);

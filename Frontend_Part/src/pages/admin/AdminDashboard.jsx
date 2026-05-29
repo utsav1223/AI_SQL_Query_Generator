@@ -1,14 +1,17 @@
 import { useContext } from "react";
 import {
   AlertTriangle,
+  Bell,
   CheckCircle2,
   Clock3,
   Download,
   Filter,
   LogOut,
+  Megaphone,
   Moon,
   RefreshCw,
   Search,
+  Send,
   Sun,
 } from "lucide-react";
 import {
@@ -26,7 +29,15 @@ import {
 import { ThemeContext } from "../../context/ThemeContext";
 import { AdminSummary } from "../../components/admin/AdminSummary";
 import { useAdminAuth } from "../../hooks/useAdminAuth";
-import { ACCESS_APPEAL_STATUSES, FEEDBACK_STATUSES, useAdminDashboardData } from "../../hooks/useAdminDashboardData";
+import {
+  ACCESS_APPEAL_STATUSES,
+  FEEDBACK_STATUSES,
+  NOTIFICATION_AUDIENCES,
+  NOTIFICATION_PRIORITIES,
+  NOTIFICATION_STATUSES,
+  NOTIFICATION_TYPES,
+  useAdminDashboardData
+} from "../../hooks/useAdminDashboardData";
 
 export default function AdminDashboard() {
   const { admin, logout } = useAdminAuth();
@@ -36,6 +47,8 @@ export default function AdminDashboard() {
     accessAppeals,
     accessAppealsPagination,
     accessAppealStatus,
+    adminNotifications,
+    adminNotificationsPagination,
     ConfirmationDialog,
     error,
     exportVisibleUsers,
@@ -52,6 +65,10 @@ export default function AdminDashboard() {
     handleFeedbackSearch,
     handleFeedbackStatusFilter,
     handleFeedbackStatusUpdate,
+    handleNotificationCreate,
+    handleNotificationFormChange,
+    handleNotificationStatusFilter,
+    handleNotificationStatusUpdate,
     handleSecurityEventStatusUpdate,
     handleSuspendToggle,
     handleTogglePlan,
@@ -59,12 +76,17 @@ export default function AdminDashboard() {
     handleUsersSearch,
     loadAccessAppeals,
     loadFeedback,
+    loadNotifications,
     loadUsers,
     loadingAccessAppeals,
     loadingFeedback,
+    loadingNotifications,
     loadingOverview,
     loadingUsers,
     monthlyBusinessData,
+    notificationForm,
+    notificationNotice,
+    notificationStatus,
     overview,
     planDistributionData,
     proPercent,
@@ -599,6 +621,205 @@ export default function AdminDashboard() {
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h3 className={`text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
+                    Notifications
+                  </h3>
+                  <p className={`mt-1 text-xs font-medium ${mutedTextClass}`}>
+                    Publish dashboard announcements and operational messages.
+                  </p>
+                </div>
+                <span className="inline-flex items-center gap-1.5 rounded-md bg-sky-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-sky-700">
+                  <Bell size={12} />
+                  Live: {overview.stats.publishedNotifications || 0}
+                </span>
+              </div>
+
+              <form onSubmit={handleNotificationCreate} className={`mb-4 rounded-lg border p-3 ${subtleBgClass}`}>
+                <div className="grid gap-3">
+                  <label className="min-w-0">
+                    <span className={`mb-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
+                      Title
+                    </span>
+                    <input
+                      value={notificationForm.title}
+                      onChange={(event) => handleNotificationFormChange("title", event.target.value)}
+                      placeholder="Maintenance window, product update, billing notice"
+                      className={`h-10 w-full rounded-md border px-3 text-sm font-semibold outline-none ${inputClass}`}
+                    />
+                  </label>
+                  <label className="min-w-0">
+                    <span className={`mb-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
+                      Message
+                    </span>
+                    <textarea
+                      value={notificationForm.message}
+                      onChange={(event) => handleNotificationFormChange("message", event.target.value)}
+                      rows={4}
+                      maxLength={2000}
+                      placeholder="Write a clear message users will see in their dashboard."
+                      className={`w-full resize-none rounded-md border px-3 py-2 text-sm font-semibold leading-6 outline-none ${inputClass}`}
+                    />
+                  </label>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <label className="min-w-0">
+                      <span className={`mb-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
+                        Type
+                      </span>
+                      <select
+                        value={notificationForm.type}
+                        onChange={(event) => handleNotificationFormChange("type", event.target.value)}
+                        className={`h-10 w-full rounded-md border px-3 text-sm font-semibold outline-none ${selectClass}`}
+                      >
+                        {NOTIFICATION_TYPES.map((type) => (
+                          <option key={type} value={type}>{type}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="min-w-0">
+                      <span className={`mb-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
+                        Audience
+                      </span>
+                      <select
+                        value={notificationForm.audience}
+                        onChange={(event) => handleNotificationFormChange("audience", event.target.value)}
+                        className={`h-10 w-full rounded-md border px-3 text-sm font-semibold outline-none ${selectClass}`}
+                      >
+                        {NOTIFICATION_AUDIENCES.map((audience) => (
+                          <option key={audience} value={audience}>{audience}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="min-w-0">
+                      <span className={`mb-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
+                        Priority
+                      </span>
+                      <select
+                        value={notificationForm.priority}
+                        onChange={(event) => handleNotificationFormChange("priority", event.target.value)}
+                        className={`h-10 w-full rounded-md border px-3 text-sm font-semibold outline-none ${selectClass}`}
+                      >
+                        {NOTIFICATION_PRIORITIES.map((priority) => (
+                          <option key={priority} value={priority}>{priority}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="min-w-0">
+                      <span className={`mb-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
+                        Status
+                      </span>
+                      <select
+                        value={notificationForm.status}
+                        onChange={(event) => handleNotificationFormChange("status", event.target.value)}
+                        className={`h-10 w-full rounded-md border px-3 text-sm font-semibold outline-none ${selectClass}`}
+                      >
+                        {NOTIFICATION_STATUSES.filter((status) => status !== "all").map((status) => (
+                          <option key={status} value={status}>{status}</option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={actioningId === "notification-create"}
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-slate-900 px-3 text-[10px] font-bold uppercase tracking-[0.12em] text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+                  >
+                    <Send size={13} />
+                    {actioningId === "notification-create" ? "Publishing" : "Publish Message"}
+                  </button>
+                </div>
+                {notificationNotice ? (
+                  <p className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
+                    {notificationNotice}
+                  </p>
+                ) : null}
+              </form>
+
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                {NOTIFICATION_STATUSES.map((status) => (
+                  <button
+                    key={status}
+                    type="button"
+                    onClick={() => handleNotificationStatusFilter(status)}
+                    className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] ${
+                      notificationStatus === status
+                        ? "border-emerald-300 bg-emerald-100 text-emerald-700"
+                        : isDark
+                        ? "border-slate-700 bg-slate-800 text-slate-300"
+                        : "border-slate-200 bg-white text-slate-500"
+                    }`}
+                  >
+                    <Filter size={11} />
+                    {status}
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-3 max-h-[340px] overflow-auto pr-1 custom-scrollbar">
+                {loadingNotifications ? (
+                  <FeedbackCardsSkeleton isDark={isDark} />
+                ) : adminNotifications.length === 0 ? (
+                  <p className={`text-sm font-semibold ${mutedTextClass}`}>No notifications found.</p>
+                ) : (
+                  adminNotifications.map((notification) => {
+                    const isBusy = actioningId === notification._id;
+                    return (
+                      <article key={notification._id} className={`rounded-lg border px-4 py-3 ${subtleBgClass}`}>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className={`inline-flex rounded-md px-2 py-1 text-[9px] font-bold uppercase tracking-[0.12em] ${notificationPriorityClass(notification.priority, isDark)}`}>
+                                {notification.priority || "normal"}
+                              </span>
+                              <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
+                                <Megaphone size={11} />
+                                {notification.audience || "all"}
+                              </span>
+                            </div>
+                            <p className={`mt-2 text-sm font-bold break-words ${isDark ? "text-slate-100" : "text-slate-900"}`}>
+                              {notification.title}
+                            </p>
+                          </div>
+                          <span className={`shrink-0 rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${notificationStatusClass(notification.status, isDark)}`}>
+                            {notification.status}
+                          </span>
+                        </div>
+                        <p className={`mt-2 text-[13px] leading-6 ${isDark ? "text-slate-300" : "text-slate-600"}`}>
+                          {notification.message}
+                        </p>
+                        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                          <span className={`text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
+                            <Clock3 size={12} className="mr-1 inline" />
+                            {notification.createdAt ? new Date(notification.createdAt).toLocaleString() : "Created"}
+                          </span>
+                          <select
+                            value={notification.status || "published"}
+                            disabled={isBusy}
+                            onChange={(event) => handleNotificationStatusUpdate(notification._id, event.target.value)}
+                            className={`h-8 rounded-md border px-2 text-[10px] font-bold uppercase tracking-[0.12em] outline-none ${isDark ? "border-slate-600 bg-slate-800 text-slate-200" : "border-slate-200 bg-white text-slate-700"}`}
+                          >
+                            {NOTIFICATION_STATUSES.filter((status) => status !== "all").map((status) => (
+                              <option key={status} value={status}>{status}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </article>
+                    );
+                  })
+                )}
+              </div>
+
+              <Pager
+                currentPage={adminNotificationsPagination.page}
+                totalPages={adminNotificationsPagination.pages}
+                onPrev={() => loadNotifications(adminNotificationsPagination.page - 1, notificationStatus)}
+                onNext={() => loadNotifications(adminNotificationsPagination.page + 1, notificationStatus)}
+                isDark={isDark}
+              />
+            </section>
+
+            <section className={`min-w-0 rounded-lg border p-5 shadow-sm ${surfaceClass}`}>
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 className={`text-[10px] font-bold uppercase tracking-[0.12em] ${mutedTextClass}`}>
                     Access Requests
                   </h3>
                   <p className={`mt-1 text-xs font-medium ${mutedTextClass}`}>
@@ -1058,6 +1279,18 @@ function appealStatusBadgeClass(status, isDark) {
   if (status === "in_review") return "bg-sky-100 text-sky-700";
   if (status === "closed") return isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700";
   return "bg-amber-100 text-amber-700";
+}
+
+function notificationPriorityClass(priority, isDark) {
+  if (priority === "urgent") return "bg-rose-100 text-rose-700";
+  if (priority === "important") return "bg-amber-100 text-amber-700";
+  return isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700";
+}
+
+function notificationStatusClass(status, isDark) {
+  if (status === "published") return "bg-emerald-100 text-emerald-700";
+  if (status === "draft") return "bg-sky-100 text-sky-700";
+  return isDark ? "bg-slate-700 text-slate-200" : "bg-slate-200 text-slate-700";
 }
 
 function accessBadgeClass(accessStatus, isDark) {

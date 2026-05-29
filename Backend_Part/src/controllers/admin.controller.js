@@ -110,6 +110,46 @@ exports.updateAccessAppealStatusByAdmin = asyncHandler(async (req, res) => {
   });
 });
 
+exports.createNotificationByAdmin = asyncHandler(async (req, res) => {
+  const notification = await adminService.createNotification({
+    adminId: req.admin?.adminId,
+    payload: req.body,
+    requestMeta: getRequestMeta(req)
+  });
+
+  return sendResponse(res, {
+    statusCode: 201,
+    message: "Notification created successfully",
+    data: {
+      notification
+    }
+  });
+});
+
+exports.getAdminNotifications = asyncHandler(async (req, res) => {
+  const notifications = await adminService.getAdminNotifications(req.query);
+
+  return sendResponse(res, {
+    message: "Notifications fetched successfully",
+    data: notifications
+  });
+});
+
+exports.updateNotificationStatusByAdmin = asyncHandler(async (req, res) => {
+  const notification = await adminService.updateNotificationStatus({
+    adminId: req.admin?.adminId,
+    notificationId: req.params.notificationId,
+    status: req.body?.status
+  });
+
+  return sendResponse(res, {
+    message: "Notification updated successfully",
+    data: {
+      notification
+    }
+  });
+});
+
 exports.updateFeedbackStatusByAdmin = asyncHandler(async (req, res) => {
   const feedback = await adminService.updateFeedbackStatus({
     feedbackId: req.params.feedbackId,

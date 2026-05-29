@@ -13,6 +13,10 @@ const MODERATION_ACTIONS = [
   "delete"
 ];
 const ACCESS_APPEAL_STATUSES = ["all", "new", "in_review", "resolved", "closed"];
+const NOTIFICATION_TYPES = ["announcement", "general", "maintenance", "billing", "security", "product"];
+const NOTIFICATION_PRIORITIES = ["normal", "important", "urgent"];
+const NOTIFICATION_AUDIENCES = ["all", "free", "paid"];
+const NOTIFICATION_STATUSES = ["all", "draft", "published", "archived"];
 
 const mongoIdParam = (name) =>
   param(name).isMongoId().withMessage(`${name} must be a valid MongoDB id`);
@@ -78,6 +82,14 @@ const accessAppealCreateRules = [
     .withMessage("message must be 10 to 2000 characters")
 ];
 
+const notificationListRules = [
+  query("limit").optional().isInt({ min: 1, max: 20 }).withMessage("limit must be between 1 and 20")
+];
+
+const notificationReadRules = [
+  mongoIdParam("notificationId")
+];
+
 const adminLoginRules = [
   body("userId").isString().trim().isLength({ min: 1, max: 120 }).withMessage("userId is required"),
   body("password").isString().isLength({ min: 1, max: 200 }).withMessage("password is required")
@@ -110,6 +122,24 @@ const adminAccessAppealsQueryRules = [
   query("search").optional().isString().trim().isLength({ max: 120 }).withMessage("search is too long")
 ];
 
+const adminNotificationsQueryRules = [
+  ...paginationQuery,
+  query("status").optional().isIn(NOTIFICATION_STATUSES).withMessage("status is invalid"),
+  query("audience").optional().isIn(NOTIFICATION_AUDIENCES).withMessage("audience is invalid"),
+  query("search").optional().isString().trim().isLength({ max: 120 }).withMessage("search is too long")
+];
+
+const notificationCreateRules = [
+  body("title").isString().trim().isLength({ min: 3, max: 140 }).withMessage("title must be 3 to 140 characters"),
+  body("message").isString().trim().isLength({ min: 10, max: 2000 }).withMessage("message must be 10 to 2000 characters"),
+  body("type").optional().isIn(NOTIFICATION_TYPES).withMessage("type is invalid"),
+  body("priority").optional().isIn(NOTIFICATION_PRIORITIES).withMessage("priority is invalid"),
+  body("audience").optional().isIn(NOTIFICATION_AUDIENCES).withMessage("audience is invalid"),
+  body("status").optional().isIn(NOTIFICATION_STATUSES.filter((status) => status !== "all")).withMessage("status is invalid"),
+  body("publishedAt").optional().isISO8601().withMessage("publishedAt must be a valid date"),
+  body("expiresAt").optional().isISO8601().withMessage("expiresAt must be a valid date")
+];
+
 const moderationRules = [
   mongoIdParam("userId"),
   body("action").isIn(MODERATION_ACTIONS).withMessage("moderation action is invalid"),
@@ -133,6 +163,11 @@ const accessAppealStatusRules = [
   body("adminNote").optional().isString().trim().isLength({ max: 1000 }).withMessage("adminNote is too long")
 ];
 
+const notificationStatusRules = [
+  mongoIdParam("notificationId"),
+  body("status").isIn(NOTIFICATION_STATUSES.filter((status) => status !== "all")).withMessage("status is invalid")
+];
+
 const paymentVerifyRules = [
   body("razorpay_order_id").isString().trim().isLength({ min: 1, max: 120 }).withMessage("razorpay_order_id is required"),
   body("razorpay_payment_id").isString().trim().isLength({ min: 1, max: 120 }).withMessage("razorpay_payment_id is required"),
@@ -151,6 +186,7 @@ module.exports = {
   accessAppealCreateRules,
   accessAppealStatusRules,
   adminAccessAppealsQueryRules,
+  adminNotificationsQueryRules,
   adminLoginRules,
   adminFeedbackQueryRules,
   adminSecurityEventsQueryRules,
@@ -160,6 +196,10 @@ module.exports = {
   feedbackStatusRules,
   mongoIdParam,
   moderationRules,
+  notificationCreateRules,
+  notificationListRules,
+  notificationReadRules,
+  notificationStatusRules,
   paginationQuery,
   paymentLinkVerifyRules,
   paymentVerifyRules,

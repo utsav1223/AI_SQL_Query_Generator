@@ -12,12 +12,13 @@ export function AdminSummary({ admin, overview, loadingOverview, proPercent, isD
   return (
     <>
       <section className={`rounded-lg border p-4 shadow-sm ${surfaceClass}`}>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
           <SummaryMetric isDark={isDark} label="Admin" value={admin?.id || "active session"} />
           <SummaryMetric isDark={isDark} label="Conversion" value={`${proPercent}% paid`} />
           <SummaryMetric isDark={isDark} label="Open Feedback" value={overview.stats.pendingFeedback || 0} tone="amber" />
           <SummaryMetric isDark={isDark} label="Security Queue" value={overview.stats.pendingSecurityEvents || 0} tone="rose" />
           <SummaryMetric isDark={isDark} label="Access Requests" value={overview.stats.pendingAccessAppeals || 0} tone="amber" />
+          <SummaryMetric isDark={isDark} label="Announcements" value={overview.stats.publishedNotifications || 0} />
         </div>
       </section>
 

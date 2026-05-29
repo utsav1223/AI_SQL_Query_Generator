@@ -19,6 +19,8 @@ const OrganizationSubscription = require("../src/models/OrganizationSubscription
 const SecurityEvent = require("../src/models/SecurityEvent");
 const AdminAuditLog = require("../src/models/AdminAuditLog");
 const AccessAppeal = require("../src/models/AccessAppeal");
+const Notification = require("../src/models/Notification");
+const NotificationRead = require("../src/models/NotificationRead");
 
 const hasIndex = (model, expectedFields) => {
   return model.schema.indexes().some(([fields]) => {
@@ -75,5 +77,7 @@ describe("MongoDB query indexes", () => {
     assert.equal(hasIndex(AdminAuditLog, { targetUserId: 1, createdAt: -1 }), true);
     assert.equal(hasIndex(AccessAppeal, { status: 1, createdAt: -1 }), true);
     assert.equal(hasIndex(AccessAppeal, { email: 1, createdAt: -1 }), true);
+    assert.equal(hasIndex(Notification, { status: 1, audience: 1, publishedAt: -1 }), true);
+    assert.equal(hasUniqueIndex(NotificationRead, { notificationId: 1, userId: 1 }), true);
   });
 });

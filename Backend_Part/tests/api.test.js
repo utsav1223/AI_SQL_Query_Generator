@@ -25,6 +25,8 @@ const Invoice = require("../src/models/Invoice");
 const OrganizationSubscription = require("../src/models/OrganizationSubscription");
 const SecurityEvent = require("../src/models/SecurityEvent");
 const AccessAppeal = require("../src/models/AccessAppeal");
+const Notification = require("../src/models/Notification");
+const NotificationRead = require("../src/models/NotificationRead");
 
 describe("API validation and auth guards", () => {
   it("does not expose legacy password auth endpoints after Clerk migration", async () => {
@@ -160,7 +162,9 @@ dbDescribe("Database-backed auth integration", () => {
       Invoice.deleteMany({}),
       OrganizationSubscription.deleteMany({}),
       SecurityEvent.deleteMany({}),
-      AccessAppeal.deleteMany({})
+      AccessAppeal.deleteMany({}),
+      Notification.deleteMany({}),
+      NotificationRead.deleteMany({})
     ]);
   });
 

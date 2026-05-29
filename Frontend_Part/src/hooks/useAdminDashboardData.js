@@ -15,7 +15,8 @@ const initialOverview = {
     pendingFeedback: 0,
     pendingSecurityEvents: 0,
     recentHighSeverityEvents: 0,
-    pendingAccessAppeals: 0
+    pendingAccessAppeals: 0,
+    publishedNotifications: 0
   },
   charts: {
     monthlyBusiness: [],
@@ -27,12 +28,26 @@ const initialOverview = {
   recentFeedback: [],
   recentSecurityEvents: [],
   recentAccessAppeals: [],
+  recentNotifications: [],
   riskyUsers: [],
   recentAdminActions: []
 };
 
 export const FEEDBACK_STATUSES = ["all", "new", "reviewed", "resolved"];
 export const ACCESS_APPEAL_STATUSES = ["new", "in_review", "resolved", "closed", "all"];
+export const NOTIFICATION_STATUSES = ["all", "published", "draft", "archived"];
+export const NOTIFICATION_TYPES = ["announcement", "general", "maintenance", "billing", "security", "product"];
+export const NOTIFICATION_PRIORITIES = ["normal", "important", "urgent"];
+export const NOTIFICATION_AUDIENCES = ["all", "free", "paid"];
+
+const initialNotificationForm = {
+  title: "",
+  message: "",
+  type: "announcement",
+  priority: "normal",
+  audience: "all",
+  status: "published"
+};
 
 const escapeCsvValue = (value) => {
   const text = String(value ?? "");
@@ -71,11 +86,17 @@ export function useAdminDashboardData() {
   const [accessAppeals, setAccessAppeals] = useState([]);
   const [accessAppealsPagination, setAccessAppealsPagination] = useState({ total: 0, page: 1, limit: 5, pages: 1 });
   const [accessAppealStatus, setAccessAppealStatus] = useState("new");
+  const [adminNotifications, setAdminNotifications] = useState([]);
+  const [adminNotificationsPagination, setAdminNotificationsPagination] = useState({ total: 0, page: 1, limit: 5, pages: 1 });
+  const [notificationStatus, setNotificationStatus] = useState("all");
+  const [notificationForm, setNotificationForm] = useState(initialNotificationForm);
+  const [notificationNotice, setNotificationNotice] = useState("");
 
   const [loadingOverview, setLoadingOverview] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingFeedback, setLoadingFeedback] = useState(true);
   const [loadingAccessAppeals, setLoadingAccessAppeals] = useState(true);
+  const [loadingNotifications, setLoadingNotifications] = useState(true);
   const [actioningId, setActioningId] = useState("");
   const [error, setError] = useState("");
 
@@ -158,11 +179,31 @@ export function useAdminDashboardData() {
     }
   }, []);
 
+  const loadNotifications = useCallback(async (page = 1, status = "all") => {
+    setLoadingNotifications(true);
+    try {
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: "5",
+        status
+      });
+
+      const data = await adminService.getNotifications(params.toString());
+      setAdminNotifications(data.notifications || []);
+      setAdminNotificationsPagination(data.pagination || { total: 0, page: 1, limit: 5, pages: 1 });
+    } catch (err) {
+      setError(err.message || "Failed to load notifications");
+    } finally {
+      setLoadingNotifications(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadOverview();
     loadFeedback(1, "all", "");
     loadAccessAppeals(1, "new");
-  }, [loadAccessAppeals, loadFeedback, loadOverview]);
+    loadNotifications(1, "all");
+  }, [loadAccessAppeals, loadFeedback, loadNotifications, loadOverview]);
 
   useEffect(() => {
     loadUsers(1, usersSearchQuery);
@@ -180,7 +221,8 @@ export function useAdminDashboardData() {
       loadOverview(),
       loadUsers(usersPagination.page, usersSearchQuery),
       loadFeedback(feedbackPagination.page, feedbackStatus, feedbackSearchQuery),
-      loadAccessAppeals(accessAppealsPagination.page, accessAppealStatus)
+      loadAccessAppeals(accessAppealsPagination.page, accessAppealStatus),
+      loadNotifications(adminNotificationsPagination.page, notificationStatus)
     ]);
   };
 
@@ -243,6 +285,18 @@ export function useAdminDashboardData() {
   const handleAccessAppealStatusFilter = async (status) => {
     setAccessAppealStatus(status);
     await loadAccessAppeals(1, status);
+  };
+
+  const handleNotificationStatusFilter = async (status) => {
+    setNotificationStatus(status);
+    await loadNotifications(1, status);
+  };
+
+  const handleNotificationFormChange = (field, value) => {
+    setNotificationForm((current) => ({
+      ...current,
+      [field]: value
+    }));
   };
 
   const getModerationReason = async ({ title, description, confirmLabel = "Submit" }) => {
@@ -415,11 +469,55 @@ export function useAdminDashboardData() {
     }
   };
 
+  const handleNotificationCreate = async (event) => {
+    event.preventDefault();
+    setActioningId("notification-create");
+    setNotificationNotice("");
+    setError("");
+
+    try {
+      await adminService.createNotification({
+        ...notificationForm,
+        title: notificationForm.title.trim(),
+        message: notificationForm.message.trim()
+      });
+      setNotificationForm(initialNotificationForm);
+      setNotificationNotice("Notification published successfully.");
+      await Promise.all([
+        loadOverview(),
+        loadNotifications(1, notificationStatus)
+      ]);
+    } catch (err) {
+      setError(err.message || "Failed to create notification");
+    } finally {
+      setActioningId("");
+    }
+  };
+
+  const handleNotificationStatusUpdate = async (notificationId, status) => {
+    setActioningId(notificationId);
+    setNotificationNotice("");
+    setError("");
+    try {
+      await adminService.updateNotificationStatus(notificationId, { status });
+      await Promise.all([
+        loadOverview(),
+        loadNotifications(adminNotificationsPagination.page, notificationStatus)
+      ]);
+    } catch (err) {
+      setError(err.message || "Failed to update notification");
+    } finally {
+      setActioningId("");
+    }
+  };
+
   return {
     accessAppeals,
     accessAppealsPagination,
     accessAppealStatus,
     actioningId,
+    adminNotifications,
+    adminNotificationsPagination,
     ConfirmationDialog,
     error,
     exportVisibleUsers,
@@ -435,6 +533,10 @@ export function useAdminDashboardData() {
     handleFeedbackStatusUpdate,
     handleAccessAppealStatusFilter,
     handleAccessAppealStatusUpdate,
+    handleNotificationCreate,
+    handleNotificationFormChange,
+    handleNotificationStatusFilter,
+    handleNotificationStatusUpdate,
     handleSecurityEventStatusUpdate,
     handleAccessDecision,
     handleSuspendToggle,
@@ -443,12 +545,17 @@ export function useAdminDashboardData() {
     handleUsersFilterChange,
     loadFeedback,
     loadAccessAppeals,
+    loadNotifications,
     loadUsers,
     loadingAccessAppeals,
     loadingFeedback,
+    loadingNotifications,
     loadingOverview,
     loadingUsers,
     monthlyBusinessData: overview?.charts?.monthlyBusiness || [],
+    notificationForm,
+    notificationNotice,
+    notificationStatus,
     overview,
     planDistributionData: overview?.charts?.planDistribution || [],
     proPercent,

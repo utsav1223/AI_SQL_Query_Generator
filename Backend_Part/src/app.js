@@ -16,6 +16,7 @@ const paymentWebhookRoutes = require("./routes/paymentWebhook.routes");
 const clerkWebhookRoutes = require("./routes/clerkWebhook.routes");
 const adminRoutes = require("./routes/admin.routes");
 const feedbackRoutes = require("./routes/feedback.routes");
+const notificationRoutes = require("./routes/notification.routes");
 const docsRoutes = require("./routes/docs.routes");
 const {
   tinyJson,
@@ -87,6 +88,7 @@ app.use("/api/schema", schemaJson, schemaRoutes);
 app.use("/api/ai", aiJson, aiRoutes);
 app.use("/api/admin", standardJson, adminRoutes);
 app.use("/api/feedback", standardJson, feedbackRoutes);
+app.use("/api/notifications", standardJson, notificationRoutes);
 app.use("/api/queries", standardJson, queryRoutes);
 
 app.use(notFound);

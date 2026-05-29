@@ -11,6 +11,9 @@ const {
   moderateUserByAdmin,
   getAdminAccessAppeals,
   updateAccessAppealStatusByAdmin,
+  createNotificationByAdmin,
+  getAdminNotifications,
+  updateNotificationStatusByAdmin,
   getAdminFeedback,
   updateFeedbackStatusByAdmin,
   getAdminSecurityEvents,
@@ -20,11 +23,14 @@ const {
   adminLoginRules,
   adminFeedbackQueryRules,
   adminAccessAppealsQueryRules,
+  adminNotificationsQueryRules,
   adminSecurityEventsQueryRules,
   adminUsersQueryRules,
   feedbackStatusRules,
   moderationRules,
   accessAppealStatusRules,
+  notificationCreateRules,
+  notificationStatusRules,
   securityEventStatusRules
 } = require("../validators/api.validator");
 
@@ -36,6 +42,9 @@ router.get("/users", adminAuth, adminUsersQueryRules, validate, getAdminUsers);
 router.post("/users/:userId/moderate", adminAuth, moderationRules, validate, moderateUserByAdmin);
 router.get("/access-appeals", adminAuth, adminAccessAppealsQueryRules, validate, getAdminAccessAppeals);
 router.patch("/access-appeals/:appealId/status", adminAuth, accessAppealStatusRules, validate, updateAccessAppealStatusByAdmin);
+router.get("/notifications", adminAuth, adminNotificationsQueryRules, validate, getAdminNotifications);
+router.post("/notifications", adminAuth, notificationCreateRules, validate, createNotificationByAdmin);
+router.patch("/notifications/:notificationId/status", adminAuth, notificationStatusRules, validate, updateNotificationStatusByAdmin);
 router.get("/feedback", adminAuth, adminFeedbackQueryRules, validate, getAdminFeedback);
 router.patch("/feedback/:feedbackId/status", adminAuth, feedbackStatusRules, validate, updateFeedbackStatusByAdmin);
 router.get("/security-events", adminAuth, adminSecurityEventsQueryRules, validate, getAdminSecurityEvents);
