@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import ProtectedRoute from "../components/ProtectedRoute";
+import PublicRoute from "../components/PublicRoute";
 import AdminProtectedRoute from "../components/AdminProtectedRoute";
 import AdminPublicRoute from "../components/AdminPublicRoute";
 import Seo from "../components/Seo";
