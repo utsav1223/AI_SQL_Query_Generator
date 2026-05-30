@@ -16,7 +16,7 @@ export default function NotificationDrawer({
       {isOpen ? (
         <button
           type="button"
-          className="fixed inset-0 z-[60] bg-slate-950/40 backdrop-blur-sm"
+          className="fixed inset-0 z-[60] bg-white/25 backdrop-blur-md dark:bg-slate-950/20"
           onClick={onClose}
           aria-label="Close notifications"
         />
