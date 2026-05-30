@@ -1,3 +1,9 @@
+import {
+  buildRequestCacheKey,
+  clearRequestCache,
+  getCachedRequest
+} from "../dsa/cache/requestCache";
+
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api").replace(
   /\/+$/,
   ""
@@ -93,81 +99,103 @@ const resolveTimeoutMs = (requestOptions = {}) => {
 
 export const createRequest = ({ getToken, authScope } = {}) => {
   return async (endpoint, method = "GET", body = null, requestOptions = {}) => {
-    const controller = new AbortController();
-    const timeoutMs = resolveTimeoutMs(requestOptions);
-    const timeoutId = timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : null;
-    const token =
-      requestOptions.token !== undefined
-        ? requestOptions.token
-        : typeof getToken === "function"
-          ? await getToken()
-          : null;
-    const notifyOnAuthError = requestOptions.notifyOnAuthError !== false;
+    const normalizedMethod = String(method || "GET").toUpperCase();
+    const cacheKey = buildRequestCacheKey({ authScope, method: normalizedMethod, endpoint });
+    const shouldUseCache = normalizedMethod === "GET" && requestOptions.cache !== false;
 
-    const options = {
-      method,
-      signal: controller.signal,
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
+    const executeRequest = async () => {
+      const controller = new AbortController();
+      const timeoutMs = resolveTimeoutMs(requestOptions);
+      const timeoutId = timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : null;
+      const token =
+        requestOptions.token !== undefined
+          ? requestOptions.token
+          : typeof getToken === "function"
+            ? await getToken()
+            : null;
+      const notifyOnAuthError = requestOptions.notifyOnAuthError !== false;
+
+      const options = {
+        method: normalizedMethod,
+        signal: controller.signal,
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        }
+      };
+
+      if (body) {
+        options.body = JSON.stringify(body);
       }
+
+      let response;
+
+      try {
+        response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+      } catch (error) {
+        if (error?.name === "AbortError") {
+          const timeoutError = new Error("Request timed out while the server was still working.");
+          timeoutError.code = "REQUEST_TIMEOUT";
+          throw timeoutError;
+        }
+
+        throw error;
+      } finally {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+      }
+
+      const payload = await parseResponseBody(response);
+
+      if (!response.ok) {
+        const details = getErrorDetails(payload);
+        const error = new Error(details.message);
+        error.status = response.status;
+        error.code = details.code;
+        error.errors = details.errors;
+        error.data = payload.data || payload;
+
+        if (
+          notifyOnAuthError &&
+          shouldNotifyAuthError({
+            endpoint,
+            status: response.status,
+            authScope,
+            code: details.code
+          })
+        ) {
+          notifyAuthError({
+            endpoint,
+            status: response.status,
+            authScope,
+            message: details.message,
+            code: details.code,
+            data: error.data
+          });
+        }
+
+        throw error;
+      }
+
+      const data = getSuccessData(payload);
+
+      if (normalizedMethod !== "GET") {
+        clearRequestCache(`${authScope || "public"}:GET:`);
+      }
+
+      return data;
     };
 
-    if (body) {
-      options.body = JSON.stringify(body);
+    if (!shouldUseCache) {
+      return executeRequest();
     }
 
-    let response;
-
-    try {
-      response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-    } catch (error) {
-      if (error?.name === "AbortError") {
-        const timeoutError = new Error("Request timed out while the server was still working.");
-        timeoutError.code = "REQUEST_TIMEOUT";
-        throw timeoutError;
-      }
-
-      throw error;
-    } finally {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    }
-
-    const payload = await parseResponseBody(response);
-
-    if (!response.ok) {
-      const details = getErrorDetails(payload);
-      const error = new Error(details.message);
-      error.status = response.status;
-      error.code = details.code;
-      error.errors = details.errors;
-      error.data = payload.data || payload;
-
-      if (
-        notifyOnAuthError &&
-        shouldNotifyAuthError({
-          endpoint,
-          status: response.status,
-          authScope,
-          code: details.code
-        })
-      ) {
-        notifyAuthError({
-          endpoint,
-          status: response.status,
-          authScope,
-          message: details.message,
-          code: details.code,
-          data: error.data
-        });
-      }
-
-      throw error;
-    }
-
-    return getSuccessData(payload);
+    return getCachedRequest({
+      key: cacheKey,
+      ttlMs: requestOptions.cacheTtlMs,
+      request: executeRequest
+    });
   };
 };

@@ -9,6 +9,9 @@ const {
   normalizeActor,
   withWorkspaceScope
 } = require("../utils/workspaceScope");
+const { accumulateQueryAnalytics } = require("../dsa/analytics/queryAccumulator");
+const { getOffsetPagination, buildPaginationMeta } = require("../dsa/pagination/cursorPagination");
+const { buildRegexSearchFilter } = require("../dsa/search/querySearch");
 
 const FREE_HISTORY_LIMIT = 10;
 const ADVANCED_ANALYTICS_QUERY_SAMPLE_LIMIT = 500;
@@ -20,10 +23,6 @@ const MODE_TIME_SAVED_MINUTES = {
   explain: 5,
   format: 2,
   schema: 8
-};
-
-const escapeRegex = (value) => {
-  return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 };
 
 const normalizeTags = (tags = []) => {
@@ -44,112 +43,16 @@ const buildModeMap = (modeStats = []) => {
   }, {});
 };
 
-const extractReferencedTables = (sqlText = "") => {
-  const tableMatches = [];
-  const tablePattern = /\b(?:from|join|update|into)\s+([A-Za-z_][\w.]*|"[^"]+"|`[^`]+`|\[[^\]]+\])/gi;
-  let match = tablePattern.exec(String(sqlText || ""));
-
-  while (match) {
-    const tableName = String(match[1] || "")
-      .replace(/^[`"\[]|[`"\]]$/g, "")
-      .split(".")
-      .pop()
-      .trim();
-
-    if (tableName) {
-      tableMatches.push(tableName);
-    }
-
-    match = tablePattern.exec(String(sqlText || ""));
-  }
-
-  return tableMatches;
-};
-
-const assessSqlQuality = (queries = []) => {
-  const issueCounters = {
-    selectStar: 0,
-    missingWhere: 0,
-    joinWithoutCondition: 0,
-    destructiveStatements: 0
-  };
-  const riskDistribution = {
-    low: 0,
-    medium: 0,
-    high: 0
-  };
-
-  queries.forEach((query) => {
-    const sql = String(query.generatedSQL || "");
-    const normalizedSql = sql.replace(/\s+/g, " ").trim();
-    const hasSelect = /\bselect\b/i.test(normalizedSql);
-    const hasJoin = /\bjoin\b/i.test(normalizedSql);
-    const hasWhere = /\bwhere\b/i.test(normalizedSql);
-    const hasJoinCondition = /\bon\b/i.test(normalizedSql) || /\busing\s*\(/i.test(normalizedSql);
-    const hasSelectStar = /\bselect\s+\*/i.test(normalizedSql);
-    const hasDestructiveStatement = /\b(drop|truncate|alter|delete)\b/i.test(normalizedSql);
-
-    let risk = "low";
-
-    if (hasSelectStar) {
-      issueCounters.selectStar += 1;
-      risk = "medium";
-    }
-
-    if (hasSelect && !hasWhere && !/\blimit\b/i.test(normalizedSql)) {
-      issueCounters.missingWhere += 1;
-      risk = "medium";
-    }
-
-    if (hasJoin && !hasJoinCondition) {
-      issueCounters.joinWithoutCondition += 1;
-      risk = "high";
-    }
-
-    if (hasDestructiveStatement) {
-      issueCounters.destructiveStatements += 1;
-      risk = "high";
-    }
-
-    riskDistribution[risk] += 1;
-  });
-
-  const totalIssues = Object.values(issueCounters).reduce((sum, count) => sum + count, 0);
-  const qualityScore =
-    queries.length > 0
-      ? Math.max(35, Math.round(100 - (totalIssues / queries.length) * 12))
-      : 100;
-
-  return {
-    issueCounters,
-    riskDistribution,
-    qualityScore
-  };
-};
-
-const buildTopTables = (queries = []) => {
-  const tableCounts = new Map();
-
-  queries.forEach((query) => {
-    extractReferencedTables(query.generatedSQL).forEach((tableName) => {
-      tableCounts.set(tableName, (tableCounts.get(tableName) || 0) + 1);
-    });
-  });
-
-  return [...tableCounts.entries()]
-    .map(([name, count]) => ({ name, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 6);
-};
-
 const getUserQueries = async (actorOrUserId, options = {}) => {
   const actor = normalizeActor(actorOrUserId);
-  const safePage = Math.max(parseInt(options.page || "1", 10), 1);
-  const safeLimit = Math.min(Math.max(parseInt(options.limit || "10", 10), 1), 50);
+  const { page: safePage, limit: safeLimit, skip } = getOffsetPagination({
+    page: options.page,
+    limit: options.limit,
+    maxLimit: 50
+  });
   const mode = String(options.mode || "all").trim().toLowerCase();
   const search = String(options.search || "").trim().slice(0, 120);
   const sortOrder = String(options.sort || "newest").trim().toLowerCase();
-  const skip = (safePage - 1) * safeLimit;
   const user = await User.findById(actor.userId).select("plan");
   const effectivePlan = await getEffectivePlanForActor(actor, user);
   const hasFullHistory = hasPlan(effectivePlan, "pro");
@@ -172,11 +75,7 @@ const getUserQueries = async (actorOrUserId, options = {}) => {
   }
 
   if (search) {
-    const safeSearch = escapeRegex(search);
-    extraFilter.$or = [
-      { prompt: { $regex: safeSearch, $options: "i" } },
-      { generatedSQL: { $regex: safeSearch, $options: "i" } }
-    ];
+    Object.assign(extraFilter, buildRegexSearchFilter(search, ["prompt", "generatedSQL"]));
   }
 
   const filter = withWorkspaceScope(actor, extraFilter);
@@ -197,12 +96,7 @@ const getUserQueries = async (actorOrUserId, options = {}) => {
 
   return {
     queries,
-    pagination: {
-      total,
-      page: safePage,
-      limit: safeLimit,
-      pages: Math.max(Math.ceil(total / safeLimit), 1)
-    },
+    pagination: buildPaginationMeta({ total, page: safePage, limit: safeLimit }),
     accessPolicy: {
       fullHistory: hasFullHistory,
       visibleLimit: hasFullHistory ? null : FREE_HISTORY_LIMIT,
@@ -310,30 +204,25 @@ const getAdvancedUserAnalytics = async (actorOrUserId) => {
   const optimizerUsagePercent =
     totalQueries > 0 ? ((optimizeCount / totalQueries) * 100).toFixed(1) : "0.0";
   const modeMap = buildModeMap(modeStats);
-  const estimatedMinutesSaved = queries.reduce(
-    (sum, query) => sum + (MODE_TIME_SAVED_MINUTES[query.mode] || 4),
-    0
-  );
-  const copiedQueries = queries.filter((query) => (query.copyCount || 0) > 0).length;
-  const exportedQueries = queries.filter((query) => (query.exportCount || 0) > 0).length;
-  const pinnedQueries = queries.filter((query) => query.pinned).length;
-  const favoriteQueries = queries.filter((query) => query.favorite).length;
-  const taggedQueries = queries.filter((query) => query.tags?.length > 0).length;
-  const validationChangedCount = queries.filter((query) => {
-    if (query.mode !== "validate") {
-      return false;
-    }
-
-    const originalSql = String(query.prompt || "").replace(/\s+/g, " ").trim().toLowerCase();
-    const finalSql = String(query.generatedSQL || "").replace(/\s+/g, " ").trim().toLowerCase();
-    return Boolean(originalSql && finalSql && originalSql !== finalSql);
-  }).length;
+  const analytics = accumulateQueryAnalytics(queries, {
+    modeTimeSavedMinutes: MODE_TIME_SAVED_MINUTES,
+    topTableLimit: 6
+  });
+  const {
+    estimatedMinutesSaved,
+    copiedQueries,
+    exportedQueries,
+    pinnedQueries,
+    favoriteQueries,
+    taggedQueries,
+    validationChangedCount,
+    topTables,
+    sqlQuality
+  } = analytics;
   const validationPassRate =
     validateCount > 0
       ? (((validateCount - validationChangedCount) / validateCount) * 100).toFixed(1)
       : "N/A";
-  const topTables = buildTopTables(queries);
-  const sqlQuality = assessSqlQuality(queries);
   const schemaText = String(schemaData?.schemaText || "").trim();
   const schemaHints = [];
 

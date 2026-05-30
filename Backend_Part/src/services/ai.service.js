@@ -15,6 +15,7 @@ const {
   normalizeActor,
   withWorkspaceScope
 } = require("../utils/workspaceScope");
+const { selectRelevantSchemaContext } = require("../dsa/schema/schemaGraph");
 
 const GEMINI_MAX_OUTPUT_TOKENS = Math.max(
   Number.parseInt(process.env.GEMINI_MAX_OUTPUT_TOKENS || "2048", 10) || 2048,
@@ -605,9 +606,13 @@ const runAiRequest = async ({ actor: actorInput, userId, mode, prompt, sql, dial
     );
   }
 
+  const selectedSchemaText = hasSchema
+    ? selectRelevantSchemaContext(schemaText, `${prompt || ""}\n${sql || ""}`)
+    : "";
+
   const userPrompt = mode === "format" ? "" : buildUserPrompt({
     mode,
-    schemaText,
+    schemaText: selectedSchemaText,
     hasSchema,
     prompt,
     sql,
@@ -680,7 +685,7 @@ const runAiRequest = async ({ actor: actorInput, userId, mode, prompt, sql, dial
         if (mode === "generate") {
           const initialCandidateSql = sqlText;
           sqlText = await reviewGeneratedSql({
-            schemaText,
+            schemaText: selectedSchemaText,
             prompt,
             candidateSql: sqlText
           });
@@ -690,7 +695,7 @@ const runAiRequest = async ({ actor: actorInput, userId, mode, prompt, sql, dial
               sqlText || (finishReason === "MAX_TOKENS" ? initialCandidateSql : "");
 
             sqlText = await completeGeneratedSqlIfNeeded({
-              schemaText,
+              schemaText: selectedSchemaText,
               prompt,
               candidateSql: completionSeed
             });

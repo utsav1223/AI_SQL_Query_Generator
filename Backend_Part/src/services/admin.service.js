@@ -18,6 +18,9 @@ const { createSecurityEvent } = require("../utils/securityMonitor");
 const accessAppealService = require("./accessAppeal.service");
 const notificationService = require("./notification.service");
 const { getNextRenewalDate } = require("./subscription.service");
+const { createTTLCache } = require("../dsa/cache/ttlCache");
+const { buildRegexSearchFilter, normalizeSearchText } = require("../dsa/search/querySearch");
+const { getOffsetPagination, buildPaginationMeta } = require("../dsa/pagination/cursorPagination");
 
 const SYSTEM_ADMIN_PROFILE = {
   role: "admin",
@@ -37,6 +40,9 @@ const ADMIN_USER_ACTIONS = {
 };
 
 const MODERATION_ACTIONS = new Set(Object.values(ADMIN_USER_ACTIONS));
+const adminOverviewCache = createTTLCache({ ttlMs: 15000, maxEntries: 4 });
+
+const invalidateAdminOverviewCache = () => adminOverviewCache.delete("overview");
 
 const monthKey = (year, month) => `${year}-${String(month).padStart(2, "0")}`;
 
@@ -108,14 +114,6 @@ const getRecentMonthBuckets = (count = 6) => {
 };
 
 const normalizeReason = (reason) => String(reason || "").trim();
-
-const normalizeSearchText = (search) => {
-  return String(search || "").trim().slice(0, 120);
-};
-
-const escapeRegex = (value) => {
-  return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-};
 
 const snapshotUserState = (user) => {
   return {
@@ -285,6 +283,7 @@ const executeModeration = async ({ adminId, requestMeta, userId, action, reason 
     action,
     reason: cleanReason
   });
+  invalidateAdminOverviewCache();
 
   const messageMap = {
     [ADMIN_USER_ACTIONS.setPro]: "User upgraded to pro",
@@ -343,6 +342,12 @@ const getAdminProfile = (adminId) => {
 };
 
 const getAdminOverview = async () => {
+  const cachedOverview = adminOverviewCache.get("overview");
+
+  if (cachedOverview) {
+    return cachedOverview;
+  }
+
   const trendStart = new Date();
   trendStart.setDate(1);
   trendStart.setHours(0, 0, 0, 0);
@@ -535,7 +540,7 @@ const getAdminOverview = async () => {
     }
   });
 
-  return {
+  const overview = {
     stats: {
       totalUsers,
       proUsers,
@@ -572,17 +577,17 @@ const getAdminOverview = async () => {
     recentAccessAppeals,
     recentNotifications
   };
+
+  adminOverviewCache.set("overview", overview);
+  return overview;
 };
 
 const getAdminUsers = async ({ page, limit, search, plan, status, accessStatus }) => {
-  const safePage = Math.max(parseInt(page || "1", 10), 1);
-  const safeLimit = Math.min(Math.max(parseInt(limit || "10", 10), 1), 50);
+  const { page: safePage, limit: safeLimit, skip } = getOffsetPagination({ page, limit, maxLimit: 50 });
   const searchText = normalizeSearchText(search);
   const planFilter = String(plan || "all").trim().toLowerCase();
   const statusFilter = String(status || "all").trim().toLowerCase();
   const accessStatusFilter = String(accessStatus || "all").trim().toLowerCase();
-  const skip = (safePage - 1) * safeLimit;
-  const safeSearch = escapeRegex(searchText);
 
   const filter = {};
 
@@ -599,10 +604,7 @@ const getAdminUsers = async ({ page, limit, search, plan, status, accessStatus }
   }
 
   if (searchText) {
-    filter.$or = [
-      { name: { $regex: safeSearch, $options: "i" } },
-      { email: { $regex: safeSearch, $options: "i" } }
-    ];
+    Object.assign(filter, buildRegexSearchFilter(searchText, ["name", "email"]));
   }
 
   const [users, total] = await Promise.all([
@@ -618,12 +620,7 @@ const getAdminUsers = async ({ page, limit, search, plan, status, accessStatus }
 
   return {
     users,
-    pagination: {
-      total,
-      page: safePage,
-      limit: safeLimit,
-      pages: Math.max(Math.ceil(total / safeLimit), 1)
-    }
+    pagination: buildPaginationMeta({ total, page: safePage, limit: safeLimit })
   };
 };
 
@@ -638,11 +635,9 @@ const moderateUserByAdmin = async ({ adminId, requestMeta, userId, action, reaso
 };
 
 const getAdminFeedback = async ({ page, limit, status, search }) => {
-  const safePage = Math.max(parseInt(page || "1", 10), 1);
-  const safeLimit = Math.min(Math.max(parseInt(limit || "10", 10), 1), 50);
+  const { page: safePage, limit: safeLimit, skip } = getOffsetPagination({ page, limit, maxLimit: 50 });
   const statusFilter = String(status || "all");
   const searchText = normalizeSearchText(search);
-  const skip = (safePage - 1) * safeLimit;
 
   const filter = {};
 
@@ -651,11 +646,7 @@ const getAdminFeedback = async ({ page, limit, status, search }) => {
   }
 
   if (searchText) {
-    const safeSearch = escapeRegex(searchText);
-    filter.$or = [
-      { topic: { $regex: safeSearch, $options: "i" } },
-      { message: { $regex: safeSearch, $options: "i" } }
-    ];
+    Object.assign(filter, buildRegexSearchFilter(searchText, ["topic", "message"]));
   }
 
   const [feedback, total] = await Promise.all([
@@ -669,12 +660,7 @@ const getAdminFeedback = async ({ page, limit, status, search }) => {
 
   return {
     feedback,
-    pagination: {
-      total,
-      page: safePage,
-      limit: safeLimit,
-      pages: Math.max(Math.ceil(total / safeLimit), 1)
-    }
+    pagination: buildPaginationMeta({ total, page: safePage, limit: safeLimit })
   };
 };
 
@@ -694,6 +680,7 @@ const updateFeedbackStatus = async ({ feedbackId, status, adminNote }) => {
   }
 
   await feedback.save();
+  invalidateAdminOverviewCache();
   return feedback;
 };
 
@@ -702,11 +689,15 @@ const getAdminAccessAppeals = async (query) => {
 };
 
 const updateAccessAppealStatus = async (payload) => {
-  return accessAppealService.updateAccessAppealStatus(payload);
+  const result = await accessAppealService.updateAccessAppealStatus(payload);
+  invalidateAdminOverviewCache();
+  return result;
 };
 
 const createNotification = async (payload) => {
-  return notificationService.createNotification(payload);
+  const result = await notificationService.createNotification(payload);
+  invalidateAdminOverviewCache();
+  return result;
 };
 
 const getAdminNotifications = async (query) => {
@@ -714,16 +705,16 @@ const getAdminNotifications = async (query) => {
 };
 
 const updateNotificationStatus = async (payload) => {
-  return notificationService.updateNotificationStatus(payload);
+  const result = await notificationService.updateNotificationStatus(payload);
+  invalidateAdminOverviewCache();
+  return result;
 };
 
 const getAdminSecurityEvents = async ({ page, limit, severity, status, search }) => {
-  const safePage = Math.max(parseInt(page || "1", 10), 1);
-  const safeLimit = Math.min(Math.max(parseInt(limit || "10", 10), 1), 50);
+  const { page: safePage, limit: safeLimit, skip } = getOffsetPagination({ page, limit, maxLimit: 50 });
   const severityFilter = String(severity || "all").trim().toLowerCase();
   const statusFilter = String(status || "all").trim().toLowerCase();
   const searchText = normalizeSearchText(search);
-  const skip = (safePage - 1) * safeLimit;
 
   const filter = {};
 
@@ -736,12 +727,7 @@ const getAdminSecurityEvents = async ({ page, limit, severity, status, search })
   }
 
   if (searchText) {
-    const safeSearch = escapeRegex(searchText);
-    filter.$or = [
-      { type: { $regex: safeSearch, $options: "i" } },
-      { message: { $regex: safeSearch, $options: "i" } },
-      { emailSnapshot: { $regex: safeSearch, $options: "i" } }
-    ];
+    Object.assign(filter, buildRegexSearchFilter(searchText, ["type", "message", "emailSnapshot"]));
   }
 
   const [events, total] = await Promise.all([
@@ -755,12 +741,7 @@ const getAdminSecurityEvents = async ({ page, limit, severity, status, search })
 
   return {
     events,
-    pagination: {
-      total,
-      page: safePage,
-      limit: safeLimit,
-      pages: Math.max(Math.ceil(total / safeLimit), 1)
-    }
+    pagination: buildPaginationMeta({ total, page: safePage, limit: safeLimit })
   };
 };
 
@@ -778,6 +759,7 @@ const updateSecurityEventStatus = async ({ adminId, eventId, status }) => {
   event.reviewedBy = adminId || "admin";
   event.reviewedAt = new Date();
   await event.save();
+  invalidateAdminOverviewCache();
 
   return event;
 };

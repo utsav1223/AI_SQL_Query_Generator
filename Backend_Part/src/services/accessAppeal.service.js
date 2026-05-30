@@ -4,6 +4,8 @@ const AccessAppeal = require("../models/AccessAppeal");
 const User = require("../models/User");
 const AppError = require("../utils/AppError");
 const { createSecurityEvent } = require("../utils/securityMonitor");
+const { getOffsetPagination, buildPaginationMeta } = require("../dsa/pagination/cursorPagination");
+const { buildRegexSearchFilter, normalizeSearchText } = require("../dsa/search/querySearch");
 const { mapClerkUser } = require("./clerkSync.service");
 const {
   getAccountRestrictionForUser,
@@ -104,11 +106,9 @@ const createAccessAppeal = async ({ req, message, requestMeta = {} }) => {
 };
 
 const getAdminAccessAppeals = async ({ page, limit, status, search }) => {
-  const safePage = Math.max(parseInt(page || "1", 10), 1);
-  const safeLimit = Math.min(Math.max(parseInt(limit || "10", 10), 1), 50);
+  const { page: safePage, limit: safeLimit, skip } = getOffsetPagination({ page, limit, maxLimit: 50 });
   const statusFilter = String(status || "new").trim().toLowerCase();
-  const searchText = String(search || "").trim().slice(0, 120);
-  const skip = (safePage - 1) * safeLimit;
+  const searchText = normalizeSearchText(search);
   const filter = {};
 
   if (APPEAL_STATUSES.includes(statusFilter)) {
@@ -118,12 +118,7 @@ const getAdminAccessAppeals = async ({ page, limit, status, search }) => {
   }
 
   if (searchText) {
-    const safeSearch = searchText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    filter.$or = [
-      { name: { $regex: safeSearch, $options: "i" } },
-      { email: { $regex: safeSearch, $options: "i" } },
-      { message: { $regex: safeSearch, $options: "i" } }
-    ];
+    Object.assign(filter, buildRegexSearchFilter(searchText, ["name", "email", "message"]));
   }
 
   const [appeals, total] = await Promise.all([
@@ -137,12 +132,7 @@ const getAdminAccessAppeals = async ({ page, limit, status, search }) => {
 
   return {
     appeals,
-    pagination: {
-      total,
-      page: safePage,
-      limit: safeLimit,
-      pages: Math.max(Math.ceil(total / safeLimit), 1)
-    }
+    pagination: buildPaginationMeta({ total, page: safePage, limit: safeLimit })
   };
 };
 

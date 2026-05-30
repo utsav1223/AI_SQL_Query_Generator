@@ -4,6 +4,9 @@ const Notification = require("../models/Notification");
 const NotificationRead = require("../models/NotificationRead");
 const AppError = require("../utils/AppError");
 const { createSecurityEvent } = require("../utils/securityMonitor");
+const { rankNotifications } = require("../dsa/notifications/notificationRanker");
+const { getOffsetPagination, buildPaginationMeta } = require("../dsa/pagination/cursorPagination");
+const { buildRegexSearchFilter, normalizeSearchText } = require("../dsa/search/querySearch");
 
 const NOTIFICATION_TYPES = ["announcement", "general", "maintenance", "billing", "security", "product"];
 const NOTIFICATION_PRIORITIES = ["normal", "important", "urgent"];
@@ -106,8 +109,10 @@ const getUserNotifications = async (actor, { limit = 8 } = {}) => {
     listedReads.map((receipt) => [String(receipt.notificationId), receipt.readAt])
   );
 
+  const serializedNotifications = notifications.map((notification) => serializeNotification(notification, readMap));
+
   return {
-    notifications: notifications.map((notification) => serializeNotification(notification, readMap)),
+    notifications: rankNotifications(serializedNotifications),
     unreadCount: Math.max(allVisibleIds.length - readCount, 0)
   };
 };
@@ -233,12 +238,10 @@ const createNotification = async ({ adminId, payload, requestMeta = {} }) => {
 };
 
 const getAdminNotifications = async ({ page, limit, status, audience, search }) => {
-  const safePage = Math.max(parseInt(page || "1", 10), 1);
-  const safeLimit = Math.min(Math.max(parseInt(limit || "10", 10), 1), 50);
+  const { page: safePage, limit: safeLimit, skip } = getOffsetPagination({ page, limit, maxLimit: 50 });
   const statusFilter = normalizeText(status).toLowerCase();
   const audienceFilter = normalizeText(audience).toLowerCase();
-  const searchText = normalizeText(search).slice(0, 120);
-  const skip = (safePage - 1) * safeLimit;
+  const searchText = normalizeSearchText(search);
   const filter = {};
 
   if (NOTIFICATION_STATUSES.includes(statusFilter)) {
@@ -250,11 +253,7 @@ const getAdminNotifications = async ({ page, limit, status, audience, search }) 
   }
 
   if (searchText) {
-    const safeSearch = searchText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    filter.$or = [
-      { title: { $regex: safeSearch, $options: "i" } },
-      { message: { $regex: safeSearch, $options: "i" } }
-    ];
+    Object.assign(filter, buildRegexSearchFilter(searchText, ["title", "message"]));
   }
 
   const [notifications, total] = await Promise.all([
@@ -267,12 +266,7 @@ const getAdminNotifications = async ({ page, limit, status, audience, search }) 
 
   return {
     notifications,
-    pagination: {
-      total,
-      page: safePage,
-      limit: safeLimit,
-      pages: Math.max(Math.ceil(total / safeLimit), 1)
-    }
+    pagination: buildPaginationMeta({ total, page: safePage, limit: safeLimit })
   };
 };
 
