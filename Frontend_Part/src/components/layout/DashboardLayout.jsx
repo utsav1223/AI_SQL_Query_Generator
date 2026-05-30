@@ -1,13 +1,100 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth as useClerkAuth } from "@clerk/clerk-react";
 import { NavLink, Outlet } from "react-router-dom";
+import { notificationService } from "../../services/notificationService";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
+import NotificationDrawer from "./NotificationDrawer";
 
 export default function DashboardLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [notificationState, setNotificationState] = useState({ notifications: [], unreadCount: 0 });
+  const [notificationError, setNotificationError] = useState("");
+  const [loadingNotifications, setLoadingNotifications] = useState(true);
+  const [updatingNotification, setUpdatingNotification] = useState("");
   const { isLoaded, orgId } = useClerkAuth();
   const workspaceKey = isLoaded ? orgId || "personal" : "loading";
+
+  const loadNotifications = useCallback(async () => {
+    setLoadingNotifications(true);
+    setNotificationError("");
+    try {
+      const data = await notificationService.getNotifications(20);
+      setNotificationState({
+        notifications: data.notifications || [],
+        unreadCount: data.unreadCount || 0
+      });
+    } catch (requestError) {
+      setNotificationError(requestError.message || "Unable to load notifications.");
+    } finally {
+      setLoadingNotifications(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadNotifications();
+  }, [loadNotifications]);
+
+  useEffect(() => {
+    if (!isNotificationOpen) {
+      return undefined;
+    }
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setIsNotificationOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isNotificationOpen]);
+
+  const handleNotificationOpen = () => {
+    setIsNotificationOpen(true);
+    loadNotifications();
+  };
+
+  const handleMarkNotificationRead = async (notificationId) => {
+    setUpdatingNotification(notificationId);
+    setNotificationError("");
+    try {
+      await notificationService.markRead(notificationId);
+      setNotificationState((current) => ({
+        unreadCount: Math.max((current.unreadCount || 0) - 1, 0),
+        notifications: current.notifications.map((item) =>
+          item._id === notificationId
+            ? { ...item, isRead: true, readAt: new Date().toISOString() }
+            : item
+        )
+      }));
+    } catch (requestError) {
+      setNotificationError(requestError.message || "Unable to update notification.");
+    } finally {
+      setUpdatingNotification("");
+    }
+  };
+
+  const handleMarkAllNotificationsRead = async () => {
+    setUpdatingNotification("all");
+    setNotificationError("");
+    try {
+      await notificationService.markAllRead();
+      setNotificationState((current) => ({
+        unreadCount: 0,
+        notifications: current.notifications.map((item) => ({
+          ...item,
+          isRead: true,
+          readAt: item.readAt || new Date().toISOString()
+        }))
+      }));
+    } catch (requestError) {
+      setNotificationError(requestError.message || "Unable to update notifications.");
+    } finally {
+      setUpdatingNotification("");
+    }
+  };
 
   return (
     <div className="dashboard-shell flex min-h-dvh overflow-hidden">
@@ -29,7 +116,11 @@ export default function DashboardLayout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col lg:pl-[260px]">
-        <Navbar onMenuClick={() => setIsSidebarOpen(true)} />
+        <Navbar
+          onMenuClick={() => setIsSidebarOpen(true)}
+          onNotificationsClick={handleNotificationOpen}
+          unreadNotifications={notificationState.unreadCount}
+        />
 
         <main className="custom-scrollbar min-w-0 flex-1 overflow-y-auto overflow-x-hidden pt-[72px]">
           <div className="relative flex min-h-full min-w-0 flex-col">
@@ -56,6 +147,18 @@ export default function DashboardLayout() {
           </div>
         </main>
       </div>
+
+      <NotificationDrawer
+        isOpen={isNotificationOpen}
+        notifications={notificationState.notifications}
+        unreadCount={notificationState.unreadCount}
+        error={notificationError}
+        loading={loadingNotifications}
+        updatingId={updatingNotification}
+        onClose={() => setIsNotificationOpen(false)}
+        onMarkRead={handleMarkNotificationRead}
+        onMarkAllRead={handleMarkAllNotificationsRead}
+      />
     </div>
   );
 }

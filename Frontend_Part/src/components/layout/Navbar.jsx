@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { LogOut, Menu, Moon, Sun } from "lucide-react";
+import { Bell, LogOut, Menu, Moon, Sun } from "lucide-react";
 import { ThemeContext } from "../../context/ThemeContext";
 import { useAuth } from "../../hooks/useAuth";
 import { getPlanLabel } from "../../utils/planAccess";
@@ -58,7 +58,7 @@ const routeLabelMap = {
   }
 };
 
-export default function Navbar({ onMenuClick }) {
+export default function Navbar({ onMenuClick, onNotificationsClick, unreadNotifications = 0 }) {
   const { user, logout } = useAuth();
   const { isDark, toggleTheme } = useContext(ThemeContext);
   const location = useLocation();
@@ -100,6 +100,21 @@ export default function Navbar({ onMenuClick }) {
           <div className="hidden max-w-[260px] lg:block">
             <WorkspaceSwitcher compact />
           </div>
+
+          <button
+            type="button"
+            onClick={onNotificationsClick}
+            className="button-secondary relative inline-flex h-10 w-10 items-center justify-center rounded-md"
+            title="Open notifications"
+            aria-label={`Open notifications${unreadNotifications ? `, ${unreadNotifications} unread` : ""}`}
+          >
+            <Bell size={16} />
+            {unreadNotifications > 0 ? (
+              <span className="absolute -right-1 -top-1 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full border-2 border-[var(--app-bg)] bg-amber-500 px-1 text-[9px] font-extrabold leading-none text-white">
+                {unreadNotifications > 9 ? "9+" : unreadNotifications}
+              </span>
+            ) : null}
+          </button>
 
           <div className="surface-card hidden items-center gap-3 rounded-lg px-3 py-2 text-slate-950 dark:text-slate-100 sm:flex">
             <UserAvatar user={user} size="sm" />
