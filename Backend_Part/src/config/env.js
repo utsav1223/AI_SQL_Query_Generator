@@ -20,6 +20,14 @@ const read = (key) => String(process.env[key] || "").trim();
 
 const hasValue = (key) => Boolean(read(key));
 
+const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1", "[::1]"]);
+
+const isLocalHostname = (hostname) => {
+  const normalizedHostname = String(hostname || "").toLowerCase();
+
+  return LOCAL_HOSTNAMES.has(normalizedHostname) || normalizedHostname.endsWith(".localhost");
+};
+
 const addMissing = (errors, key, label = key) => {
   if (!hasValue(key)) {
     errors.push(`${label} is required`);
@@ -40,7 +48,7 @@ const addMissingAny = (errors, keys, label) => {
   }
 };
 
-const assertUrl = (errors, key, { allowList = false } = {}) => {
+const assertUrl = (errors, key, { allowList = false, requireHttps = false } = {}) => {
   const rawValue = read(key);
   if (!rawValue) return;
 
@@ -51,6 +59,14 @@ const assertUrl = (errors, key, { allowList = false } = {}) => {
       const url = new URL(value);
       if (!["http:", "https:"].includes(url.protocol)) {
         errors.push(`${key} must use http or https: ${value}`);
+      }
+      if (
+        requireHttps &&
+        isProduction() &&
+        url.protocol !== "https:" &&
+        !isLocalHostname(url.hostname)
+      ) {
+        errors.push(`${key} must use https in production: ${value}`);
       }
     } catch {
       errors.push(`${key} must be a valid URL: ${value}`);
@@ -136,8 +152,8 @@ const validateEnv = () => {
   assertJwtSecret(errors);
   assertSecretLength(errors, "ADMIN_JWT_SECRET", "ADMIN_JWT_SECRET");
   assertAdminPassword(errors);
-  assertUrl(errors, "FRONTEND_URL");
-  assertUrl(errors, "CORS_ORIGIN", { allowList: true });
+  assertUrl(errors, "FRONTEND_URL", { requireHttps: true });
+  assertUrl(errors, "CORS_ORIGIN", { allowList: true, requireHttps: true });
 
   addPairValidation(
     errors,
@@ -145,6 +161,9 @@ const validateEnv = () => {
     "Clerk authentication"
   );
   addPairValidation(errors, ["RAZORPAY_KEY_ID", "RAZORPAY_SECRET"], "Razorpay payments");
+  if (isProduction() && hasValue("RAZORPAY_KEY_ID") && hasValue("RAZORPAY_SECRET")) {
+    addMissing(errors, "RAZORPAY_WEBHOOK_SECRET", "Razorpay webhook secret");
+  }
 
   const emailProvider = read("EMAIL_PROVIDER").toLowerCase();
   if (emailProvider && !["smtp", "resend"].includes(emailProvider)) {

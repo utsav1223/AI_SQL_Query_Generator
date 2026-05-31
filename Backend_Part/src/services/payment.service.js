@@ -540,17 +540,47 @@ const verifyOrderPayment = async ({
 
   verifySignature(`${razorpay_order_id}|${razorpay_payment_id}`, razorpay_signature);
   const user = await getCurrentUser(userId);
-  const paymentRecord = await Payment.findOne({
+  const paymentRecord = await getVerifiedOrderPaymentRecord({
     userId: user._id,
-    orderId: razorpay_order_id
+    razorpay_order_id,
+    razorpay_payment_id
   });
 
   return finalizeSuccessfulPayment({
     user,
     paymentId: razorpay_payment_id,
     orderId: razorpay_order_id,
-    pendingPayment: paymentRecord?.status === "pending" ? paymentRecord : null
+    pendingPayment: paymentRecord
   });
+};
+
+const getVerifiedOrderPaymentRecord = async ({
+  userId,
+  razorpay_order_id,
+  razorpay_payment_id
+}) => {
+  const paymentRecord = await Payment.findOne({
+    userId,
+    orderId: razorpay_order_id
+  });
+
+  if (!paymentRecord) {
+    throw new AppError(400, "Payment order does not belong to this user.");
+  }
+
+  if (paymentRecord.status === "success") {
+    if (paymentRecord.paymentId !== razorpay_payment_id) {
+      throw new AppError(400, "Payment order was already verified with a different payment.");
+    }
+
+    return paymentRecord;
+  }
+
+  if (paymentRecord.status !== "pending") {
+    throw new AppError(400, "Payment order is not pending verification.");
+  }
+
+  return paymentRecord;
 };
 
 const getVerifiedPaymentLinkRecord = async ({

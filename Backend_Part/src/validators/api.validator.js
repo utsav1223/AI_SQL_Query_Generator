@@ -17,6 +17,8 @@ const NOTIFICATION_TYPES = ["announcement", "general", "maintenance", "billing",
 const NOTIFICATION_PRIORITIES = ["normal", "important", "urgent"];
 const NOTIFICATION_AUDIENCES = ["all", "free", "paid"];
 const NOTIFICATION_STATUSES = ["all", "draft", "published", "archived"];
+const CHECKOUT_PLANS = ["pro", "team"];
+const CHECKOUT_SCOPES = ["personal", "organization"];
 
 const mongoIdParam = (name) =>
   param(name).isMongoId().withMessage(`${name} must be a valid MongoDB id`);
@@ -168,6 +170,11 @@ const notificationStatusRules = [
   body("status").isIn(NOTIFICATION_STATUSES.filter((status) => status !== "all")).withMessage("status is invalid")
 ];
 
+const paymentCheckoutRules = [
+  body("plan").optional().isIn(CHECKOUT_PLANS).withMessage("plan is invalid"),
+  body("scope").optional().isIn(CHECKOUT_SCOPES).withMessage("scope is invalid")
+];
+
 const paymentVerifyRules = [
   body("razorpay_order_id").isString().trim().isLength({ min: 1, max: 120 }).withMessage("razorpay_order_id is required"),
   body("razorpay_payment_id").isString().trim().isLength({ min: 1, max: 120 }).withMessage("razorpay_payment_id is required"),
@@ -201,6 +208,7 @@ module.exports = {
   notificationReadRules,
   notificationStatusRules,
   paginationQuery,
+  paymentCheckoutRules,
   paymentLinkVerifyRules,
   paymentVerifyRules,
   queryActionRules,

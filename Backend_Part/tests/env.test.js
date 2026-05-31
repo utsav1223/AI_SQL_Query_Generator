@@ -79,6 +79,52 @@ test("production env validation rejects documented placeholder secrets", () => {
   );
 });
 
+test("production env validation requires https public origins", () => {
+  process.env = {
+    NODE_ENV: "production",
+    JWT_SECRET: "a".repeat(32),
+    ADMIN_JWT_SECRET: "b".repeat(32),
+    MONGO_URI: "mongodb://127.0.0.1:27017/sql-studio",
+    CLERK_PUBLISHABLE_KEY: "pk_test_clerk",
+    CLERK_SECRET_KEY: "sk_test_clerk",
+    CLERK_WEBHOOK_SECRET: "whsec_test_clerk",
+    ADMIN_USER_ID: "platform-admin",
+    ADMIN_PASSWORD: "StrongAdminPassword123!",
+    FRONTEND_URL: "http://example.com",
+    CORS_ORIGIN: "https://app.example.com,http://api.example.com",
+    GEMINI_API_KEY: "gemini-test-key"
+  };
+
+  assert.throws(
+    () => validateEnv(),
+    /FRONTEND_URL must use https in production[\s\S]*CORS_ORIGIN must use https in production/
+  );
+});
+
+test("production env validation requires Razorpay webhook secret when payments are configured", () => {
+  process.env = {
+    NODE_ENV: "production",
+    JWT_SECRET: "a".repeat(32),
+    ADMIN_JWT_SECRET: "b".repeat(32),
+    MONGO_URI: "mongodb://127.0.0.1:27017/sql-studio",
+    CLERK_PUBLISHABLE_KEY: "pk_test_clerk",
+    CLERK_SECRET_KEY: "sk_test_clerk",
+    CLERK_WEBHOOK_SECRET: "whsec_test_clerk",
+    ADMIN_USER_ID: "platform-admin",
+    ADMIN_PASSWORD: "StrongAdminPassword123!",
+    FRONTEND_URL: "https://example.com",
+    CORS_ORIGIN: "https://example.com",
+    GEMINI_API_KEY: "gemini-test-key",
+    RAZORPAY_KEY_ID: "rzp_test_key",
+    RAZORPAY_SECRET: "rzp_test_secret"
+  };
+
+  assert.throws(
+    () => validateEnv(),
+    /Razorpay webhook secret is required/
+  );
+});
+
 test("integration validation catches partial secrets", () => {
   process.env = {
     NODE_ENV: "development",

@@ -313,7 +313,7 @@ const openApiDocument = {
     "/admin/login": {
       post: {
         tags: ["Admin"],
-        summary: "Login admin and set admin session cookie",
+        summary: "Login admin and set an HttpOnly admin session cookie",
         responses: {
           200: { description: "Admin login successful" },
           401: { description: "Invalid admin credentials" }

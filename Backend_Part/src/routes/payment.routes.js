@@ -16,6 +16,7 @@ const {
   getCurrentBilling
 } = require("../controllers/payment.controller");
 const {
+  paymentCheckoutRules,
   paymentLinkVerifyRules,
   paymentVerifyRules
 } = require("../validators/api.validator");
@@ -26,8 +27,8 @@ const canManageBilling = requireWorkspacePermission("org:billing:manage", [
 ]);
 
 router.get("/current", auth, requireApprovedAccess, getCurrentBilling);
-router.post("/create-order", auth, requireApprovedAccess, canManageBilling, paymentLimiter, createOrder);
-router.post("/create-payment-link", auth, requireApprovedAccess, canManageBilling, paymentLimiter, createPaymentLink);
+router.post("/create-order", auth, requireApprovedAccess, canManageBilling, paymentLimiter, paymentCheckoutRules, validate, createOrder);
+router.post("/create-payment-link", auth, requireApprovedAccess, canManageBilling, paymentLimiter, paymentCheckoutRules, validate, createPaymentLink);
 router.post("/verify", auth, requireApprovedAccess, canManageBilling, paymentLimiter, paymentVerifyRules, validate, verifyPayment);
 router.post("/verify-payment-link", auth, requireApprovedAccess, canManageBilling, paymentLimiter, paymentLinkVerifyRules, validate, verifyPaymentLink);
 router.post("/downgrade", auth, requireApprovedAccess, canManageBilling, paymentLimiter, downgradePlan);

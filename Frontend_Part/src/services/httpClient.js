@@ -114,18 +114,19 @@ export const createRequest = ({ getToken, authScope } = {}) => {
             ? await getToken()
             : null;
       const notifyOnAuthError = requestOptions.notifyOnAuthError !== false;
+      const hasBody = body !== null && body !== undefined;
 
       const options = {
         method: normalizedMethod,
         signal: controller.signal,
         credentials: "include",
         headers: {
-          "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {})
         }
       };
 
-      if (body) {
+      if (hasBody) {
+        options.headers["Content-Type"] = "application/json";
         options.body = JSON.stringify(body);
       }
 

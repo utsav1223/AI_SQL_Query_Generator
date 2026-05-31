@@ -94,4 +94,18 @@ describe("httpClient auth events", () => {
 
     expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 120000);
   });
+
+  it("does not send JSON content headers for bodyless requests", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ success: true, data: { id: "admin" } })
+    });
+
+    const request = createRequest({ authScope: "admin" });
+
+    await request("/admin/me", "GET");
+
+    expect(fetchSpy.mock.calls[0][1].headers).not.toHaveProperty("Content-Type");
+  });
 });

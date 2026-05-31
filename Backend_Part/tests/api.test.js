@@ -4,6 +4,7 @@ process.env.FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 process.env.CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
 process.env.ADMIN_USER_ID = process.env.ADMIN_USER_ID || "test-admin";
 process.env.ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "TestAdmin@123";
+process.env.RAZORPAY_SECRET = process.env.RAZORPAY_SECRET || "test-razorpay-secret";
 process.env.RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || "test-webhook-secret";
 
 require("dotenv").config();
@@ -84,6 +85,20 @@ describe("API validation and auth guards", () => {
     assert.equal(response.status, 400);
     assert.equal(response.body.data.errors.length > 0, true);
   });
+
+  it("sets admin auth as an HttpOnly cookie without exposing the JWT in JSON", async () => {
+    const response = await request(app)
+      .post("/api/admin/login")
+      .send({
+        userId: process.env.ADMIN_USER_ID,
+        password: process.env.ADMIN_PASSWORD
+      });
+
+    assert.equal(response.status, 200);
+    assert.equal(response.body.data.token, undefined);
+    assert.equal(response.body.data.admin.id, process.env.ADMIN_USER_ID);
+    assert.match(response.headers["set-cookie"].join(";"), /sql_studio_admin_token=.*HttpOnly/);
+  });
 });
 
 describe("public user payload", () => {
@@ -141,6 +156,43 @@ describe("Razorpay webhook security", () => {
     assert.equal(response.body.success, true);
     assert.equal(response.body.data.ignored, true);
     assert.equal(response.body.data.event, "payment.failed");
+  });
+});
+
+describe("Razorpay payment verification ownership", () => {
+  const signOrderPayment = ({ orderId, paymentId }) => {
+    return crypto
+      .createHmac("sha256", process.env.RAZORPAY_SECRET)
+      .update(`${orderId}|${paymentId}`)
+      .digest("hex");
+  };
+
+  it("rejects valid Razorpay signatures when the order is not owned by the user", async () => {
+    const paymentService = require("../src/services/payment.service");
+    const originalFindById = User.findById;
+    const originalPaymentFindOne = Payment.findOne;
+
+    User.findById = async () => ({ _id: "507f1f77bcf86cd799439011" });
+    Payment.findOne = async () => null;
+
+    try {
+      await assert.rejects(
+        () =>
+          paymentService.verifyOrderPayment({
+            userId: "507f1f77bcf86cd799439011",
+            razorpay_order_id: "order_other_user",
+            razorpay_payment_id: "pay_valid",
+            razorpay_signature: signOrderPayment({
+              orderId: "order_other_user",
+              paymentId: "pay_valid"
+            })
+          }),
+        /does not belong to this user/
+      );
+    } finally {
+      User.findById = originalFindById;
+      Payment.findOne = originalPaymentFindOne;
+    }
   });
 });
 
